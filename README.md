@@ -1,6 +1,6 @@
 # LUP
 <p align="center">
-  <img src="assets/logo/logo-lup.png" alt="Lüp Logo" width="220">
+  <img src=".jpg/lup logo.png" alt="Lüp Logo" width="220">
 </p>
 
 <h1 align="center">Lüp</h1>
