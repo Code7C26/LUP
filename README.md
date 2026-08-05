@@ -18,7 +18,7 @@
 
 ---
 
-## <img src="assets/icons/leaf.svg" width="22"> ¿Qué es Lüp?
+## <img src=".jpg/icon_hoja.png" width="22"> ¿Qué es Lüp?
 
 Lüp es una plataforma inteligente que conecta comercios, consumidores y organizaciones para reducir el desperdicio alimentario mediante la venta con descuento y la gestión responsable de excedentes.
 
@@ -26,7 +26,7 @@ Nuestro objetivo es transformar alimentos próximos a vencer en oportunidades, g
 
 ---
 
-## <img src="assets/icons/target.svg" width="22"> Objetivos
+## <img src=".jpg/icon_grafico.png" width="22"> Objetivos
 
 - Reducir el desperdicio alimentario.
 - Promover la economía circular.
@@ -37,7 +37,7 @@ Nuestro objetivo es transformar alimentos próximos a vencer en oportunidades, g
 
 ---
 
-## <img src="assets/icons/store.svg" width="22"> Funcionalidades
+## <img src=".jpg/icon_tienda.png" width="22"> Funcionalidades
 
 ### Comercios
 
@@ -66,7 +66,7 @@ Nuestro objetivo es transformar alimentos próximos a vencer en oportunidades, g
 
 ---
 
-## <img src="assets/icons/chart.svg" width="22"> Impacto
+## <img src=".jpg/icon_grafico.png" width="22"> Impacto
 
 | Ambiental | Social | Económico |
 |-----------|--------|-----------|
@@ -76,7 +76,7 @@ Nuestro objetivo es transformar alimentos próximos a vencer en oportunidades, g
 
 ---
 
-## <img src="assets/icons/code.svg" width="22"> Tecnologías
+## <img src=".jpg/icon_reloj.png" width="22"> Tecnologías
 
 - Python
 - Django
@@ -90,7 +90,7 @@ Nuestro objetivo es transformar alimentos próximos a vencer en oportunidades, g
 
 ---
 
-## <img src="assets/icons/folder.svg" width="22"> Estructura
+## <img src=".jpg/icon_tienda2.png" width="22"> Estructura
 
 ```text
 LUP/
