@@ -8,25 +8,25 @@
 
 <p align="center">
 
-![Status](https://img.shields.io/badge/Estado-En%20desarrollo-5B8F67?style=for-the-badge)
-![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![Django](https://img.shields.io/badge/Django-0C4B33?style=for-the-badge&logo=django&logoColor=white)
-![AI](https://img.shields.io/badge/IA-6C5CE7?style=for-the-badge)
-![Sostenibilidad](https://img.shields.io/badge/Economía_Circular-8A9B68?style=for-the-badge)
+![Estado](https://img.shields.io/badge/Estado-En%20desarrollo-71A24D?style=for-the-badge)
+![Python](https://img.shields.io/badge/Python-073425?style=for-the-badge&logo=python&logoColor=white)
+![Django](https://img.shields.io/badge/Django-073425?style=for-the-badge&logo=django)
+![IA](https://img.shields.io/badge/Inteligencia%20Artificial-ABBFA7?style=for-the-badge&labelColor=073425)
+![Economía Circular](https://img.shields.io/badge/Economía%20Circular-71A24D?style=for-the-badge)
 
 </p>
 
 ---
 
-# ¿Qué es Lüp?
+## <img src="assets/icons/leaf.svg" width="22"> ¿Qué es Lüp?
 
 Lüp es una plataforma inteligente que conecta comercios, consumidores y organizaciones para reducir el desperdicio alimentario mediante la venta con descuento y la gestión responsable de excedentes.
 
-Nuestro objetivo es transformar alimentos próximos a vencer en oportunidades, generando un impacto **ambiental, social y económico** a través de la tecnología.
+Nuestro objetivo es transformar alimentos próximos a vencer en oportunidades, generando un impacto **ambiental**, **social** y **económico**.
 
 ---
 
-# Objetivos
+## <img src="assets/icons/target.svg" width="22"> Objetivos
 
 - Reducir el desperdicio alimentario.
 - Promover la economía circular.
@@ -37,47 +37,46 @@ Nuestro objetivo es transformar alimentos próximos a vencer en oportunidades, g
 
 ---
 
-# Funcionalidades
+## <img src="assets/icons/store.svg" width="22"> Funcionalidades
 
-## Comercios
+### Comercios
 
 - Publicación de excedentes.
 - Descuentos inteligentes.
 - Gestión de stock.
-- Panel de estadísticas.
+- Estadísticas de impacto.
 
-## Consumidores
+### Consumidores
 
 - Productos cercanos con descuento.
 - Reserva desde la aplicación.
 - Historial de compras.
 
-## Organizaciones
+### Organizaciones
 
 - Gestión de donaciones.
 - Solicitud de alimentos.
-- Historial de entregas.
 
-## Inteligencia Artificial
+### Inteligencia Artificial
 
-- Reconocimiento automático de productos.
-- Completar información mediante imágenes.
-- Recomendaciones inteligentes de descuentos.
-- Estadísticas e indicadores ambientales.
+- Reconocimiento de productos.
+- Carga automática de información.
+- Recomendación de descuentos.
+- Indicadores ambientales.
 
 ---
 
-# Impacto
+## <img src="assets/icons/chart.svg" width="22"> Impacto
 
 | Ambiental | Social | Económico |
 |-----------|--------|-----------|
-| Reducción del desperdicio | Mayor acceso a alimentos | Menores pérdidas para comercios |
-| Menos residuos | Apoyo a organizaciones | Optimización del stock |
-| Economía circular | Consumo responsable | Mayor aprovechamiento |
+| 🌿 Menos desperdicio | 🤝 Mayor acceso a alimentos | 💰 Menores pérdidas |
+| ♻️ Economía circular | ❤️ Apoyo a organizaciones | 📦 Mejor aprovechamiento |
+| 🌎 Reducción de residuos | 👥 Consumo responsable | 📈 Optimización del stock |
 
 ---
 
-# Tecnologías
+## <img src="assets/icons/code.svg" width="22"> Tecnologías
 
 - Python
 - Django
@@ -91,7 +90,7 @@ Nuestro objetivo es transformar alimentos próximos a vencer en oportunidades, g
 
 ---
 
-# Estructura
+## <img src="assets/icons/folder.svg" width="22"> Estructura
 
 ```text
 LUP/
@@ -99,6 +98,7 @@ LUP/
 ├── assets/
 │   ├── branding/
 │   ├── logo/
+│   ├── icons/
 │   └── mockups/
 │
 ├── backend/
@@ -113,5 +113,7 @@ LUP/
 ---
 
 <p align="center">
-  <b>Más valor. Menos desperdicio.</b>
+
+**Más valor. Menos desperdicio.**
+
 </p>
