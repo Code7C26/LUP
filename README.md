@@ -6,16 +6,16 @@
 <h1 align="center">Lüp</h1>
 
 <p align="center">
-  <strong>Cada alimento merece una oportunidad.</strong>
+  <strong>Una segunda oportunidad para cada alimento</strong>
 </p>
 
 <p align="center">
-  🌱 Economía Circular • 🤖 Inteligencia Artificial • 🍃 Sostenibilidad
+  🌱 Economía Circular 🍃 Sostenibilidad
 </p>
 
 ---
 
-# 📖 ¿Qué es Lüp?
+# ¿Qué es Lüp?
 
 Lüp es una plataforma inteligente diseñada para reducir el desperdicio alimentario mediante la gestión eficiente de excedentes de comercios. La aplicación conecta supermercados, panaderías, restaurantes y otros negocios con consumidores y organizaciones sociales, permitiendo que los alimentos próximos a vencer encuentren una segunda oportunidad antes de convertirse en residuos.
 
@@ -23,7 +23,7 @@ Nuestro objetivo es generar un impacto ambiental, social y económico positivo, 
 
 ---
 
-# 🎯 Objetivos
+# Objetivos
 
 - 🌱 Reducir el desperdicio alimentario.
 - 🍽️ Dar una segunda oportunidad a alimentos aptos para el consumo.
@@ -34,7 +34,7 @@ Nuestro objetivo es generar un impacto ambiental, social y económico positivo, 
 
 ---
 
-# 🚀 Funcionalidades
+# Funcionalidades
 
 ## 🏪 Comercios
 
@@ -66,7 +66,7 @@ Nuestro objetivo es generar un impacto ambiental, social y económico positivo, 
 
 ---
 
-# 🌍 Impacto
+# Impacto
 
 ### 🌱 Ambiental
 
@@ -120,18 +120,6 @@ LUP/
 ├── README.md
 └── .gitignore
 ```
-
----
-
-# 🚧 Estado del proyecto
-
-Actualmente Lüp se encuentra en etapa de investigación, diseño y desarrollo como Proyecto Final Integrador de la especialidad Informática.
-
----
-
-# 👨‍💻 Equipo
-
-Proyecto desarrollado por estudiantes de la Especialidad en Informática.
 
 ---
 
