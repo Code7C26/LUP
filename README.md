@@ -95,20 +95,14 @@ Nuestro objetivo es transformar alimentos próximos a vencer en oportunidades, g
 ```text
 LUP/
 │
-├── assets/
-│   ├── branding/
-│   ├── logo/
-│   ├── icons/
-│   └── mockups/
-│
-├── backend/
-├── frontend/
-├── docs/
-├── hardware/
-│
-├── README.md
-└── .gitignore
+├── /docs     	→ Documentación y análisis
+├── /src      	→ Código fuente
+├── /design   	→ Mockups y prototipos
+├── /assets   	→ Imágenes y recursos
+├── README.md 	→ Presentación general del proyecto
+├── .gitignore	→ Archivos a excluir del seguimiento
 ```
+
 
 ---
 
