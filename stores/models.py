@@ -1,6 +1,6 @@
 from django.db import models
 from users.models import Usuario
-class Comercio(models.Model):
+class Tienda(models.Model):
     usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE, limit_choices_to={'rol': 'comercio'})
     nombre_fantasia = models.CharField(max_length=100)
     direccion = models.CharField(max_length=200)

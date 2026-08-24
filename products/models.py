@@ -1,7 +1,7 @@
 from django.db import models
-from stores.models import Comercio
+from stores.models import Tienda
 class Producto(models.Model):
-    comercio = models.ForeignKey(Comercio, on_delete=models.CASCADE)
+    comercio = models.ForeignKey(Tienda, on_delete=models.CASCADE)
     titulo = models.CharField(max_length=100)
     descripcion = models.TextField()
     precio_original = models.DecimalField(max_digits=10, decimal_places=2)
