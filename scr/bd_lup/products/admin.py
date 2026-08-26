@@ -1,4 +1,4 @@
 from django.contrib import admin
-from .models import Producto  # O el nombre de tu modelo (ej: Producto)
+from scr.bd_lup.products.models import Producto  
 
 admin.site.register(Producto)

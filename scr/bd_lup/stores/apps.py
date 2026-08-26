@@ -1,5 +1,7 @@
 from django.apps import AppConfig
 
-
 class StoresConfig(AppConfig):
-    name = 'stores'
+    default_auto_field = 'django.db.models.BigAutoField'
+    # Cambiá 'users' por la ruta completa:
+    name = 'scr.bd_lup.stores'
+    

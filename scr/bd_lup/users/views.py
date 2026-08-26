@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .forms import RegistroUsuarioForm
+from scr.bd_lup.users.forms import RegistroUsuarioForm
 
 def registrar_usuario(request):
     if request.method == 'POST':

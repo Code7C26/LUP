@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 
 from pathlib import Path
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -37,9 +38,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'users',
-    'stores',
-    'products',
+
+    # Tus apps (SOLO UNA VEZ CADA UNA):
+    'scr.bd_lup.users.apps.UsersConfig',
+    'scr.bd_lup.stores.apps.StoresConfig',
+    'scr.bd_lup.products.apps.ProductsConfig',
 ]
 
 MIDDLEWARE = [
@@ -52,12 +55,13 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'lup.urls'
+ROOT_URLCONF = 'scr.lup.urls'
+
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -69,7 +73,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'lup.wsgi.application'
+WSGI_APPLICATION = 'scr.lup.wsgi.application'
 
 
 # Database

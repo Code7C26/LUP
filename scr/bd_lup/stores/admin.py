@@ -1,4 +1,4 @@
 from django.contrib import admin
-from .models import Tienda  
+from scr.bd_lup.stores.models import Tienda
 
 admin.site.register(Tienda)
