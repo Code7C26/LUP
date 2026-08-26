@@ -1,5 +1,5 @@
 from django.db import models
-from stores.models import Tienda
+from scr.bd_lup.stores.models import Tienda
 class Producto(models.Model):
     comercio = models.ForeignKey(Tienda, on_delete=models.CASCADE)
     titulo = models.CharField(max_length=100)
