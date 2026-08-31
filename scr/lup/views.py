@@ -1,6 +1,5 @@
 from django.shortcuts import render
-from scr.bd_lup.stores.models import Tienda
 
+# Vista principal simplificada
 def home(request):
-    tiendas = Tienda.objects.all()
-    return render(request, 'home.html', {'tiendas': tiendas})
+    return render(request, 'home.html')

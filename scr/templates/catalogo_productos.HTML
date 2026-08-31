@@ -1,0 +1,42 @@
+{% extends 'base.html' %}  <!-- O el nombre de tu plantilla base si la tienen -->
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="text-center mb-4">Catálogo de Ofertas Disponibles</h2>
+    
+    <div class="row">
+        {% for producto in productos %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <span class="badge bg-success mb-2">Disponible</span>
+                        {% if producto.es_donacion %}
+                            <span class="badge bg-info text-dark mb-2">Donación</span>
+                        {% endif %}
+                        
+                        <h5 class="card-title">{{ producto.titulo }}</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">{{ producto.comercio.nombre }}</h6>
+                        <p class="card-text">{{ producto.descripcion|truncatewords:15 }}</p>
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div>
+                                <small class="text-decoration-line-through text-muted">${{ producto.precio_original }}</small>
+                                <span class="fs-5 fw-bold text-success">${{ producto.precio_descuento }}</span>
+                            </div>
+                            <small class="text-muted">Stock: {{ producto.stock }}</small>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent border-top-0">
+                        <a href="#" class="btn btn-primary w-100">Reservar Oferta</a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12 text-center py-5">
+                <h4>No hay ofertas disponibles en este momento.</h4>
+                <p class="text-muted">¡Vuelve a consultar más tarde para encontrar nuevos excedentes de comercios cercanos!</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
