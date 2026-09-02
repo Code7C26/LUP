@@ -3,6 +3,7 @@ from scr.bd_lup.stores.models import Tienda
 
 class Producto(models.Model):
     # Opciones de estado para la lógica del catálogo
+    imagen = models.ImageField(upload_to='productos/', null=True, blank=True, verbose_name="Foto del producto")
     ESTADO_CHOICES = (
         ('DISPONIBLE', 'Disponible'),
         ('VENDIDO', 'Vendido'),
