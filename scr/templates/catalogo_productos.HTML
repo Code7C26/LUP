@@ -16,12 +16,12 @@
                     <!-- Imagen del Producto -->
                     <div class="position-relative" style="height: 200px; background-color: #f8f9fa;">
                         {% if producto.imagen %}
-                            <img src="{{ producto.imagen.url }}" class="card-img-top h-100 w-100" style="object-fit: cover;" alt="{{ producto.titulo }}">
+                            <img src="{{ producto.imagen.url }}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="{{ producto.titulo }}">
                         {% else %}
-                            <!-- Imagen Placeholder Verde si el producto no subió foto -->
-                            <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80" class="card-img-top h-100 w-100" style="object-fit: cover;" alt="Alimentos Lüp">
+                            <!-- Imagen de respaldo si el producto no tiene foto -->
+                            <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80" class="card-img-top" style="height: 200px; object-fit: cover;" alt="Alimentos Lüp">
                         {% endif %}
-                        
+
                         <!-- Badges Superpuestos -->
                         <div class="position-absolute top-0 start-0 m-2 d-flex flex-column gap-1">
                             <span class="badge bg-success shadow-sm">Disponible</span>
