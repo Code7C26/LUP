@@ -1,56 +1,183 @@
-{% extends 'base.html' %}  <!-- O el nombre de tu plantilla base si la tienen -->
+{% extends 'base.html' %}
 
 {% block content %}
+<style>
+    :root {
+        --verde-lup: #4F8A5B;
+        --verde-oscuro: #315C3B;
+        --verde-claro: #E8F3E9;
+        --crema: #F8F6EF;
+        --gris: #5F6B61;
+    }
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: var(--crema);
+        color: #26352A;
+    }
+
+    /* ENCABEZADO */
+    .catalogo-titulo {
+        color: var(--verde-oscuro);
+        font-weight: 700;
+        font-size: 38px;
+    }
+
+    .catalogo-subtitulo {
+        color: var(--gris);
+        font-size: 17px;
+        max-width: 650px;
+        margin: 0 auto;
+    }
+
+    /* CARDS DE PRODUCTOS */
+    .lup-card {
+        background-color: white;
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 5px 18px rgba(49, 92, 59, 0.08);
+    }
+
+    .lup-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 25px rgba(49, 92, 59, 0.14);
+    }
+
+    .lup-card-img-wrapper {
+        height: 200px;
+        position: relative;
+        background-color: var(--verde-claro);
+    }
+
+    .lup-card-img {
+        height: 200px;
+        width: 100%;
+        object-fit: cover;
+    }
+
+    .badge-lup-disponible {
+        background-color: var(--verde-lup) !important;
+        color: white;
+        font-weight: 500;
+        border-radius: 12px;
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    .badge-lup-donacion {
+        background-color: #D97706 !important;
+        color: white;
+        font-weight: 500;
+        border-radius: 12px;
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    .comercio-nombre {
+        color: var(--verde-lup);
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .precio-original {
+        text-decoration: line-through;
+        color: #98A29A;
+        font-size: 0.85rem;
+    }
+
+    .precio-descuento {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--verde-oscuro);
+    }
+
+    .badge-stock {
+        background-color: var(--verde-claro);
+        color: var(--verde-oscuro);
+        border-radius: 12px;
+        font-weight: 600;
+        padding: 6px 12px;
+    }
+
+    .btn-reservar {
+        background-color: var(--verde-lup);
+        color: white;
+        border-radius: 20px;
+        font-weight: 600;
+        border: none;
+        padding: 10px;
+        transition: background-color 0.2s ease;
+    }
+
+    .btn-reservar:hover {
+        background-color: var(--verde-oscuro);
+        color: white;
+    }
+
+    /* ESTADO VACÍO */
+    .empty-card {
+        background-color: white;
+        border-radius: 24px;
+        padding: 40px;
+        text-align: center;
+        box-shadow: 0 5px 18px rgba(49, 92, 59, 0.08);
+    }
+</style>
+
 <div class="container my-5">
     <!-- Encabezado Estilizado -->
     <div class="text-center mb-5">
-        <h2 class="fw-bold text-success display-5">Catálogo de Ofertas Disponibles</h2>
-        <p class="text-muted fs-5">Rescatá excedentes de comercios cercanos a precios reducidos y ayudá a reducir el desperdicio de alimentos.</p>
+        <h2 class="catalogo-titulo">Catálogo de Ofertas Disponibles 🌱</h2>
+        <p class="catalogo-subtitulo mt-2">
+            Rescatá excedentes de comercios cercanos a precios reducidos y ayudá a reducir el desperdicio de alimentos.
+        </p>
     </div>
 
-    <div class="row">
+    <div class="row g-4">
         {% for producto in productos %}
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 shadow-sm border-0 rounded-3 overflow-hidden">
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 lup-card">
                     
                     <!-- Imagen del Producto -->
-                    <div class="position-relative" style="height: 200px; background-color: #f8f9fa;">
+                    <div class="lup-card-img-wrapper">
                         {% if producto.imagen %}
-                            <img src="{{ producto.imagen.url }}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="{{ producto.titulo }}">
+                            <img src="{{ producto.imagen.url }}" class="lup-card-img" alt="{{ producto.titulo }}">
                         {% else %}
-                            <!-- Imagen de respaldo si el producto no tiene foto -->
-                            <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80" class="card-img-top" style="height: 200px; object-fit: cover;" alt="Alimentos Lüp">
+                            <!-- Imagen de respaldo -->
+                            <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80" class="lup-card-img" alt="Alimentos Lüp">
                         {% endif %}
 
                         <!-- Badges Superpuestos -->
-                        <div class="position-absolute top-0 start-0 m-2 d-flex flex-column gap-1">
-                            <span class="badge bg-success shadow-sm">Disponible</span>
+                        <div class="position-absolute top-0 start-0 m-3 d-flex flex-column gap-1">
+                            <span class="badge badge-lup-disponible shadow-sm">Disponible</span>
                             {% if producto.es_donacion %}
-                                <span class="badge bg-info text-dark shadow-sm">Donación</span>
+                                <span class="badge badge-lup-donacion shadow-sm">🤝 Donación</span>
                             {% endif %}
                         </div>
                     </div>
 
                     <!-- Cuerpo de la Tarjeta -->
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title fw-bold text-dark mb-1">{{ producto.titulo }}</h5>
-                        <h6 class="card-subtitle mb-3 text-success fw-semibold">
-                            <i class="bi bi-shop me-1"></i>{{ producto.comercio.nombre }}
+                    <div class="card-body d-flex flex-column p-4">
+                        <h5 class="fw-bold text-dark mb-1">{{ producto.titulo }}</h5>
+                        <h6 class="comercio-nombre mb-3">
+                            🏪 {{ producto.comercio.nombre }}
                         </h6>
-                        <p class="card-text text-secondary flex-grow-1">{{ producto.descripcion|truncatewords:15 }}</p>
+                        <p class="text-secondary small flex-grow-1">{{ producto.descripcion|truncatewords:15 }}</p>
                         
                         <!-- Precios y Stock -->
                         <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
                             <div>
-                                <small class="text-decoration-line-through text-muted d-block" style="font-size: 0.85rem;">
+                                <small class="precio-original d-block">
                                     ${{ producto.precio_original }}
                                 </small>
-                                <span class="fs-4 fw-bolder text-success">
+                                <span class="precio-descuento">
                                     ${{ producto.precio_descuento }}
                                 </span>
                             </div>
                             <div class="text-end">
-                                <span class="badge bg-light text-dark border">
+                                <span class="badge badge-stock">
                                     Stock: {{ producto.stock }}
                                 </span>
                             </div>
@@ -58,8 +185,8 @@
                     </div>
 
                     <!-- Botón de Acción -->
-                    <div class="card-footer bg-white border-top-0 p-3">
-                        <a href="#" class="btn btn-success w-100 fw-bold py-2 shadow-sm" style="background-color: #15803d; border: none;">
+                    <div class="card-footer bg-white border-top-0 p-3 pt-0">
+                        <a href="#" class="btn btn-reservar w-100">
                             Reservar Oferta
                         </a>
                     </div>
@@ -68,10 +195,11 @@
             </div>
         {% empty %}
             <!-- Estado Vacío -->
-            <div class="col-12 text-center py-5">
-                <div class="p-5 bg-light rounded-3 shadow-sm">
-                    <h4 class="text-success fw-bold">No hay ofertas disponibles en este momento.</h4>
-                    <p class="text-muted mb-0">¡Vuelve a consultar más tarde para encontrar nuevos excedentes de comercios cercanos!</p>
+            <div class="col-12">
+                <div class="empty-card">
+                    <div style="font-size: 40px;" class="mb-2">🌱</div>
+                    <h4 class="fw-bold" style="color: var(--verde-oscuro);">No hay ofertas disponibles en este momento.</h4>
+                    <p class="text-muted mb-0">¡Volvé a consultar más tarde para encontrar nuevos excedentes de comercios cercanos!</p>
                 </div>
             </div>
         {% endfor %}
