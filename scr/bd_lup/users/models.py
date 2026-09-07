@@ -9,4 +9,5 @@ class Usuario(AbstractUser):
     )
     rol = models.CharField(max_length=20, choices=ROLES, default='consumidor')
     telefono = models.CharField(max_length=20, blank=True, null=True)
-
+    
+    
