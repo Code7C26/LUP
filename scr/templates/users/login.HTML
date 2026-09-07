@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lüp - Iniciar Sesión</title>
+
+    <!-- Bootstrap CSS y JS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --verde-lup: #4F8A5B;
+            --verde-oscuro: #315C3B;
+            --verde-claro: #E8F3E9;
+            --crema: #F8F6EF;
+            --gris: #5F6B61;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--crema);
+            color: #26352A;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 0;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 24px;
+            padding: 40px 35px;
+            box-shadow: 0 10px 30px rgba(49, 92, 59, 0.08);
+            width: 100%;
+            max-width: 480px;
+        }
+
+        .logo {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--verde-oscuro);
+            text-decoration: none;
+            display: block;
+            text-align: center;
+        }
+
+        .logo span {
+            color: var(--verde-lup);
+        }
+
+        .nav-pills {
+            background-color: var(--verde-claro);
+            padding: 6px;
+            border-radius: 16px;
+            margin-bottom: 25px;
+        }
+
+        .nav-pills .nav-link {
+            color: var(--gris);
+            font-weight: 500;
+            font-size: 13px;
+            border-radius: 12px;
+            padding: 8px 10px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-pills .nav-link.active {
+            background-color: var(--verde-lup);
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(79, 138, 91, 0.3);
+        }
+
+        .form-control {
+            border-radius: 12px;
+            padding: 10px 14px;
+            border: 1px solid #DCE3DB;
+        }
+
+        .form-control:focus {
+            border-color: var(--verde-lup);
+            box-shadow: 0 0 0 0.25rem rgba(79, 138, 91, 0.2);
+        }
+
+        .btn-lup {
+            background-color: var(--verde-lup);
+            color: white;
+            border-radius: 20px;
+            padding: 11px;
+            font-weight: 600;
+            width: 100%;
+            border: none;
+            margin-top: 15px;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn-lup:hover {
+            background-color: var(--verde-oscuro);
+            color: white;
+        }
+
+        .type-description {
+            font-size: 13px;
+            color: var(--gris);
+            text-align: center;
+            margin-bottom: 20px;
+            background-color: #F3F7F3;
+            padding: 10px;
+            border-radius: 12px;
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 14px;
+            color: var(--gris);
+        }
+
+        .login-footer a {
+            color: var(--verde-lup);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+
+        <!-- LOGO -->
+        <a href="/" class="logo mb-2">L<span>ü</span>p</a>
+        <p class="text-center text-muted fs-6 mb-4">Ingresá a tu cuenta</p>
+
+        <!-- SELECCIÓN DE TIPO DE USUARIO -->
+        <ul class="nav nav-pills nav-justified" id="userTypeTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="consumidor-tab" data-bs-toggle="pill" data-bs-target="#consumidor" type="button" role="tab">
+                    🛒 Consumidor
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="fundacion-tab" data-bs-toggle="pill" data-bs-target="#fundacion" type="button" role="tab">
+                    🤝 Fundación
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="comercio-tab" data-bs-toggle="pill" data-bs-target="#comercio" type="button" role="tab">
+                    🏪 Comercio
+                </button>
+            </li>
+        </ul>
+
+        <!-- CONTENIDO DE LOS FORMULARIOS -->
+        <div class="tab-content" id="userTypeTabContent">
+
+            <!-- 1. CONSUMIDOR -->
+            <div class="tab-pane fade show active" id="consumidor" role="tabpanel">
+                <div class="type-description">
+                    Accedé para comprar productos con descuento cerca tuyo.
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="user_type" value="consumidor">
+
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small fw-medium">Usuario o Email</label>
+                        <input type="text" name="username" class="form-control" placeholder="tu_usuario" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small fw-medium">Contraseña</label>
+                        <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-lup">Ingresar como Consumidor</button>
+                </form>
+            </div>
+
+            <!-- 2. FUNDACIÓN / MERENDERO -->
+            <div class="tab-pane fade" id="fundacion" role="tabpanel">
+                <div class="type-description">
+                    Accedé para solicitar o recibir donaciones de alimentos.
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="user_type" value="fundacion">
+
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small fw-medium">Email institucional o Usuario</label>
+                        <input type="text" name="username" class="form-control" placeholder="organizacion@lup.org" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small fw-medium">Contraseña</label>
+                        <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-lup">Ingresar como Fundación</button>
+                </form>
+            </div>
+
+            <!-- 3. COMERCIO -->
+            <div class="tab-pane fade" id="comercio" role="tabpanel">
+                <div class="type-description">
+                    Gestioná tus productos en oferta y donaciones publicadas.
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="user_type" value="comercio">
+
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small fw-medium">Usuario del Comercio</label>
+                        <input type="text" name="username" class="form-control" placeholder="mi_comercio" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small fw-medium">Contraseña</label>
+                        <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-lup">Ingresar a mi Comercio</button>
+                </form>
+            </div>
+
+        </div>
+
+        <!-- FOOTER -->
+        <div class="login-footer">
+            ¿Todavía no tenés una cuenta? <br>
+            <a href="/usuarios/register/">Registrate gratis acá</a>
+        </div>
+
+    </div>
+
+</body>
+</html>

@@ -10,6 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
+<<<<<<< HEAD
+=======
+import os 
+
+>>>>>>> 4f9617d98698c7b8ea023dab7cee9d5cdc16cdde
 
 from pathlib import Path
 
@@ -135,4 +140,9 @@ MAILERS = {
 }
 
 AUTH_USER_MODEL = 'users.Usuario'
+<<<<<<< HEAD
 
+=======
+MEDIA_URL = '/media/' 
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media') 
+>>>>>>> 4f9617d98698c7b8ea023dab7cee9d5cdc16cdde
