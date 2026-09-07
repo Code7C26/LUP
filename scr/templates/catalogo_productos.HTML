@@ -16,7 +16,12 @@
         color: #26352A;
     }
 
-    /* ENCABEZADO */
+    /* ENCABEZADO Y HEADER */
+    .catalogo-header {
+        border-bottom: 1px solid #E4E9E3;
+        padding-bottom: 1.5rem;
+    }
+
     .catalogo-titulo {
         color: var(--verde-oscuro);
         font-weight: 700;
@@ -25,9 +30,27 @@
 
     .catalogo-subtitulo {
         color: var(--gris);
-        font-size: 17px;
+        font-size: 16px;
         max-width: 650px;
-        margin: 0 auto;
+    }
+
+    .btn-publicar {
+        background-color: var(--verde-lup);
+        color: white;
+        border-radius: 25px;
+        padding: 10px 22px;
+        font-weight: 600;
+        border: none;
+        transition: background-color 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-publicar:hover {
+        background-color: var(--verde-oscuro);
+        color: white;
     }
 
     /* CARDS DE PRODUCTOS */
@@ -55,6 +78,7 @@
         height: 200px;
         width: 100%;
         object-fit: cover;
+        display: block;
     }
 
     .badge-lup-disponible {
@@ -109,6 +133,9 @@
         border: none;
         padding: 10px;
         transition: background-color 0.2s ease;
+        text-decoration: none;
+        display: block;
+        text-align: center;
     }
 
     .btn-reservar:hover {
@@ -127,21 +154,22 @@
 </style>
 
 <div class="container my-5">
-<<<<<<< HEAD
     
-    <!-- Encabezado con Botón Flotante a la Derecha -->
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-3 border-bottom pb-4">
+    <!-- Encabezado con Botón Flotante a la Derecha para Comercios -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 catalogo-header gap-3">
         <div>
-            <h2 class="fw-bold text-success display-5 mb-1">Catálogo de Ofertas Disponibles</h2>
-            <p class="text-muted fs-5 mb-0">Rescatá excedentes de comercios cercanos a precios reducidos y ayudá a reducir el desperdicio de alimentos.</p>
+            <h2 class="catalogo-titulo mb-1">Catálogo de Ofertas Disponibles 🌱</h2>
+            <p class="catalogo-subtitulo mb-0">
+                Rescatá excedentes de comercios cercanos a precios reducidos y ayudá a reducir el desperdicio de alimentos.
+            </p>
         </div>
 
-        <!-- Botón del Encabezado (Visible para Comercio / Vendedor / Staff) -->
+        <!-- Botón del Encabezado (Visible para Comercios / Vendedores / Staff) -->
         {% if request.user.is_authenticated %}
             {% if request.user.rol == 'VENDEDOR' or request.user.is_staff or request.user.comercio %}
                 <div class="flex-shrink-0">
-                    <a href="#" class="btn btn-success btn-lg fw-bold shadow-sm px-4 py-2 text-nowrap d-inline-flex align-items-center gap-2" style="background-color: #15803d; border: none; border-radius: 8px;">
-                        <i class="bi bi-plus-lg fs-5"></i> Publicar Excedente
+                    <a href="#" class="btn btn-publicar shadow-sm">
+                        <span>+</span> Publicar Excedente
                     </a>
                 </div>
             {% endif %}
@@ -149,40 +177,17 @@
     </div>
 
     <!-- Grilla de Productos -->
-    <div class="row">
-=======
-    <!-- Encabezado Estilizado -->
-    <div class="text-center mb-5">
-        <h2 class="catalogo-titulo">Catálogo de Ofertas Disponibles 🌱</h2>
-        <p class="catalogo-subtitulo mt-2">
-            Rescatá excedentes de comercios cercanos a precios reducidos y ayudá a reducir el desperdicio de alimentos.
-        </p>
-    </div>
-
     <div class="row g-4">
->>>>>>> 4f9617d98698c7b8ea023dab7cee9d5cdc16cdde
         {% for producto in productos %}
             <div class="col-md-6 col-lg-4">
                 <div class="card h-100 lup-card">
                     
-<<<<<<< HEAD
-                    <!-- Contenedor de la Imagen del Producto -->
-                    <div class="position-relative bg-light" style="height: 220px; width: 100%; overflow: hidden;">
-                        {% if producto.imagen %}
-                            <!-- Imagen subida desde el Administrador o Formulario de Django -->
-                            <img src="{{ producto.imagen.url }}" class="card-img-top h-100 w-100" style="object-fit: cover; display: block;" alt="{{ producto.titulo }}">
-                        {% else %}
-                            <!-- Imagen de Respaldo en caso de que no tenga foto adjunta -->
-                            <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80" class="card-img-top h-100 w-100" style="object-fit: cover; display: block;" alt="Alimentos Lüp">
-=======
-                    <!-- Imagen del Producto -->
+                    <!-- Contenedor e Imagen del Producto -->
                     <div class="lup-card-img-wrapper">
                         {% if producto.imagen %}
                             <img src="{{ producto.imagen.url }}" class="lup-card-img" alt="{{ producto.titulo }}">
                         {% else %}
-                            <!-- Imagen de respaldo -->
                             <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80" class="lup-card-img" alt="Alimentos Lüp">
->>>>>>> 4f9617d98698c7b8ea023dab7cee9d5cdc16cdde
                         {% endif %}
 
                         <!-- Badges Superpuestos -->
@@ -222,7 +227,7 @@
 
                     <!-- Botón de Acción -->
                     <div class="card-footer bg-white border-top-0 p-3 pt-0">
-                        <a href="#" class="btn btn-reservar w-100">
+                        <a href="#" class="btn btn-reservar">
                             Reservar Oferta
                         </a>
                     </div>
@@ -231,18 +236,11 @@
             </div>
         {% empty %}
             <!-- Estado Vacío -->
-<<<<<<< HEAD
-            <div class="col-12 text-center py-5">
-                <div class="p-5 bg-light rounded-3 shadow-sm border">
-                    <h4 class="text-success fw-bold mb-2">No hay ofertas disponibles en este momento.</h4>
-                    <p class="text-muted mb-0">¡Vuelve a consultar más tarde para encontrar nuevos excedentes de comercios cercanos!</p>
-=======
             <div class="col-12">
                 <div class="empty-card">
                     <div style="font-size: 40px;" class="mb-2">🌱</div>
                     <h4 class="fw-bold" style="color: var(--verde-oscuro);">No hay ofertas disponibles en este momento.</h4>
                     <p class="text-muted mb-0">¡Volvé a consultar más tarde para encontrar nuevos excedentes de comercios cercanos!</p>
->>>>>>> 4f9617d98698c7b8ea023dab7cee9d5cdc16cdde
                 </div>
             </div>
         {% endfor %}
