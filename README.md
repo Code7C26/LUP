@@ -94,6 +94,20 @@ Nuestro objetivo es transformar alimentos próximos a vencer en oportunidades, g
 
 ---
 
+## <img src="jpg/icon_tienda2.png" width="40"> Estructura
+
+```text
+LUP/
+│
+├── /docs     	→ Documentación y análisis
+├── /src      	→ Código fuente
+├── /design   	→ Mockups y prototipos
+├── /assets   	→ Imágenes y recursos
+├── README.md 	→ Presentación general del proyecto
+├── .gitignore	→ Archivos a excluir del seguimiento
+```
+---
+
 ## <img src="jpg/icon_grafico.png" width="40"> Estado Técnico Actual
 
 Actualmente el proyecto cuenta con la estructura backend base en Django:
@@ -113,21 +127,6 @@ Actualmente el proyecto cuenta con la estructura backend base en Django:
 git clone https://github.com/Code7C26/LUP.git
 cd LUP
 
----
-
-## <img src="jpg/icon_tienda2.png" width="40"> Estructura
-
-```text
-LUP/
-│
-├── /docs     	→ Documentación y análisis
-├── /src      	→ Código fuente
-├── /design   	→ Mockups y prototipos
-├── /assets   	→ Imágenes y recursos
-├── README.md 	→ Presentación general del proyecto
-├── .gitignore	→ Archivos a excluir del seguimiento
-```
----
 
 <p align="center">
 
