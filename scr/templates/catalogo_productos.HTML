@@ -185,7 +185,7 @@
                     <!-- Contenedor e Imagen del Producto -->
                     <div class="lup-card-img-wrapper">
                         {% if producto.imagen %}
-                            <img src="{{ producto.imagen.url }}" class="lup-card-img" alt="{{ producto.titulo }}">
+                           <img src="{{ producto.imagen.url }}" class="card-img-top h-100 w-100" style="object-fit: cover; display: block;" alt="{{ producto.titulo }}">
                         {% else %}
                             <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80" class="lup-card-img" alt="Alimentos Lüp">
                         {% endif %}
