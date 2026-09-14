@@ -1,9 +1,13 @@
 <p align="center">
+
   <img src="jpg/lup logo.png" alt="Lüp Logo" width="300">
+
 </p>
 
 <p align="center">
+
   <strong>Una segunda oportunidad para cada alimento.</strong>
+
 </p>
 
 <p align="center">
@@ -90,6 +94,27 @@ Nuestro objetivo es transformar alimentos próximos a vencer en oportunidades, g
 
 ---
 
+## <img src="jpg/icon_grafico.png" width="40"> Estado Técnico Actual
+
+Actualmente el proyecto cuenta con la estructura backend base en Django:
+
+- **Autenticación y Usuarios:** configuración del modelo de usuario personalizado (`Usuario`) con soporte para roles diferenciados, principalmente **Consumidor** y **Comercio**.
+- **Gestión de Comercios:** formularios y modelos de base de datos (`models.py`) configurados para registrar datos específicos del local, como CUIT, dirección, rubro y horarios de atención.
+- **Arquitectura Base:** estructura general vinculada a SQLite/PostgreSQL y configuración global en `settings.py`.
+- **Estado del Proyecto:** el proyecto se encuentra actualmente **en desarrollo**, con la estructura backend inicial implementada y funcionalidades adicionales en proceso de desarrollo.
+
+---
+
+## 🚀 Pasos para Ejecutar el Proyecto en Local
+
+### 1. Clonar el repositorio
+
+```bash
+git clone https://github.com/Code7C26/LUP.git
+cd LUP
+
+---
+
 ## <img src="jpg/icon_tienda2.png" width="40"> Estructura
 
 ```text
@@ -102,8 +127,6 @@ LUP/
 ├── README.md 	→ Presentación general del proyecto
 ├── .gitignore	→ Archivos a excluir del seguimiento
 ```
-
-
 ---
 
 <p align="center">
@@ -111,3 +134,4 @@ LUP/
 **Más valor. Menos desperdicio.**
 
 </p>
+
