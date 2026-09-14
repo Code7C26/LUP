@@ -168,7 +168,7 @@
         {% if request.user.is_authenticated %}
             {% if request.user.rol == 'VENDEDOR' or request.user.is_staff or request.user.comercio %}
                 <div class="flex-shrink-0">
-                    <a href="#" class="btn btn-publicar shadow-sm">
+                    <a href="{% url 'crear_producto' %}" class="btn btn-publicar shadow-sm">
                         <span>+</span> Publicar Excedente
                     </a>
                 </div>

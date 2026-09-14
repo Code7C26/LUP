@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    :root {
+        --verde-lup: #4F8A5B;
+        --verde-oscuro: #315C3B;
+        --verde-claro: #E8F3E9;
+        --crema: #F8F6EF;
+        --gris: #5F6B61;
+    }
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: var(--crema);
+        color: #26352A;
+    }
+
+    .form-card {
+        background-color: white;
+        border: none;
+        border-radius: 24px;
+        box-shadow: 0 5px 20px rgba(49, 92, 59, 0.08);
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--verde-oscuro);
+        margin-bottom: 6px;
+    }
+
+    .btn-lup-submit {
+        background-color: var(--verde-lup);
+        color: white;
+        border-radius: 25px;
+        padding: 12px 30px;
+        font-weight: 600;
+        border: none;
+        transition: background-color 0.2s ease;
+        font-size: 16px;
+    }
+
+    .btn-lup-submit:hover {
+        background-color: var(--verde-oscuro);
+        color: white;
+    }
+
+    .btn-cancelar {
+        border-radius: 25px;
+        padding: 12px 25px;
+        font-weight: 600;
+        color: var(--gris);
+        text-decoration: none;
+    }
+
+    .btn-cancelar:hover {
+        color: #111;
+    }
+</style>
+
+<div class="container my-5" style="max-width: 750px;">
+    
+    <!-- Encabezado de la página -->
+    <div class="mb-4 text-center">
+        <h2 class="fw-bold display-6" style="color: var(--verde-oscuro);">Publicar Nuevo Excedente 🌱</h2>
+        <p class="text-muted fs-6">Completa los datos de tu oferta para darle una segunda oportunidad a tus alimentos sobrantes.</p>
+    </div>
+
+    <!-- Formulario -->
+    <div class="card form-card p-4 p-md-5">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label class="form-label">{{ form.titulo.label }}</label>
+                {{ form.titulo }}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">{{ form.descripcion.label }}</label>
+                {{ form.descripcion }}
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ form.precio_original.label }}</label>
+                    {{ form.precio_original }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ form.precio_descuento.label }}</label>
+                    {{ form.precio_descuento }}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ form.stock.label }}</label>
+                    {{ form.stock }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ form.fecha_vencimiento.label }}</label>
+                    {{ form.fecha_vencimiento }}
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">{{ form.imagen.label }}</label>
+                {{ form.imagen }}
+            </div>
+
+            <div class="form-check mb-4 bg-light p-3 rounded-3 border">
+                {{ form.es_donacion }}
+                <label class="form-check-label fw-semibold ms-2" style="color: var(--verde-oscuro);">
+                    {{ form.es_donacion.label }}
+                </label>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                <a href="{% url 'catalogo' %}" class="btn btn-cancelar">Cancelar</a>
+                <button type="submit" class="btn btn-lup-submit shadow-sm">
+                    ✨ Publicar Oferta
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+Paso 5: Enlazar el Botón en catalogo_productos.html
+Por último, en tu archivo catalogo_productos.html, busca el enlace del botón "+ Publicar Excedente" en el encabezado y reemplaza el atributo href="#" por la URL que acabas de crear:
+
+HTML
+<a href="{% url 'crear_producto' %}" class="btn btn-publicar shadow-sm">
+    <span>+</span> Publicar Excedente
+</a>
