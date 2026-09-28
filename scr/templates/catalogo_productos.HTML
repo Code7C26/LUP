@@ -46,6 +46,7 @@
         display: inline-flex;
         align-items: center;
         gap: 8px;
+        white-space: nowrap;
     }
 
     .btn-publicar:hover {
@@ -155,7 +156,7 @@
 
 <div class="container my-5">
     
-    <!-- Encabezado con Botón Flotante a la Derecha para Comercios -->
+    <!-- Encabezado con Botón a la Derecha -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 catalogo-header gap-3">
         <div>
             <h2 class="catalogo-titulo mb-1">Catálogo de Ofertas Disponibles 🌱</h2>
@@ -164,17 +165,13 @@
             </p>
         </div>
 
-        <!-- Botón del Encabezado (Visible para Comercios / Vendedores / Staff) -->
-        {% if request.user.is_authenticated %}
-            {% if request.user.rol == 'VENDEDOR' or request.user.is_staff or request.user.comercio %}
-                <div class="flex-shrink-0">
-                    <a href="{% url 'crear_producto' %}" class="btn btn-publicar shadow-sm">
-                        <span>+</span> Publicar Excedente
-                    </a>
-                </div>
-            {% endif %}
+        <!-- Botón del Encabezado (Visible para Comercios) -->
+        {% if user.is_authenticated and user.is_comercio %}
+            <a href="{% url 'publicar_excedente' %}" class="btn-publicar">
+                + Publicar Excedente
+            </a>
         {% endif %}
-    </div>
+    </div> <!-- Cierre correcto del catalogo-header -->
 
     <!-- Grilla de Productos -->
     <div class="row g-4">
@@ -227,7 +224,7 @@
 
                     <!-- Botón de Acción -->
                     <div class="card-footer bg-white border-top-0 p-3 pt-0">
-                        <a href="#" class="btn btn-reservar">
+                        <a href="#" class="btn-reservar">
                             Reservar Oferta
                         </a>
                     </div>
