@@ -9,7 +9,7 @@ def lista_productos(request):
     return render(request, 'catalogo_productos.html', {'productos': productos})
 
 @login_required
-def crear_producto(request):
+def publicar_excedente(request):
     tienda = Tienda.objects.filter(usuario=request.user).first()
     if not tienda:
         tienda = Tienda.objects.first()
