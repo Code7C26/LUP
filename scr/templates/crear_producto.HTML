@@ -62,7 +62,7 @@
     
     <!-- Encabezado de la página -->
     <div class="mb-4 text-center">
-        <h2 class="fw-bold display-6" style="color: var(--verde-oscuro);">Publicar Nuevo Excedente 🌱</h2>
+        <h2 class="fw-bold display-6" style="color: var(--verde-oscuro);">Publicar Nuevo Excedente </h2>
         <p class="text-muted fs-6">Completa los datos de tu oferta para darle una segunda oportunidad a tus alimentos sobrantes.</p>
     </div>
 
@@ -70,6 +70,18 @@
     <div class="card form-card p-4 p-md-5">
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
+            {% if form.errors %}
+            <div class="alert alert-danger rounded-3 mb-4">
+                <strong>Por favor corrijé los siguientes errores:</strong>
+                <ul>
+                    {% for field, errors in form.errors.items %}
+                        {% for error in errors %}
+                            <li><strong>{{ field }}:</strong> {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
 
             <div class="mb-3">
                 <label class="form-label">{{ form.titulo.label }}</label>
