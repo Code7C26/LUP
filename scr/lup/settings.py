@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'app',
 
     # Tus apps (SOLO UNA VEZ CADA UNA):
     'scr.bd_lup.users.apps.UsersConfig',
