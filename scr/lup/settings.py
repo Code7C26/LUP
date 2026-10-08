@@ -132,7 +132,7 @@ MAILERS = {
 }
 
 # Modelo de Usuario Personalizado
-AUTH_USER_MODEL = 'users.Usuario'
+AUTH_USER_MODEL = 'app.Usuario'
 
 # Rutas de Redirección para Autenticación
 LOGIN_URL = 'login'

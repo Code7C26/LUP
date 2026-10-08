@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container my-5" style="max-width: 650px;">
+    <div class="card shadow-sm p-4 p-md-5 rounded-4 border-0 bg-white">
+        
+        <div class="text-center mb-4">
+            <div class="badge bg-warning text-dark px-3 py-2 rounded-pill mb-2">Canal de Organización</div>
+            <h3 class="fw-bold text-dark">Solicitar Donación a LÜP</h3>
+            <p class="text-muted small">
+                Las solicitudes de alimentos son gestionadas por el equipo de LÜP para garantizar una logística y recepción transparente.
+            </p>
+        </div>
+
+        {% if producto %}
+            <div class="bg-light p-3 rounded-3 mb-4 border border-warning">
+                <small class="text-muted d-block">Producto a solicitar:</small>
+                <strong class="text-dark fs-5">{{ producto.titulo }}</strong>
+                <span class="d-block text-success small">Comercio: {{ producto.comercio.username }}</span>
+            </div>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="mb-3">
+                <label class="form-label fw-bold">Asunto</label>
+                {{ form.asunto }}
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-bold">Mensaje para el equipo de LÜP</label>
+                {{ form.mensaje }}
+            </div>
+
+            <button type="submit" class="btn btn-warning text-dark fw-bold w-100 rounded-pill py-2 shadow-sm">
+                Enviar Solicitud
+            </button>
+
+            <a href="{% url 'catalogo_productos' %}" class="btn btn-link w-100 text-center mt-2 text-secondary text-decoration-none">
+                Volver al Catálogo
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container my-5">
+    
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+            <h2 class="fw-bold mb-1" style="color: var(--verde-oscuro);">Panel de Gestión 🏪</h2>
+            <p class="text-muted mb-0">Comercio: <strong>{{ user.nombre_entidad|default:user.username }}</strong></p>
+        </div>
+        <div>
+            <a href="{% url 'publicar_excedente' %}" class="btn btn-success rounded-pill px-4 fw-semibold shadow-sm">
+                + Publicar Nuevo Excedente
+            </a>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr class="py-3">
+                            <th class="ps-4">Producto</th>
+                            <th>Precio Oferta</th>
+                            <th>Stock</th>
+                            <th>Tipo</th>
+                            <th class="text-end pe-4">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for producto in productos %}
+                        <tr>
+                            <td class="ps-4">
+                                <div class="fw-bold text-dark">{{ producto.titulo }}</div>
+                                <small class="text-muted">{{ producto.descripcion|truncatewords:8 }}</small>
+                            </td>
+                            <td class="text-success fw-bold">${{ producto.precio_descuento }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ producto.stock }} unidades</span></td>
+                            <td>
+                                {% if producto.es_donacion %}
+                                    <span class="badge bg-warning text-dark">Donación</span>
+                                {% else %}
+                                    <span class="badge bg-success">Venta Directa</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end pe-4">
+                                <form method="POST" action="{% url 'eliminar_excedente' producto.id %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="return confirm('¿Seguro que deseas eliminar este producto?');">
+                                        <i class="bi bi-trash me-1"></i> Eliminar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="bi bi-box-seam display-6 d-block mb-2"></i>
+                                No has publicado ningún excedente todavía.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

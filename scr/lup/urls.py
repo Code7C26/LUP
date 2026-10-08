@@ -1,24 +1,18 @@
-from django.contrib import admin
-from django.urls import path, include
-from django.conf import settings
-from django.conf.urls.static import static
-
-from scr.lup.views import home
-
+from django.urls import path
+from scr.lup import views
 
 urlpatterns = [
-    path('', home, name='home'),
-    path('admin/', admin.site.urls),
-    path('usuarios/', include('scr.bd_lup.users.urls')),
-    path('productos/', include('scr.bd_lup.products.urls')),
-
-    # API
-    path('api/', include('app.urls')),
+    path('', views.home, name='home'),
+    
+    # El catálogo ahora vive en /catalogo/ o /productos/
+    path('catalogo/', views.catalogo_productos, name='catalogo_productos'),
+    path('productos/', views.catalogo_productos, name='catalogo_productos'),
+    path('usuarios/login/', views.login_view, name='login'),
+    path('usuarios/logout/', views.logout_view, name='logout'),
+    path('publicar/', views.publicar_excedente, name='publicar_excedente'),
+    path('mi-perfil/', views.mi_perfil_comercio, name='mi_perfil_comercio'),
+    path('eliminar/<int:producto_id>/', views.eliminar_excedente, name='eliminar_excedente'),
+    path('solicitar-donacion/<int:producto_id>/', views.solicitar_donacion_lup, name='solicitar_donacion_lup'),
+    path('usuarios/login/', views.login_view, name='login'),
+    path('usuarios/logout/', views.logout_view, name='logout'),
 ]
-
-
-if settings.DEBUG:
-    urlpatterns += static(
-        settings.MEDIA_URL,
-        document_root=settings.MEDIA_ROOT
-    )

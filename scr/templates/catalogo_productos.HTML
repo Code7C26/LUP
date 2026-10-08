@@ -10,29 +10,10 @@
         --gris: #5F6B61;
     }
 
-    body {
-        font-family: 'Poppins', sans-serif;
-        background-color: var(--crema);
-        color: #26352A;
-    }
-
-    /* ENCABEZADO Y HEADER */
-    .catalogo-header {
-        border-bottom: 1px solid #E4E9E3;
-        padding-bottom: 1.5rem;
-    }
-
-    .catalogo-titulo {
-        color: var(--verde-oscuro);
-        font-weight: 700;
-        font-size: 38px;
-    }
-
-    .catalogo-subtitulo {
-        color: var(--gris);
-        font-size: 16px;
-        max-width: 650px;
-    }
+    /* ENCABEZADO */
+    .catalogo-header { border-bottom: 1px solid #E4E9E3; padding-bottom: 1.5rem; }
+    .catalogo-titulo { color: var(--verde-oscuro); font-weight: 700; font-size: 36px; }
+    .catalogo-subtitulo { color: var(--gris); font-size: 15px; max-width: 650px; }
 
     .btn-publicar {
         background-color: var(--verde-lup);
@@ -46,15 +27,10 @@
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        white-space: nowrap;
     }
+    .btn-publicar:hover { background-color: var(--verde-oscuro); color: white; }
 
-    .btn-publicar:hover {
-        background-color: var(--verde-oscuro);
-        color: white;
-    }
-
-    /* CARDS DE PRODUCTOS */
+    /* CARDS */
     .lup-card {
         background-color: white;
         border: none;
@@ -63,180 +39,109 @@
         transition: transform 0.2s ease, box-shadow 0.2s ease;
         box-shadow: 0 5px 18px rgba(49, 92, 59, 0.08);
     }
-
     .lup-card:hover {
         transform: translateY(-4px);
         box-shadow: 0 10px 25px rgba(49, 92, 59, 0.14);
     }
 
-    .lup-card-img-wrapper {
-        height: 200px;
-        position: relative;
-        background-color: var(--verde-claro);
-    }
+    .lup-card-img-wrapper { height: 200px; position: relative; background-color: var(--verde-claro); }
+    .lup-card-img { height: 200px; width: 100%; object-fit: cover; display: block; }
 
-    .lup-card-img {
-        height: 200px;
-        width: 100%;
-        object-fit: cover;
-        display: block;
-    }
+    .badge-lup-disponible { background-color: var(--verde-lup) !important; color: white; border-radius: 12px; padding: 6px 12px; font-size: 12px; }
+    .badge-lup-donacion { background-color: #D97706 !important; color: white; border-radius: 12px; padding: 6px 12px; font-size: 12px; }
 
-    .badge-lup-disponible {
-        background-color: var(--verde-lup) !important;
-        color: white;
-        font-weight: 500;
-        border-radius: 12px;
-        padding: 6px 12px;
-        font-size: 12px;
-    }
+    .precio-descuento { font-size: 1.4rem; font-weight: 700; color: var(--verde-oscuro); }
+    .precio-original { text-decoration: line-through; color: #98A29A; font-size: 0.85rem; }
 
-    .badge-lup-donacion {
-        background-color: #D97706 !important;
-        color: white;
-        font-weight: 500;
-        border-radius: 12px;
-        padding: 6px 12px;
-        font-size: 12px;
-    }
+    .btn-reservar { background-color: var(--verde-lup); color: white; border-radius: 20px; font-weight: 600; text-decoration: none; display: block; text-align: center; padding: 10px; }
+    .btn-reservar:hover { background-color: var(--verde-oscuro); color: white; }
 
-    .comercio-nombre {
-        color: var(--verde-lup);
-        font-weight: 600;
-        font-size: 14px;
-    }
-
-    .precio-original {
-        text-decoration: line-through;
-        color: #98A29A;
-        font-size: 0.85rem;
-    }
-
-    .precio-descuento {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--verde-oscuro);
-    }
-
-    .badge-stock {
-        background-color: var(--verde-claro);
-        color: var(--verde-oscuro);
-        border-radius: 12px;
-        font-weight: 600;
-        padding: 6px 12px;
-    }
-
-    .btn-reservar {
-        background-color: var(--verde-lup);
-        color: white;
-        border-radius: 20px;
-        font-weight: 600;
-        border: none;
-        padding: 10px;
-        transition: background-color 0.2s ease;
-        text-decoration: none;
-        display: block;
-        text-align: center;
-    }
-
-    .btn-reservar:hover {
-        background-color: var(--verde-oscuro);
-        color: white;
-    }
-
-    /* ESTADO VACÍO */
-    .empty-card {
-        background-color: white;
-        border-radius: 24px;
-        padding: 40px;
-        text-align: center;
-        box-shadow: 0 5px 18px rgba(49, 92, 59, 0.08);
-    }
+    .btn-donacion { background-color: #D97706; color: white; border-radius: 20px; font-weight: 600; text-decoration: none; display: block; text-align: center; padding: 10px; }
+    .btn-donacion:hover { background-color: #B45309; color: white; }
 </style>
 
 <div class="container my-5">
     
-    <!-- Encabezado con Botón a la Derecha -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 catalogo-header gap-3">
-    <div>
-        <h2 class="catalogo-titulo mb-1">Catálogo de Ofertas Disponibles</h2>
-        <p class="catalogo-subtitulo mb-0">
-            Rescatá excedentes de comercios cercanos a precios reducidos y ayudá a reducir el desperdicio de alimentos.
-        </p>
+        <div>
+            <h2 class="catalogo-titulo mb-1">Catálogo de Ofertas Disponibles</h2>
+            <p class="catalogo-subtitulo mb-0">Rescatá excedentes de comercios cercanos a precios reducidos y ayudá a reducir el desperdicio de alimentos.</p>
+        </div>
+
+        {% if user.is_authenticated and user.rol == 'comercio' %}
+            <a href="{% url 'publicar_excedente' %}" class="btn-publicar">
+                <i class="bi bi-plus-circle-fill"></i> Publicar Excedente
+            </a>
+        {% endif %}
     </div>
 
-    <!-- Botón que redirige a la plantilla crear_producto.html -->
-    {% if user.is_authenticated %}
-        <a href="{% url 'publicar_excedente' %}" class="btn-publicar">
-            + Publicar Excedente
-        </a>
-    {% endif %}
-</div>
-    <!-- Grilla de Productos -->
     <div class="row g-4">
         {% for producto in productos %}
             <div class="col-md-6 col-lg-4">
                 <div class="card h-100 lup-card">
                     
-                    <!-- Contenedor e Imagen del Producto -->
                     <div class="lup-card-img-wrapper">
                         {% if producto.imagen %}
-                           <img src="{{ producto.imagen.url }}" class="card-img-top h-100 w-100" style="object-fit: cover; display: block;" alt="{{ producto.titulo }}">
+                           <img src="{{ producto.imagen.url }}" class="lup-card-img" alt="{{ producto.titulo }}">
                         {% else %}
                             <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80" class="lup-card-img" alt="Alimentos Lüp">
                         {% endif %}
 
-                        <!-- Badges Superpuestos -->
                         <div class="position-absolute top-0 start-0 m-3 d-flex flex-column gap-1">
                             <span class="badge badge-lup-disponible shadow-sm">Disponible</span>
                             {% if producto.es_donacion %}
-                                <span class="badge badge-lup-donacion shadow-sm">🤝 Donación</span>
+                                <span class="badge badge-lup-donacion shadow-sm">Donación</span>
                             {% endif %}
                         </div>
                     </div>
 
-                    <!-- Cuerpo de la Tarjeta -->
                     <div class="card-body d-flex flex-column p-4">
                         <h5 class="fw-bold text-dark mb-1">{{ producto.titulo }}</h5>
-                        <h6 class="comercio-nombre mb-3">
-                            🏪 {{ producto.comercio.nombre }}
+                        <h6 class="text-success small fw-semibold mb-2">
+                             {{ producto.comercio.nombre_entidad|default:producto.comercio.username }}
                         </h6>
-                        <p class="text-secondary small flex-grow-1">{{ producto.descripcion|truncatewords:15 }}</p>
+                        <p class="text-secondary small flex-grow-1">{{ producto.descripcion|truncatewords:12 }}</p>
                         
-                        <!-- Precios y Stock -->
                         <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
                             <div>
-                                <small class="precio-original d-block">
-                                    ${{ producto.precio_original }}
-                                </small>
-                                <span class="precio-descuento">
-                                    ${{ producto.precio_descuento }}
-                                </span>
+                                {% if producto.precio_original %}
+                                    <small class="precio-original d-block">${{ producto.precio_original }}</small>
+                                {% endif %}
+                                <span class="precio-descuento">${{ producto.precio_descuento }}</span>
                             </div>
-                            <div class="text-end">
-                                <span class="badge badge-stock">
-                                    Stock: {{ producto.stock }}
-                                </span>
+                            <div>
+                                <span class="badge bg-light text-dark border rounded-pill">Stock: {{ producto.stock }}</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Botón de Acción -->
                     <div class="card-footer bg-white border-top-0 p-3 pt-0">
-                        <a href="#" class="btn-reservar">
-                            Reservar Oferta
-                        </a>
+                        {% if user.is_authenticated %}
+                            {% if user.rol == 'organizacion' and producto.es_donacion %}
+                                <a href="{% url 'solicitar_donacion_lup' producto.id %}" class="btn-donacion">
+                                    <i class="bi bi-heart-fill me-1"></i> Contactar a LÜP por Donación
+                                </a>
+                            {% elif user.rol == 'comercio' and producto.comercio == user %}
+                                <div class="d-flex gap-2">
+                                    <span class="badge bg-secondary w-100 py-2 text-center my-auto">Tu Publicación</span>
+                                    <a href="{% url 'eliminar_excedente' producto.id %}" class="btn btn-outline-danger btn-sm rounded-pill"><i class="bi bi-trash"></i></a>
+                                </div>
+                            {% else %}
+                                <a href="#" class="btn-reservar">Reservar Oferta</a>
+                            {% endif %}
+                        {% else %}
+                            <a href="{% url 'login' %}" class="btn-reservar">Inicia sesión para reservar</a>
+                        {% endif %}
                     </div>
 
                 </div>
             </div>
         {% empty %}
-            <!-- Estado Vacío -->
             <div class="col-12">
-                <div class="empty-card">
-                    <div style="font-size: 40px;" class="mb-2">🌱</div>
+                <div class="bg-white p-5 text-center rounded-4 shadow-sm">
+                    <i class="bi bi-basket3 text-muted display-4 mb-3 d-block"></i>
                     <h4 class="fw-bold" style="color: var(--verde-oscuro);">No hay ofertas disponibles en este momento.</h4>
-                    <p class="text-muted mb-0">¡Volvé a consultar más tarde para encontrar nuevos excedentes de comercios cercanos!</p>
+                    <p class="text-muted mb-0">¡Volvé a consultar más tarde para encontrar nuevos excedentes!</p>
                 </div>
             </div>
         {% endfor %}

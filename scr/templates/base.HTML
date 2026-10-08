@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lüp - Una segunda oportunidad</title>
 
-    <!-- Bootstrap -->
+    <!-- Bootstrap CSS & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
     <!-- Google Fonts (Poppins) -->
@@ -30,12 +28,17 @@
             background-color: var(--crema);
             color: #26352A;
             margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
 
-        /* NAVBAR BLANCA (Estilo unificado) */
+        main { flex: 1; }
+
+        /* NAVBAR BLANCA UNIFICADA */
         .navbar-lup {
             background-color: #ffffff !important;
-            padding: 18px 0;
+            padding: 14px 0;
             border-bottom: 1px solid #E4E9E3;
         }
 
@@ -46,9 +49,7 @@
             text-decoration: none;
         }
 
-        .logo span {
-            color: var(--verde-lup);
-        }
+        .logo span { color: var(--verde-lup); }
 
         .btn-login {
             border: 1.5px solid var(--verde-lup);
@@ -64,35 +65,72 @@
             background-color: var(--verde-lup);
             color: white;
         }
+
+        .btn-action-nav {
+            background-color: var(--verde-lup);
+            color: white;
+            border-radius: 25px;
+            padding: 8px 18px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .btn-action-nav:hover { background-color: var(--verde-oscuro); color: white; }
     </style>
 </head>
 <body>
 
-    <!-- NAVBAR BLANCA UNIFICADA -->
-    <nav class="navbar-lup">
+    <!-- NAVBAR UNIFICADA CON NAVEGACIÓN COMPLETA -->
+    <nav class="navbar-lup sticky-top shadow-sm">
         <div class="container d-flex justify-content-between align-items-center">
             
-            <!-- Logo Lüp -->
-            <a href="/" class="logo">
-                L<span>ü</span>p
-            </a>
+            <div class="d-flex align-items-center gap-4">
+                <a href="{% url 'catalogo_productos' %}" class="logo">
+                    L<span>ü</span>p
+                </a>
+                <a href="{% url 'catalogo_productos' %}" class="text-decoration-none text-dark fw-semibold small d-none d-md-inline">
+                    <i class="bi bi-grid-fill me-1" style="color: var(--verde-lup);"></i> Catálogo
+                </a>
+            </div>
 
-            <!-- Botón de Iniciar Sesión / Perfil -->
             <div>
                 {% if request.user.is_authenticated %}
-                    <span class="me-3 fw-semibold text-success">
-                        <i class="bi bi-person-circle me-1"></i>{{ request.user.username }}
-                    </span>
-                    <a href="/usuarios/logout/" class="btn btn-login">Cerrar sesión</a>
+                    <div class="d-flex align-items-center gap-2">
+                        <!-- ACCIONES POR ROL -->
+                        {% if request.user.rol == 'comercio' %}
+                            <a href="{% url 'publicar_excedente' %}" class="btn btn-action-nav btn-sm d-none d-sm-inline">
+                                <i class="bi bi-plus-lg"></i> Publicar Excedente
+                            </a>
+                            <a href="{% url 'mi_perfil_comercio' %}" class="btn btn-outline-success btn-sm rounded-pill font-weight-bold px-3">
+                                Mi Perfil
+                            </a>
+                        {% endif %}
+
+                        <span class="ms-2 fw-semibold text-success small">
+                            <i class="bi bi-person-circle me-1"></i>{{ request.user.username }}
+                        </span>
+                        
+                        <a href="{% url 'logout' %}" class="btn btn-login btn-sm ms-2">Cerrar sesión</a>
+                    </div>
                 {% else %}
-                    <a href="/usuarios/login/" class="btn btn-login">Iniciar sesión</a>
-                {% endif %}
+                    <a href="{% url 'login' %}" class="btn btn-outline-success">Iniciar sesión</a>
             </div>
 
         </div>
     </nav>
 
-    <!-- CONTENIDO DINÁMICO DE PRODUCTOS O CUALQUIER OTRA VISTA -->
+    <!-- MENSAJES FLOTANTES DE SISTEMA -->
+    <div class="container mt-3">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show rounded-4 shadow-sm" role="alert">
+                    <i class="bi bi-info-circle-fill me-2"></i> {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- CONTENIDO DE CADA VISTA -->
     <main>
         {% block content %}
         {% endblock %}
@@ -101,9 +139,11 @@
     <!-- FOOTER -->
     <footer class="text-center py-4 text-white mt-5" style="background-color: var(--verde-oscuro);">
         <div class="container">
-            <p class="mb-0 small">Lüp · Una segunda oportunidad para cada alimento 🌱</p>
+            <p class="mb-0 small">Lüp · Una segunda oportunidad para cada alimento</p>
         </div>
     </footer>
 
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -1,79 +1,55 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, authenticate
+from django.contrib import messages
+from .forms import RegistroUsuarioForm, CustomLoginForm
 
-from .forms import (
-    RegistroUsuarioForm, 
-    ConsumidorRegistroForm, 
-    ComercioRegistroForm, 
-    CustomLoginForm
-)
+# VISTA DE REGISTRO
+def register_view(request):
+    if request.method == 'POST':
+        # Instanciamos el formulario enviando los datos POST del usuario
+        form = RegistroUsuarioForm(request.POST)
+        
+        if form.is_valid():
+            usuario = form.save()  # Guarda en la base de datos db.sqlite3
+            login(request, usuario)  # Autentica e inicia la sesión
+            messages.success(request, f"¡Bienvenido/a {usuario.username}! Tu cuenta ha sido creada exitosamente.")
+            
+            # Redirige usando el NOMBRE de la ruta para evitar error 404
+            return redirect('catalogo_productos')
+        else:
+            messages.error(request, "Error al crear la cuenta. Verifica que los datos sean correctos.")
+    else:
+        form = RegistroUsuarioForm()
+    
+    return render(request, 'users/register.html', {'form': form})
 
-
+# VISTA DE INICIO DE SESIÓN
 def login_view(request):
     if request.method == 'POST':
         form = CustomLoginForm(request, data=request.POST)
-        user_type = request.POST.get('user_type', 'consumidor')
-        
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            
-            # Redirección según el rol del usuario autenticado
-            if user.is_comercio() or user_type == 'comercio':
-                return redirect('/productos/')
-            elif user.is_organizacion() or user_type == 'fundacion':
-                return redirect('/fundacion/panel/')
+            messages.success(request, f"¡Hola de nuevo, {user.username}!")
+            return redirect('catalogo_productos')
+        else:
+            # Fallback en caso de login simple
+            username_req = request.POST.get('username')
+            password_req = request.POST.get('password')
+            user = authenticate(request, username=username_req, password=password_req)
+            if user is not None:
+                login(request, user)
+                return redirect('catalogo_productos')
             else:
-                return redirect('/productos/')
+                messages.error(request, "Usuario o contraseña incorrectos.")
     else:
         form = CustomLoginForm()
         
     return render(request, 'users/login.html', {'form': form})
 
 
+# VISTA DE CIERRE DE SESIÓN
 def logout_view(request):
     logout(request)
-    return redirect('/')
-
-
-# Vistas de Selección y Registro Generales
-def registro_seleccion_view(request):
-    return render(request, 'users/registro_seleccion.html')
-
-
-def register_view(request):
-    if request.method == 'POST':
-        form = RegistroUsuarioForm(request.POST)
-        if form.is_valid():
-            usuario = form.save()
-            login(request, usuario)
-            return redirect('/productos/')
-    else:
-        form = RegistroUsuarioForm()
-    
-    return render(request, 'users/register.html', {'form': form})
-
-
-# Vistas para los Registros Específicos
-def registro_consumidor_view(request):
-    if request.method == 'POST':
-        form = ConsumidorRegistroForm(request.POST)
-        if form.is_valid():
-            usuario = form.save()
-            login(request, usuario)
-            return redirect('/productos/')
-    else:
-        form = ConsumidorRegistroForm()
-    return render(request, 'users/registro_consumidor.html', {'form': form})
-
-
-def registro_comercio_view(request):
-    if request.method == 'POST':
-        form = ComercioRegistroForm(request.POST)
-        if form.is_valid():
-            usuario = form.save()
-            login(request, usuario)
-            return redirect('/productos/')
-    else:
-        form = ComercioRegistroForm()
-    return render(request, 'users/registro_comercio.html', {'form': form})
+    messages.info(request, "Sesión cerrada correctamente.")
+    return redirect('catalogo_productos')

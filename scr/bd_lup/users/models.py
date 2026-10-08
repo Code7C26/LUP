@@ -8,21 +8,25 @@ class Usuario(AbstractUser):
         ('comercio', 'Comercio'),
         ('organizacion', 'Organización'),
     )
-    rol = models.CharField(max_length=20, choices=ROLES, default='consumidor', verbose_name="Rol de Usuario")
-    telefono = models.CharField(max_length=20, blank=True, null=True, verbose_name="Teléfono de Contacto")
+    rol = models.CharField(max_length=20, choices=ROLES, default='consumidor')
+    telefono = models.CharField(max_length=20, blank=True, null=True)
+    nombre_entidad = models.CharField(max_length=150, blank=True, null=True)
 
-    # Métodos auxiliares para verificación rápida de roles
-    def is_consumidor(self):
-        return self.rol == 'consumidor'
-
-    def is_comercio(self):
-        return self.rol == 'comercio'
-
-    def is_organizacion(self):
-        return self.rol == 'organizacion'
-
-    def __str__(self):
-        return f"{self.username} ({self.get_rol_display()})"
+    # Evita el choque de permisos entre apps distintas
+    groups = models.ManyToManyField(
+        'auth.Group',
+        related_name='%(app_label)s_%(class)s_groups',
+        blank=True,
+        help_text='Grupos a los que pertenece este usuario.',
+        verbose_name='groups',
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        related_name='%(app_label)s_%(class)s_user_permissions',
+        blank=True,
+        help_text='Permisos específicos para este usuario.',
+        verbose_name='user permissions',
+    )
 
 
 # 2. Perfil para Comercio Asociado
