@@ -1,14 +1,17 @@
 from rest_framework import serializers
-from scr.bd_lup.stores.models import Tienda
+from scr.bd_lup.products.models import Producto
 
 
-class TiendaSerializer(serializers.ModelSerializer):
+class ProductoSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Tienda
+        model = Producto
         fields = [
             'id',
-            'nombre_fantasia',
-            'direccion',
-            'cuit',
-            'horario_atencion',
+            'titulo',
+            'descripcion',
+            'precio_original',
+            'precio_descuento',
+            'es_donacion',
+            'stock',
+            'fecha_vencimiento',
         ]
