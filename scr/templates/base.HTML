@@ -95,7 +95,7 @@
             <div>
                 {% if request.user.is_authenticated %}
                     <div class="d-flex align-items-center gap-2">
-                        <!-- ACCIONES POR ROL -->
+                        <!-- ACCIONES POR ROL DE USUARIO -->
                         {% if request.user.rol == 'comercio' %}
                             <a href="{% url 'publicar_excedente' %}" class="btn btn-action-nav btn-sm d-none d-sm-inline">
                                 <i class="bi bi-plus-lg"></i> Publicar Excedente
@@ -112,7 +112,11 @@
                         <a href="{% url 'logout' %}" class="btn btn-login btn-sm ms-2">Cerrar sesión</a>
                     </div>
                 {% else %}
-                    <a href="{% url 'login' %}" class="btn btn-outline-success">Iniciar sesión</a>
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="{% url 'login' %}" class="btn btn-outline-success">Iniciar sesión</a>
+                        <a href="{% url 'register' %}" class="btn btn-success">Registrarse</a>
+                    </div>
+                {% endif %}
             </div>
 
         </div>

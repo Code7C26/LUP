@@ -8,10 +8,12 @@ from django import forms
 from scr.bd_lup.products.models import Producto
 from scr.bd_lup.products.forms import ProductoForm
 
+def register_view(request):
+    return render(request, 'users/register.html')
 def home(request):
     return render(request, 'home.html')
 
-# Formulario sencillo para coordinar la donación con LÜP
+# Formulario donación 
 class ContactoOrganizacionForm(forms.Form):
     asunto = forms.CharField(
         max_length=150, 
@@ -21,11 +23,7 @@ class ContactoOrganizacionForm(forms.Form):
         widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Escribe tu mensaje para coordinar la entrega...'})
     )
 
-
-# ==========================================
 # 1. AUTENTICACIÓN Y SESIÓN
-# ==========================================
-
 def login_view(request):
     if request.method == 'POST':
         username_req = request.POST.get('username')
@@ -48,19 +46,15 @@ def logout_view(request):
     messages.info(request, "Has cerrado sesión correctamente.")
     return redirect('catalogo_productos')
 
-
-# ==========================================
 # 2. CATÁLOGO Y GESTIÓN DE EXCEDENTES
-# ==========================================
 
 # VISTA PÚBLICA PRINCIPAL
 def catalogo_productos(request):
-    # Cambiamos '-fecha_creacion' por '-creado_en'
     productos = Producto.objects.all().order_by('-creado_en')
     return render(request, 'catalogo_productos.html', {'productos': productos})
 
 
-# PUBLICAR EXCEDENTE (SOLO COMERCIOS)
+# PUBLICAR EXCEDENTE
 @login_required
 def publicar_excedente(request):
     if getattr(request.user, 'rol', None) != 'comercio':
