@@ -1,24 +1,25 @@
-from django.urls import path
-from scr.lup import views
-from scr.bd_lup.users import views as user_views
+from django.conf import settings
+from django.conf.urls.static import static
+from django.contrib import admin
+from django.urls import include, path
+from rest_framework.routers import DefaultRouter
+
+from scr.bd_lup.products import views as product_views
+from scr.bd_lup.products.api import ProductoViewSet
+from scr.bd_lup.stores import views as store_views
+
+router = DefaultRouter()
+router.register('productos', ProductoViewSet, basename='api-productos')
 
 urlpatterns = [
-    # Ruta principal y catálogo
-    path('', views.home, name='home'),
-    path('catalogo/', views.catalogo_productos, name='catalogo_productos'),
-    path('productos/', views.catalogo_productos, name='catalogo_productos'),
-
-    # Autenticación y Registro (importados desde la app users)
-    path('usuarios/login/', views.login_view, name='login'),
-    path('usuarios/logout/', views.logout_view, name='logout'),
-    path('usuarios/register/', user_views.register_view, name='register'),
-    path('usuarios/registro-seleccion/', user_views.registro_seleccion_view, name='registro_seleccion'),
-    path('usuarios/registro-consumidor/', user_views.registro_consumidor_view, name='registro_consumidor'),
-    path('usuarios/registro-comercio/', user_views.registro_comercio_view, name='registro_comercio'),
-
-    # Gestión de excedentes y perfil de comercio
-    path('publicar/', views.publicar_excedente, name='publicar_excedente'),
-    path('mi-perfil/', views.mi_perfil_comercio, name='mi_perfil_comercio'),
-    path('eliminar/<int:producto_id>/', views.eliminar_excedente, name='eliminar_excedente'),
-    path('solicitar-donacion/<int:producto_id>/', views.solicitar_donacion_lup, name='solicitar_donacion_lup'),
+    path('', product_views.home, name='home'),
+    path('panel/', product_views.panel, name='panel'),
+    path('productos/', include('scr.bd_lup.products.urls')),
+    path('comercios/<int:pk>/', store_views.detalle_tienda, name='detalle_tienda'),
+    path('usuarios/', include('scr.bd_lup.users.urls')),
+    path('api/', include(router.urls)),
+    path('admin/', admin.site.urls),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container pt-4">
+
+    <!-- HERO -->
+    <section class="hero">
+        <span class="burbuja b1"></span><span class="burbuja b2"></span><span class="burbuja b3"></span>
+        <div class="row align-items-center g-5 position-relative">
+            <div class="col-lg-7">
+                <span class="badge rounded-pill bg-white bg-opacity-10 border border-light border-opacity-25 px-3 py-2 mb-3 fw-medium">
+                    🌱 Rescatá comida rica · Ahorrá · Ayudá al planeta
+                </span>
+                <h1 class="mb-3">Comida deliciosa que <span class="resaltado">no merece</span> terminar en la basura</h1>
+                <p class="lead mb-4">Locales y restaurantes publican sus excedentes del día con grandes descuentos. Vos reservás, retirás y ayudás a reducir el desperdicio.</p>
+
+                <form class="hero-busqueda mb-4" action="{% url 'catalogo' %}" method="get" role="search">
+                    <i class="bi bi-search text-muted"></i>
+                    <input type="search" name="q" placeholder="Buscá medialunas, viandas, verduras..." aria-label="Buscar ofertas">
+                    <button class="btn btn-lup" type="submit">Buscar</button>
+                </form>
+
+                <div class="d-flex flex-wrap gap-2">
+                    {% if not user.is_authenticated %}
+                        <a href="{% url 'registro_seleccion' %}" class="btn btn-blanco">Crear cuenta gratis</a>
+                    {% endif %}
+                    <a href="{% url 'catalogo' %}" class="btn btn-outline-light">Ver ofertas <i class="bi bi-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+            <div class="col-lg-5 d-none d-lg-block">
+                <div class="hero-tarjeta">
+                    <p class="small text-white-50 mb-3"><i class="bi bi-lightning-charge-fill text-warning"></i> Ofertas que se rescatan hoy</p>
+                    <div class="item"><span class="emoji">🥐</span><div class="flex-grow-1"><strong class="d-block">Docena de medialunas</strong><small class="text-muted">Panadería del barrio</small></div><span class="badge-lup descuento">-60%</span></div>
+                    <div class="item"><span class="emoji">🍲</span><div class="flex-grow-1"><strong class="d-block">Vianda del día</strong><small class="text-muted">Rotisería</small></div><span class="badge-lup descuento">-50%</span></div>
+                    <div class="item"><span class="emoji">🥕</span><div class="flex-grow-1"><strong class="d-block">Bolsa de verduras</strong><small class="text-muted">Verdulería</small></div><span class="badge-lup donacion">Donable</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ESTADÍSTICAS -->
+    <section class="row g-3 mt-2">
+        <div class="col-6 col-lg-3 revelar"><div class="stat"><div class="icono"><i class="bi bi-basket2"></i></div><div class="numero" data-contador="{{ stats.ofertas }}">{{ stats.ofertas }}</div><div class="etiqueta">Ofertas activas</div></div></div>
+        <div class="col-6 col-lg-3 revelar"><div class="stat azul"><div class="icono"><i class="bi bi-shop"></i></div><div class="numero" data-contador="{{ stats.comercios }}">{{ stats.comercios }}</div><div class="etiqueta">Comercios adheridos</div></div></div>
+        <div class="col-6 col-lg-3 revelar"><div class="stat"><div class="icono"><i class="bi bi-recycle"></i></div><div class="numero" data-contador="{{ stats.rescatados }}">{{ stats.rescatados }}</div><div class="etiqueta">Productos rescatados</div></div></div>
+        <div class="col-6 col-lg-3 revelar"><div class="stat ambar"><div class="icono"><i class="bi bi-people"></i></div><div class="numero" data-contador="{{ stats.organizaciones }}">{{ stats.organizaciones }}</div><div class="etiqueta">Organizaciones sociales</div></div></div>
+    </section>
+
+    <!-- OFERTAS DESTACADAS -->
+    <section class="seccion">
+        <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+            <div>
+                <span class="eyebrow">Recién publicadas</span>
+                <h2 class="mb-0">Ofertas cerca tuyo</h2>
+            </div>
+            <a href="{% url 'catalogo' %}" class="btn btn-lup-outline btn-sm">Ver todas <i class="bi bi-arrow-right"></i></a>
+        </div>
+        <div class="row g-4">
+            {% for producto in destacados %}
+                <div class="col-sm-6 col-lg-4 revelar">{% include 'includes/_producto_card.html' %}</div>
+            {% empty %}
+                <div class="col-12">
+                    <div class="vacio">
+                        <div class="emoji mb-2">🌱</div>
+                        <h5>Todavía no hay ofertas publicadas</h5>
+                        <p class="text-muted-lup mb-3">¿Tenés un comercio? Sé el primero en publicar tus excedentes.</p>
+                        <a href="{% url 'registro' 'comercio' %}" class="btn btn-lup">Sumar mi comercio</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- CÓMO FUNCIONA -->
+    <section class="seccion" id="como-funciona">
+        <div class="text-center mb-5">
+            <span class="eyebrow">Simple y rápido</span>
+            <h2>¿Cómo funciona Lüp?</h2>
+            <p class="text-muted-lup mx-auto" style="max-width: 560px;">En tres pasos rescatás comida de calidad y le das una segunda oportunidad.</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4 revelar"><div class="paso"><span class="num">01</span><div class="icono"><i class="bi bi-search-heart"></i></div><h5>Descubrí</h5><p class="text-muted-lup mb-0">Explorá las ofertas del día de panaderías, restaurantes y verdulerías de tu zona.</p></div></div>
+            <div class="col-md-4 revelar"><div class="paso"><span class="num">02</span><div class="icono"><i class="bi bi-bag-check"></i></div><h5>Reservá</h5><p class="text-muted-lup mb-0">Elegí la cantidad y confirmá tu reserva. Recibís un código único de retiro.</p></div></div>
+            <div class="col-md-4 revelar"><div class="paso"><span class="num">03</span><div class="icono"><i class="bi bi-emoji-smile"></i></div><h5>Retirá y disfrutá</h5><p class="text-muted-lup mb-0">Pasá por el local en el horario indicado, mostrá tu código y pagá menos.</p></div></div>
+        </div>
+    </section>
+
+    <!-- PARA QUIÉN -->
+    <section class="seccion">
+        <div class="text-center mb-5">
+            <span class="eyebrow">Una comunidad, tres roles</span>
+            <h2>Elegí cómo querés sumarte</h2>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4 revelar">
+                <a href="{% url 'registro' 'consumidor' %}" class="rol-card">
+                    <div class="icono"><i class="bi bi-bag-heart"></i></div>
+                    <h4>Consumidores</h4>
+                    <p class="text-muted-lup">Comprá comida de calidad con descuentos de hasta 70%.</p>
+                    <ul><li><i class="bi bi-check-circle-fill"></i>Ofertas cerca tuyo</li><li><i class="bi bi-check-circle-fill"></i>Reserva en un clic</li><li><i class="bi bi-check-circle-fill"></i>Seguí cuánto ahorrás</li></ul>
+                    <span class="cta">Crear cuenta <i class="bi bi-arrow-right"></i></span>
+                </a>
+            </div>
+            <div class="col-md-4 revelar">
+                <a href="{% url 'registro' 'comercio' %}" class="rol-card comercio">
+                    <div class="icono"><i class="bi bi-shop"></i></div>
+                    <h4>Comercios</h4>
+                    <p class="text-muted-lup">Convertí tus excedentes en ingresos en lugar de pérdidas.</p>
+                    <ul><li><i class="bi bi-check-circle-fill"></i>Publicá en segundos</li><li><i class="bi bi-check-circle-fill"></i>Gestioná reservas y retiros</li><li><i class="bi bi-check-circle-fill"></i>Medí tu impacto</li></ul>
+                    <span class="cta">Sumar mi comercio <i class="bi bi-arrow-right"></i></span>
+                </a>
+            </div>
+            <div class="col-md-4 revelar">
+                <a href="{% url 'registro' 'organizacion' %}" class="rol-card organizacion">
+                    <div class="icono"><i class="bi bi-people"></i></div>
+                    <h4>Organizaciones</h4>
+                    <p class="text-muted-lup">Comedores, merenderos y fundaciones reciben donaciones.</p>
+                    <ul><li><i class="bi bi-check-circle-fill"></i>Accedé a donaciones</li><li><i class="bi bi-check-circle-fill"></i>Coordiná con comercios</li><li><i class="bi bi-check-circle-fill"></i>Seguimiento de pedidos</li></ul>
+                    <span class="cta">Registrar organización <i class="bi bi-arrow-right"></i></span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    {% if tiendas %}
+    <!-- COMERCIOS -->
+    <section class="seccion">
+        <span class="eyebrow">Comercios adheridos</span>
+        <h2 class="mb-4">Locales que ya rescatan comida</h2>
+        <div class="row g-3">
+            {% for tienda in tiendas %}
+            <div class="col-md-6 col-lg-4 revelar">
+                <a href="{% url 'detalle_tienda' tienda.pk %}" class="lista-item text-decoration-none text-reset h-100">
+                    <div class="mini-foto"><i class="bi bi-shop text-lup"></i></div>
+                    <div class="flex-grow-1 min-w-0">
+                        <strong class="d-block text-lup-oscuro">{{ tienda.nombre_fantasia }}</strong>
+                        <small class="text-muted-lup d-block text-truncate"><i class="bi bi-geo-alt"></i> {{ tienda.direccion }}</small>
+                        <small class="text-muted-lup"><i class="bi bi-clock"></i> {{ tienda.horario_atencion }}</small>
+                    </div>
+                    <span class="estado">{{ tienda.ofertas }} oferta{{ tienda.ofertas|pluralize }}</span>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- CTA FINAL -->
+    <section class="seccion">
+        <div class="cta-final revelar">
+            <div class="row align-items-center g-4">
+                <div class="col-lg-8">
+                    <h2 class="mb-2">Cada alimento rescatado cuenta 💚</h2>
+                    <p class="mb-0">Sumate a la comunidad que transforma excedentes en oportunidades: menos desperdicio, más acceso a alimentos y comercios más sustentables.</p>
+                </div>
+                <div class="col-lg-4 text-lg-end">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'panel' %}" class="btn btn-blanco btn-lg">Ir a mi panel</a>
+                    {% else %}
+                        <a href="{% url 'registro_seleccion' %}" class="btn btn-blanco btn-lg">Empezar ahora</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

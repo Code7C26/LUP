@@ -1,150 +1,128 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
-from django.contrib.auth.models import User
+from django.contrib.auth import login, logout
+from django.contrib.auth.decorators import login_required
+from django.http import Http404
+from django.shortcuts import redirect, render
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.http import require_POST
 
-# Intentamos importar los formularios correspondientes
-try:
-    from .forms import (
-        RegistroUsuarioForm, 
-        ConsumidorRegistroForm, 
-        ComercioRegistroForm, 
-        CustomLoginForm
-    )
-except ImportError:
-    from scr.bd_lup.users.forms import (
-        RegistroUsuarioForm, 
-        ConsumidorRegistroForm, 
-        ComercioRegistroForm, 
-        CustomLoginForm
-    )
+from .forms import (
+    FORMULARIOS_REGISTRO,
+    LoginForm,
+    OrganizacionForm,
+    PerfilUsuarioForm,
+    TiendaForm,
+)
+from .models import Usuario
+
+INFO_ROLES = {
+    Usuario.CONSUMIDOR: {
+        'titulo': 'Consumidor',
+        'icono': 'bi-bag-heart',
+        'descripcion': 'Rescatá comida rica a precios reducidos en comercios cerca tuyo.',
+        'beneficios': ['Hasta 70% de descuento', 'Reservá y retirá en el local', 'Historial de compras'],
+    },
+    Usuario.COMERCIO: {
+        'titulo': 'Comercio',
+        'icono': 'bi-shop',
+        'descripcion': 'Vendé tus excedentes del día y recuperá ingresos en lugar de tirarlos.',
+        'beneficios': ['Publicá en segundos', 'Gestioná reservas y retiros', 'Medí tu impacto'],
+    },
+    Usuario.ORGANIZACION: {
+        'titulo': 'Organización',
+        'icono': 'bi-people',
+        'descripcion': 'Recibí donaciones de alimentos para comedores, merenderos y fundaciones.',
+        'beneficios': ['Solicitá donaciones', 'Coordiná con comercios', 'Seguimiento de pedidos'],
+    },
+}
 
 
-# ==========================================
-# 1. AUTENTICACIÓN Y SESIÓN
-# ==========================================
+def _destino_seguro(request, por_defecto='panel'):
+    destino = request.POST.get('next') or request.GET.get('next')
+    if destino and url_has_allowed_host_and_scheme(destino, {request.get_host()}, request.is_secure()):
+        return destino
+    return por_defecto
+
 
 def login_view(request):
+    if request.user.is_authenticated:
+        return redirect('panel')
+
+    rol_inicial = request.GET.get('rol', Usuario.CONSUMIDOR)
+    if rol_inicial not in INFO_ROLES:
+        rol_inicial = Usuario.CONSUMIDOR
+
+    form = LoginForm(request, data=request.POST or None, initial={'rol': rol_inicial})
     if request.method == 'POST':
-        form = CustomLoginForm(request, data=request.POST)
+        rol_inicial = request.POST.get('rol') or rol_inicial
         if form.is_valid():
-            user = form.get_user()
-            login(request, user)
-            messages.success(request, f"¡Hola de nuevo, {user.username}!")
-            return redirect('catalogo_productos')
-        else:
-            # Fallback que permite ingresar tanto por Nombre de usuario como por Email
-            login_input = request.POST.get('username')
-            password_req = request.POST.get('password')
-            
-            # Buscar si el dato ingresado corresponde a un email o usuario
-            user_obj = User.objects.filter(email__iexact=login_input).first() or \
-                       User.objects.filter(username__iexact=login_input).first()
-            
-            if user_obj:
-                user = authenticate(request, username=user_obj.username, password=password_req)
-                if user is not None:
-                    login(request, user)
-                    messages.success(request, f"¡Bienvenido/a {user.username}!")
-                    return redirect('catalogo_productos')
-            
-            messages.error(request, "Usuario o contraseña incorrectos.")
-    else:
-        form = CustomLoginForm()
-        
-    return render(request, 'users/login.html', {'form': form})
+            usuario = form.get_user()
+            login(request, usuario)
+            messages.success(request, f'¡Hola de nuevo, {usuario.nombre_visible}!')
+            return redirect(_destino_seguro(request))
+
+    return render(
+        request,
+        'users/login.html',
+        {'form': form, 'roles': INFO_ROLES, 'rol_activo': rol_inicial, 'next': request.GET.get('next', '')},
+    )
 
 
+@require_POST
 def logout_view(request):
     logout(request)
-    messages.info(request, "Sesión cerrada correctamente.")
-    return redirect('catalogo_productos')
+    messages.info(request, 'Cerraste sesión. ¡Te esperamos pronto!')
+    return redirect('home')
 
 
-# ==========================================
-# 2. SELECCIÓN Y REGISTRO DE USUARIOS
-# ==========================================
-
-# Vista intermedia para elegir tipo de perfil (Consumidor / Comercio / Organización)
 def registro_seleccion_view(request):
-    return render(request, 'users/registro_seleccion.html')
+    if request.user.is_authenticated:
+        return redirect('panel')
+    return render(request, 'users/registro_seleccion.html', {'roles': INFO_ROLES})
 
 
-# Registro General / Predeterminado
-def register_view(request):
+def registro_view(request, rol):
+    if rol not in FORMULARIOS_REGISTRO:
+        raise Http404('Tipo de cuenta inexistente')
+    if request.user.is_authenticated:
+        return redirect('panel')
+
+    FormClass = FORMULARIOS_REGISTRO[rol]
+    form = FormClass(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        usuario = form.save()
+        login(request, usuario, backend='scr.bd_lup.users.backends.UsuarioOEmailBackend')
+        messages.success(request, f'¡Bienvenido/a a Lüp, {usuario.nombre_visible}! Tu cuenta fue creada.')
+        return redirect('panel')
+
+    return render(
+        request,
+        'users/registro.html',
+        {'form': form, 'rol': rol, 'info': INFO_ROLES[rol], 'roles': INFO_ROLES},
+    )
+
+
+@login_required
+def perfil_view(request):
+    usuario = request.user
+    PerfilForm = None
+    instancia = None
+    if usuario.es_comercio and hasattr(usuario, 'tienda'):
+        PerfilForm, instancia = TiendaForm, usuario.tienda
+    elif usuario.es_organizacion and hasattr(usuario, 'organizacion'):
+        PerfilForm, instancia = OrganizacionForm, usuario.organizacion
+
+    datos = request.POST if request.method == 'POST' else None
+    form_usuario = PerfilUsuarioForm(datos, instance=usuario, prefix='u')
+    form_perfil = PerfilForm(datos, instance=instancia, prefix='p') if PerfilForm else None
+
     if request.method == 'POST':
-        form = RegistroUsuarioForm(request.POST)
-        if form.is_valid():
-            # 1. Creamos la instancia sin guardar en la DB todavía
-            usuario = form.save(commit=False)
-            
-            # 2. Encriptamos explícitamente la contraseña ingresada
-            raw_password = form.cleaned_data.get('password') or request.POST.get('password')
-            if raw_password:
-                usuario.set_password(raw_password)
-            
-            # 3. Guardamos definitivamente en db.sqlite3
-            usuario.save()
+        validos = form_usuario.is_valid() and (form_perfil is None or form_perfil.is_valid())
+        if validos:
+            form_usuario.save()
+            if form_perfil:
+                form_perfil.save()
+            messages.success(request, 'Tus datos se actualizaron correctamente.')
+            return redirect('perfil')
 
-            # 4. Forzamos el inicio de sesión con el backend estándar de Django
-            login(request, usuario, backend='django.contrib.auth.backends.ModelBackend')
-            
-            messages.success(request, f"¡Bienvenido/a {usuario.username}! Tu cuenta ha sido creada exitosamente.")
-            return redirect('catalogo_productos')
-        else:
-            # Mostramos los errores específicos directamente en la pantalla
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.error(request, f"Error en {field}: {error}")
-    else:
-        form = RegistroUsuarioForm()
-    
-    return render(request, 'users/register.html', {'form': form})
-
-
-# Registro específico para Consumidores
-def registro_consumidor_view(request):
-    if request.method == 'POST':
-        form = ConsumidorRegistroForm(request.POST) if 'ConsumidorRegistroForm' in globals() else RegistroUsuarioForm(request.POST)
-        if form.is_valid():
-            usuario = form.save(commit=False)
-            raw_password = form.cleaned_data.get('password') or request.POST.get('password')
-            if raw_password:
-                usuario.set_password(raw_password)
-            usuario.save()
-
-            login(request, usuario, backend='django.contrib.auth.backends.ModelBackend')
-            messages.success(request, "¡Cuenta de Consumidor creada exitosamente!")
-            return redirect('catalogo_productos')
-        else:
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.error(request, f"Error en {field}: {error}")
-    else:
-        form = ConsumidorRegistroForm() if 'ConsumidorRegistroForm' in globals() else RegistroUsuarioForm()
-        
-    return render(request, 'users/registro_consumidor.html', {'form': form})
-
-
-# Registro específico para Comercios
-def registro_comercio_view(request):
-    if request.method == 'POST':
-        form = ComercioRegistroForm(request.POST) if 'ComercioRegistroForm' in globals() else RegistroUsuarioForm(request.POST)
-        if form.is_valid():
-            usuario = form.save(commit=False)
-            raw_password = form.cleaned_data.get('password') or request.POST.get('password')
-            if raw_password:
-                usuario.set_password(raw_password)
-            usuario.save()
-
-            login(request, usuario, backend='django.contrib.auth.backends.ModelBackend')
-            messages.success(request, "¡Comercio registrado exitosamente!")
-            return redirect('catalogo_productos')
-        else:
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.error(request, f"Error en {field}: {error}")
-    else:
-        form = ComercioRegistroForm() if 'ComercioRegistroForm' in globals() else RegistroUsuarioForm()
-        
-    return render(request, 'users/registro_comercio.html', {'form': form})
+    return render(request, 'users/perfil.html', {'form_usuario': form_usuario, 'form_perfil': form_perfil})

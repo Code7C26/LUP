@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load lup_tags humanize %}
+
+{% block title %}Panel de comercio · Lüp{% endblock %}
+
+{% block content %}
+<div class="container pt-4">
+    <div class="panel-header d-flex flex-wrap align-items-center gap-3 mb-4">
+        <div class="rol-card comercio p-0 shadow-none border-0" style="height:auto;"><div class="icono mb-0"><i class="bi bi-shop"></i></div></div>
+        <div class="me-auto">
+            <h1 class="h4 mb-0">{{ tienda.nombre_fantasia|default:user.username }}</h1>
+            <p class="text-muted-lup mb-0 small">{% if tienda %}{{ tienda.get_rubro_display }} · {{ tienda.direccion }} · <a href="{% url 'detalle_tienda' tienda.pk %}">Ver página pública</a>{% else %}<a href="{% url 'perfil' %}">Completá los datos de tu comercio</a>{% endif %}</p>
+        </div>
+        <a href="{% url 'publicar_excedente' %}" class="btn btn-lup"><i class="bi bi-plus-lg me-1"></i>Publicar excedente</a>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3"><div class="stat"><div class="icono"><i class="bi bi-megaphone"></i></div><div class="numero">{{ stats.activas }}</div><div class="etiqueta">Ofertas activas</div></div></div>
+        <div class="col-6 col-lg-3"><div class="stat ambar"><div class="icono"><i class="bi bi-hourglass-split"></i></div><div class="numero">{{ stats.pendientes }}</div><div class="etiqueta">Retiros pendientes</div></div></div>
+        <div class="col-6 col-lg-3"><div class="stat azul"><div class="icono"><i class="bi bi-recycle"></i></div><div class="numero">{{ stats.rescatados }}</div><div class="etiqueta">Unidades rescatadas</div></div></div>
+        <div class="col-6 col-lg-3"><div class="stat"><div class="icono"><i class="bi bi-cash-coin"></i></div><div class="numero">${{ stats.ingresos|floatformat:0|intcomma }}</div><div class="etiqueta">Ingresos recuperados</div></div></div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="tarjeta p-4 mb-4">
+                <h2 class="h5"><i class="bi bi-qr-code-scan me-2 text-lup"></i>Confirmar retiro</h2>
+                <p class="small text-muted-lup">Ingresá el código que te muestra el cliente.</p>
+                <form method="post" action="{% url 'confirmar_retiro' %}" class="d-flex gap-2">
+                    {% csrf_token %}
+                    <input name="codigo" class="form-control text-uppercase fw-bold" placeholder="Ej: A1B2C3" maxlength="10" required aria-label="Código de retiro" style="letter-spacing:.15em;">
+                    <button class="btn btn-lup">Confirmar</button>
+                </form>
+            </div>
+
+            <h2 class="h5 mb-3">Reservas a entregar</h2>
+            {% for r in reservas_pendientes %}
+                <div class="lista-item">
+                    <div class="flex-grow-1">
+                        <strong class="d-block">{{ r.cantidad }} × {{ r.producto.titulo }}</strong>
+                        <small class="text-muted-lup">{{ r.consumidor.nombre_visible }} · {{ r.creada_en|naturaltime }}</small>
+                    </div>
+                    <span class="codigo-retiro small">{{ r.codigo_retiro }}</span>
+                </div>
+            {% empty %}
+                <p class="text-muted-lup small">No hay reservas pendientes de retiro.</p>
+            {% endfor %}
+
+            {% if solicitudes %}
+                <h2 class="h5 mt-4 mb-3"><i class="bi bi-heart-fill text-warning me-1"></i>Solicitudes de donación</h2>
+                {% for s in solicitudes %}
+                    <div class="lista-item flex-column align-items-stretch">
+                        <div>
+                            <strong>{{ s.organizacion.nombre_visible }}</strong> pidió <strong>{{ s.producto.titulo }}</strong>
+                            <p class="small text-muted-lup mb-0 mt-1">"{{ s.mensaje|truncatechars:160 }}"</p>
+                        </div>
+                        <div class="d-flex gap-2 justify-content-end">
+                            <form method="post" action="{% url 'responder_donacion' s.pk 'rechazar' %}">{% csrf_token %}<button class="btn btn-sm btn-light">Rechazar</button></form>
+                            <form method="post" action="{% url 'responder_donacion' s.pk 'aprobar' %}">{% csrf_token %}<button class="btn btn-sm btn-ambar">Aprobar donación</button></form>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="col-lg-7">
+            <h2 class="h5 mb-3">Mis publicaciones</h2>
+            <div class="tabla-lup table-responsive">
+                <table class="table align-middle">
+                    <thead><tr><th>Producto</th><th>Precio</th><th>Stock</th><th>Estado</th><th class="text-end">Acciones</th></tr></thead>
+                    <tbody>
+                    {% for p in productos %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'detalle_producto' p.pk %}" class="fw-semibold text-decoration-none text-reset">{{ p.titulo }}</a>
+                                <small class="d-block text-muted-lup">Hasta {{ p.fecha_vencimiento|date:"d/m" }}{% if p.es_donacion %} · <span class="text-ambar">Donable</span>{% endif %}</small>
+                            </td>
+                            <td><strong>${{ p.precio_descuento|floatformat:"-2"|intcomma }}</strong>{% if p.porcentaje_descuento %}<small class="d-block text-lup">-{{ p.porcentaje_descuento }}%</small>{% endif %}</td>
+                            <td>{{ p.stock }}</td>
+                            <td>
+                                {% if p.esta_disponible %}<span class="estado disponible">Activa</span>
+                                {% elif p.estado == 'DISPONIBLE' %}<span class="estado vencido">Vencida</span>
+                                {% else %}<span class="estado {{ p.estado|lower }}">{{ p.get_estado_display }}</span>{% endif %}
+                            </td>
+                            <td class="text-end text-nowrap">
+                                <a href="{% url 'editar_excedente' p.pk %}" class="btn btn-sm btn-light" title="Editar"><i class="bi bi-pencil"></i></a>
+                                <a href="{% url 'eliminar_excedente' p.pk %}" class="btn btn-sm btn-light text-danger" title="Eliminar"><i class="bi bi-trash"></i></a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="5" class="text-center py-5">
+                            <div class="display-6">📦</div>
+                            <p class="text-muted-lup mb-3">Todavía no publicaste excedentes.</p>
+                            <a href="{% url 'publicar_excedente' %}" class="btn btn-lup btn-sm">Publicar mi primera oferta</a>
+                        </td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

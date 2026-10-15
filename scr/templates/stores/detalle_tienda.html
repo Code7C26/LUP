@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ tienda.nombre_fantasia }} · Lüp{% endblock %}
+
+{% block content %}
+<div class="container pt-4">
+    <div class="panel-header mb-4">
+        <div class="d-flex flex-wrap align-items-center gap-3">
+            <div class="rol-card comercio p-0 shadow-none border-0" style="height:auto;"><div class="icono mb-0"><i class="bi bi-shop"></i></div></div>
+            <div class="me-auto">
+                <span class="chip-rol comercio">{{ tienda.get_rubro_display }}</span>
+                <h1 class="h3 mb-1 mt-1">{{ tienda.nombre_fantasia }}</h1>
+                <p class="text-muted-lup small mb-0"><i class="bi bi-geo-alt"></i> {{ tienda.direccion }} · <i class="bi bi-clock"></i> {{ tienda.horario_atencion }}</p>
+            </div>
+        </div>
+        {% if tienda.descripcion %}<p class="mt-3 mb-0">{{ tienda.descripcion }}</p>{% endif %}
+    </div>
+
+    <h2 class="h5 mb-3">Ofertas disponibles ({{ productos|length }})</h2>
+    <div class="row g-4">
+        {% for producto in productos %}
+            <div class="col-sm-6 col-lg-4 col-xl-3">{% include 'includes/_producto_card.html' %}</div>
+        {% empty %}
+            <div class="col-12"><div class="vacio"><div class="emoji">⏳</div><p class="text-muted-lup mb-0">Este comercio no tiene ofertas activas ahora. ¡Volvé más tarde!</p></div></div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

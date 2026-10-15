@@ -1,4 +1,10 @@
 from django.contrib import admin
-from scr.bd_lup.stores.models import Tienda
 
-admin.site.register(Tienda)
+from .models import Tienda
+
+
+@admin.register(Tienda)
+class TiendaAdmin(admin.ModelAdmin):
+    list_display = ('nombre_fantasia', 'rubro', 'direccion', 'cuit', 'usuario')
+    list_filter = ('rubro',)
+    search_fields = ('nombre_fantasia', 'cuit', 'direccion')
