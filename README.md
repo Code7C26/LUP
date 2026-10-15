@@ -124,16 +124,42 @@ LUP/
     ├── productos/                <-- Fotos de prueba de productos/ofertas
     ├── comercios/                <-- Logos/fotos de prueba de los comercios
     └── marcas/                   <-- Logos oficiales de LÜP (isotipo, imagotipo, favicon)
+```
+
 ---
 
-## <img src="jpg/icon_grafico.png" width="40"> Estado Técnico Actual
+## <img src="jpg/doc_assets/icon_grafico.png" width="40"> Estado Técnico Actual
 
-Actualmente el proyecto cuenta con la estructura backend base en Django:
+Plataforma web funcional en Django con tres tipos de cuenta:
 
-- **Autenticación y Usuarios:** configuración del modelo de usuario personalizado (`Usuario`) con soporte para roles diferenciados, principalmente **Consumidor** y **Comercio**.
-- **Gestión de Comercios:** formularios y modelos de base de datos (`models.py`) configurados para registrar datos específicos del local, como CUIT, dirección, rubro y horarios de atención.
-- **Arquitectura Base:** estructura general vinculada a SQLite/PostgreSQL y configuración global en `settings.py`.
-- **Estado del Proyecto:** el proyecto se encuentra actualmente **en desarrollo**, con la estructura backend inicial implementada y funcionalidades adicionales en proceso de desarrollo.
+| Rol | Puede |
+|-----|-------|
+| **Consumidor** | Buscar y filtrar ofertas, reservar con código de retiro, cancelar reservas, ver historial y ahorro. |
+| **Comercio** | Publicar / editar / eliminar excedentes con vista previa en vivo, confirmar retiros por código, aprobar donaciones, ver estadísticas. |
+| **Organización** | Solicitar productos marcados como donables y seguir el estado de sus solicitudes. |
+
+- **Apps:** `users` (usuario personalizado `Usuario` + perfil `Organizacion`), `stores` (perfil `Tienda` del comercio) y `products` (`Producto`, `Reserva`, `SolicitudDonacion`).
+- **Login** con usuario o email y selector de tipo de cuenta; **registro** guiado en 2 pasos según el rol.
+- **API REST** de solo lectura en `/api/productos/` para la futura app móvil.
+- **Tests** automáticos de todos los flujos (`python manage.py test scr`).
+
+---
+
+## <img src="jpg/doc_assets/icon_reloj.png" width="40"> Cómo ejecutarlo
+
+```bash
+python -m venv venv
+source venv/bin/activate          # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py cargar_demo      # opcional: comercios, ofertas y usuarios de ejemplo
+python manage.py createsuperuser  # opcional: acceso a /admin
+python manage.py runserver
+```
+
+Abrí http://127.0.0.1:8000. Usuarios de demo (clave `LupDemo2026!`): `panaderia_sol` (comercio), `consumidor_demo` (consumidor) y `comedor_demo` (organización).
+
+> Si tenías una base `db.sqlite3` de una versión anterior, borrala antes de `migrate`: los modelos se unificaron y las migraciones se regeneraron desde cero.
 
 ---
 

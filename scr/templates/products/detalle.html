@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load lup_tags humanize %}
+
+{% block title %}{{ producto.titulo }} · Lüp{% endblock %}
+
+{% block content %}
+<div class="container pt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'catalogo' %}">Ofertas</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'detalle_tienda' producto.comercio.pk %}">{{ producto.comercio }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ producto.titulo|truncatechars:30 }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4 g-lg-5">
+        <div class="col-lg-6">
+            <div class="detalle-foto position-relative">
+                {% if producto.imagen %}<img src="{{ producto.imagen.url }}" alt="{{ producto.titulo }}">{% else %}{{ producto.categoria|emoji_categoria }}{% endif %}
+                <div class="position-absolute top-0 start-0 m-3 d-flex gap-2">
+                    {% if producto.porcentaje_descuento %}<span class="badge-lup descuento fs-6">-{{ producto.porcentaje_descuento }}%</span>{% endif %}
+                    {% if producto.es_donacion %}<span class="badge-lup donacion fs-6"><i class="bi bi-heart-fill"></i> Donable</span>{% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <a href="{% url 'detalle_tienda' producto.comercio.pk %}" class="text-decoration-none fw-semibold text-lup"><i class="bi bi-shop me-1"></i>{{ producto.comercio }}</a>
+            <h1 class="h2 mt-1 mb-2">{{ producto.titulo }}</h1>
+            <span class="estado {{ producto.estado|lower }}">{{ producto.get_categoria_display }}</span>
+            {% if not producto.esta_disponible %}<span class="estado vencido ms-1">No disponible</span>{% endif %}
+
+            <div class="d-flex align-items-end gap-3 my-4">
+                <span class="precio" style="font-size: 2.4rem;">${{ producto.precio_descuento|floatformat:"-2"|intcomma }}</span>
+                {% if producto.porcentaje_descuento %}<span class="precio-antes fs-5 mb-1">${{ producto.precio_original|floatformat:"-2"|intcomma }}</span>{% endif %}
+            </div>
+
+            <p class="text-muted-lup">{{ producto.descripcion|linebreaksbr }}</p>
+
+            <div class="info-retiro my-4">
+                <div class="row g-3 small">
+                    <div class="col-sm-6"><i class="bi bi-geo-alt-fill me-2"></i><strong>Dónde:</strong> {{ producto.comercio.direccion }}</div>
+                    <div class="col-sm-6"><i class="bi bi-clock-fill me-2"></i><strong>Horario:</strong> {{ producto.comercio.horario_atencion }}</div>
+                    <div class="col-sm-6"><i class="bi bi-calendar-check-fill me-2"></i><strong>Retirá hasta:</strong> {{ producto.fecha_vencimiento|date:"l j \d\e F" }}</div>
+                    <div class="col-sm-6"><i class="bi bi-box-seam-fill me-2"></i><strong>Disponibles:</strong> {{ producto.stock }} unidad{{ producto.stock|pluralize:"es" }}</div>
+                </div>
+            </div>
+
+            {% if not producto.esta_disponible %}
+                <div class="alert alert-warning rounded-4">Esta oferta ya no está disponible. <a href="{% url 'catalogo' %}">Ver otras ofertas</a></div>
+
+            {% elif form_reserva %}
+                <form method="post" action="{% url 'reservar' producto.pk %}" class="tarjeta p-4 needs-validation" novalidate>
+                    {% csrf_token %}
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                        <div>
+                            <label class="form-label d-block" for="id_cantidad">Cantidad</label>
+                            <div class="cantidad">
+                                <button type="button" data-delta="-1" aria-label="Restar">−</button>
+                                <input type="number" name="cantidad" id="id_cantidad" value="1" min="1" max="{{ producto.stock }}" required>
+                                <button type="button" data-delta="1" aria-label="Sumar">+</button>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <small class="text-muted-lup d-block">Total a pagar en el local</small>
+                            <span id="total-reserva" class="precio" data-precio="{{ producto.precio_descuento|stringformat:'s' }}">${{ producto.precio_descuento }}</span>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-lup btn-lg w-100 mt-4"><i class="bi bi-bag-check me-2"></i>Reservar ahora</button>
+                    <p class="small text-muted-lup text-center mt-2 mb-0">Recibirás un código para mostrar al retirar.</p>
+                </form>
+
+            {% elif form_donacion %}
+                {% if ya_solicitada %}
+                    <div class="alert alert-success rounded-4"><i class="bi bi-check-circle me-2"></i>Ya enviaste una solicitud por esta donación. Podés seguirla desde <a href="{% url 'panel' %}">tu panel</a>.</div>
+                {% else %}
+                    <form method="post" action="{% url 'solicitar_donacion' producto.pk %}" class="tarjeta p-4 needs-validation" novalidate>
+                        {% csrf_token %}
+                        <h5 class="mb-3"><i class="bi bi-heart-fill text-warning me-2"></i>Solicitar como donación</h5>
+                        {% include 'includes/_campo.html' with campo=form_donacion.mensaje %}
+                        <button type="submit" class="btn btn-ambar w-100">Enviar solicitud al comercio</button>
+                    </form>
+                {% endif %}
+
+            {% elif es_propio %}
+                <div class="tarjeta p-4 d-flex flex-wrap gap-2 align-items-center">
+                    <span class="me-auto fw-semibold"><i class="bi bi-person-badge me-1"></i>Esta es tu publicación</span>
+                    <a href="{% url 'editar_excedente' producto.pk %}" class="btn btn-lup-outline btn-sm"><i class="bi bi-pencil me-1"></i>Editar</a>
+                    <a href="{% url 'eliminar_excedente' producto.pk %}" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash me-1"></i>Eliminar</a>
+                </div>
+
+            {% elif not user.is_authenticated %}
+                <div class="tarjeta p-4 text-center">
+                    <p class="mb-3">Iniciá sesión como consumidor para reservar esta oferta.</p>
+                    <div class="d-flex gap-2 justify-content-center flex-wrap">
+                        <a href="{% url 'login' %}?next={{ request.path|urlencode }}" class="btn btn-lup">Iniciar sesión</a>
+                        <a href="{% url 'registro' 'consumidor' %}" class="btn btn-lup-outline">Crear cuenta</a>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-light border rounded-4 small mb-0">
+                    <i class="bi bi-info-circle me-1"></i>
+                    {% if user.es_organizacion %}Esta oferta no está marcada para donación.{% else %}Las reservas están disponibles para cuentas de consumidor.{% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if relacionados %}
+    <section class="seccion">
+        <h3 class="h4 mb-4">Más de {{ producto.comercio }}</h3>
+        <div class="row g-4">
+            {% for producto in relacionados %}<div class="col-sm-6 col-lg-4">{% include 'includes/_producto_card.html' %}</div>{% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}

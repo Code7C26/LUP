@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load lup_tags humanize %}
+
+{% block title %}Mi panel · Lüp{% endblock %}
+
+{% block content %}
+<div class="container pt-4">
+    <div class="panel-header d-flex flex-wrap align-items-center gap-3 mb-4">
+        <span class="avatar" style="width:56px;height:56px;font-size:1.2rem;">{{ user|iniciales }}</span>
+        <div class="me-auto">
+            <h1 class="h4 mb-0">¡Hola, {{ user.first_name|default:user.username }}! 👋</h1>
+            <p class="text-muted-lup mb-0 small">Gracias por rescatar comida. Este es tu resumen.</p>
+        </div>
+        <a href="{% url 'catalogo' %}" class="btn btn-lup"><i class="bi bi-search me-1"></i>Buscar ofertas</a>
+    </div>
+
+    <div class="row g-3 mb-5">
+        <div class="col-md-4"><div class="stat"><div class="icono"><i class="bi bi-bag-check"></i></div><div class="numero">{{ stats.reservas }}</div><div class="etiqueta">Reservas realizadas</div></div></div>
+        <div class="col-md-4"><div class="stat azul"><div class="icono"><i class="bi bi-recycle"></i></div><div class="numero">{{ stats.rescatados }}</div><div class="etiqueta">Productos rescatados</div></div></div>
+        <div class="col-md-4"><div class="stat ambar"><div class="icono"><i class="bi bi-piggy-bank"></i></div><div class="numero">${{ stats.ahorro|floatformat:0|intcomma }}</div><div class="etiqueta">Ahorrado con Lüp</div></div></div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <h2 class="h5 mb-3">Para retirar <span class="badge rounded-pill bg-menta text-lup-oscuro">{{ reservas_pendientes|length }}</span></h2>
+            {% for r in reservas_pendientes %}
+                <div class="lista-item flex-wrap">
+                    {% if r.producto.imagen %}<img src="{{ r.producto.imagen.url }}" class="mini-foto" alt="">{% else %}<div class="mini-foto">{{ r.producto.categoria|emoji_categoria }}</div>{% endif %}
+                    <div class="flex-grow-1" style="min-width: 180px;">
+                        <strong class="d-block">{{ r.cantidad }} × {{ r.producto.titulo }}</strong>
+                        <small class="text-muted-lup d-block"><i class="bi bi-shop"></i> {{ r.producto.comercio }} · {{ r.producto.comercio.direccion }}</small>
+                        <small class="text-muted-lup"><i class="bi bi-clock"></i> {{ r.producto.comercio.horario_atencion }} · hasta el {{ r.producto.fecha_vencimiento|date:"d/m" }}</small>
+                    </div>
+                    <div class="text-end">
+                        <small class="text-muted-lup d-block">Código de retiro</small>
+                        <span class="codigo-retiro">{{ r.codigo_retiro }}</span>
+                        <button class="btn btn-sm btn-light ms-1" data-copiar="{{ r.codigo_retiro }}" title="Copiar"><i class="bi bi-clipboard"></i></button>
+                        <div class="mt-2 d-flex gap-2 justify-content-end align-items-center">
+                            <strong>${{ r.precio_total|floatformat:"-2"|intcomma }}</strong>
+                            <form method="post" action="{% url 'cancelar_reserva' r.pk %}" data-confirmar="¿Cancelar esta reserva?">{% csrf_token %}
+                                <button class="btn btn-sm btn-outline-danger">Cancelar</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="vacio py-4"><div class="emoji">🛍️</div><p class="text-muted-lup mb-3">No tenés reservas pendientes.</p><a href="{% url 'catalogo' %}" class="btn btn-lup btn-sm">Explorar ofertas</a></div>
+            {% endfor %}
+
+            {% if historial %}
+                <h2 class="h5 mt-5 mb-3">Historial</h2>
+                <div class="tabla-lup table-responsive">
+                    <table class="table">
+                        <thead><tr><th>Producto</th><th>Comercio</th><th>Fecha</th><th>Total</th><th>Estado</th></tr></thead>
+                        <tbody>
+                        {% for r in historial %}
+                            <tr><td>{{ r.cantidad }} × {{ r.producto.titulo }}</td><td>{{ r.producto.comercio }}</td><td>{{ r.creada_en|date:"d/m/Y" }}</td><td>${{ r.precio_total|floatformat:"-2"|intcomma }}</td><td><span class="estado {{ r.estado }}">{{ r.get_estado_display }}</span></td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-5">
+            <h2 class="h5 mb-3">Te puede interesar</h2>
+            <div class="d-grid gap-3">
+                {% for producto in recomendados %}{% include 'includes/_producto_card.html' %}{% empty %}<p class="text-muted-lup">Pronto habrá nuevas ofertas.</p>{% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

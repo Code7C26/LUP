@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}Mis datos · Lüp{% endblock %}
+
+{% block content %}
+<div class="container pt-4" style="max-width: 820px;">
+    <a href="{% url 'panel' %}" class="small text-decoration-none"><i class="bi bi-arrow-left me-1"></i>Volver a mi panel</a>
+    <h1 class="h2 mt-2 mb-4">Mis datos</h1>
+
+    <form method="post" class="tarjeta needs-validation" novalidate>
+        {% csrf_token %}
+        {% if form_perfil %}
+            <div class="form-seccion mt-0">{% if user.es_comercio %}Comercio{% else %}Organización{% endif %}</div>
+            <div class="row">
+                {% for campo in form_perfil %}
+                    {% include 'includes/_campo.html' with campo=campo clase='col-md-6 mb-3' %}
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="form-seccion {% if not form_perfil %}mt-0{% endif %}">Datos personales</div>
+        <div class="row">
+            {% for campo in form_usuario %}
+                {% include 'includes/_campo.html' with campo=campo clase='col-md-6 mb-3' %}
+            {% endfor %}
+        </div>
+        <p class="small text-muted-lup">Usuario: <strong>{{ user.username }}</strong> · Tipo de cuenta: <span class="chip-rol {{ user.rol }}">{{ user.get_rol_display }}</span></p>
+
+        <div class="text-end border-top pt-3"><button type="submit" class="btn btn-lup">Guardar cambios</button></div>
+    </form>
+</div>
+{% endblock %}

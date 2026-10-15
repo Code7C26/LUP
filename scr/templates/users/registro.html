@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}Registro de {{ info.titulo|lower }} · Lüp{% endblock %}
+
+{% block content %}
+<div class="container pt-4" style="max-width: 760px;">
+    <a href="{% url 'registro_seleccion' %}" class="small text-decoration-none"><i class="bi bi-arrow-left me-1"></i>Cambiar tipo de cuenta</a>
+
+    <div class="tarjeta mt-3">
+        <div class="pasos-registro"><span class="hecho"></span><span class="hecho"></span></div>
+        <div class="d-flex align-items-center gap-3 mb-4">
+            <div class="rol-card {{ rol }} p-0 shadow-none border-0" style="height:auto;"><div class="icono mb-0" style="width:56px;height:56px;"><i class="bi {{ info.icono }}"></i></div></div>
+            <div>
+                <span class="eyebrow mb-0">Paso 2 de 2</span>
+                <h1 class="h3 mb-0">Creá tu cuenta de {{ info.titulo|lower }}</h1>
+            </div>
+        </div>
+
+        {% if form.non_field_errors %}<div class="alert alert-danger rounded-4">{{ form.non_field_errors }}</div>{% endif %}
+        {% if form.errors and not form.non_field_errors %}
+            <div class="alert alert-danger rounded-4 small py-2"><i class="bi bi-exclamation-circle me-1"></i>Revisá los campos marcados en rojo.</div>
+        {% endif %}
+
+        <form method="post" class="needs-validation" novalidate>
+            {% csrf_token %}
+
+            {% if rol == 'comercio' %}
+                <div class="form-seccion mt-0">Datos del comercio</div>
+                <div class="row">
+                    {% include 'includes/_campo.html' with campo=form.nombre_fantasia clase='col-md-7 mb-3' %}
+                    {% include 'includes/_campo.html' with campo=form.rubro clase='col-md-5 mb-3' %}
+                    {% include 'includes/_campo.html' with campo=form.cuit clase='col-md-5 mb-3' %}
+                    {% include 'includes/_campo.html' with campo=form.direccion clase='col-md-7 mb-3' %}
+                    {% include 'includes/_campo.html' with campo=form.horario_atencion clase='col-12 mb-3' %}
+                </div>
+            {% elif rol == 'organizacion' %}
+                <div class="form-seccion mt-0">Datos de la organización</div>
+                <div class="row">
+                    {% include 'includes/_campo.html' with campo=form.nombre_organizacion clase='col-md-7 mb-3' %}
+                    {% include 'includes/_campo.html' with campo=form.tipo clase='col-md-5 mb-3' %}
+                    {% include 'includes/_campo.html' with campo=form.cuit clase='col-md-5 mb-3' %}
+                    {% include 'includes/_campo.html' with campo=form.direccion clase='col-md-7 mb-3' %}
+                    {% include 'includes/_campo.html' with campo=form.personas_asistidas clase='col-md-6 mb-3' %}
+                </div>
+            {% endif %}
+
+            <div class="form-seccion {% if rol == 'consumidor' %}mt-0{% endif %}">{% if rol == 'consumidor' %}Tus datos{% else %}Datos del responsable{% endif %}</div>
+            <div class="row">
+                {% include 'includes/_campo.html' with campo=form.first_name clase='col-md-6 mb-3' %}
+                {% include 'includes/_campo.html' with campo=form.last_name clase='col-md-6 mb-3' %}
+                {% include 'includes/_campo.html' with campo=form.email clase='col-md-6 mb-3' %}
+                {% include 'includes/_campo.html' with campo=form.telefono clase='col-md-6 mb-3' %}
+                {% include 'includes/_campo.html' with campo=form.ciudad clase='col-md-6 mb-3' %}
+            </div>
+
+            <div class="form-seccion">Acceso</div>
+            <div class="row">
+                {% include 'includes/_campo.html' with campo=form.username clase='col-md-12 mb-3' %}
+                {% include 'includes/_campo.html' with campo=form.password1 clase='col-md-6 mb-3' %}
+                {% include 'includes/_campo.html' with campo=form.password2 clase='col-md-6 mb-3' %}
+            </div>
+
+            {% include 'includes/_campo.html' with campo=form.acepta_terminos clase='mt-2 mb-4' %}
+
+            <button type="submit" class="btn btn-lup btn-lg w-100">Crear mi cuenta</button>
+        </form>
+        <p class="text-center text-muted-lup mt-4 mb-0">¿Ya tenés cuenta? <a href="{% url 'login' %}?rol={{ rol }}" class="fw-semibold">Iniciá sesión</a></p>
+    </div>
+</div>
+{% endblock %}
