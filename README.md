@@ -1,6 +1,6 @@
 <p align="center">
 
-  <img src="jpg/diseño/lup logo.png" alt="Lüp Logo" width="300">
+  <img src="jpg/dise%C3%B1o/lup%20logo.png" alt="Lüp Logo" width="300">
 
 </p>
 
@@ -82,13 +82,13 @@ Nuestro objetivo es transformar alimentos próximos a vencer en oportunidades, g
 
 ## <img src="jpg/doc_assets/icon_reloj.png" width="40"> Tecnologías
 
-- Python
-- Django
+- Python 3 + Django 6.1
+- Django REST Framework (API para la app móvil)
 - HTML
 - CSS
 - JavaScript
 - Bootstrap
-- SQLite / PostgreSQL
+- SQLite (desarrollo) · PostgreSQL previsto para producción
 - Git & GitHub
 - Inteligencia Artificial
 
@@ -97,33 +97,35 @@ Nuestro objetivo es transformar alimentos próximos a vencer en oportunidades, g
 ## <img src="jpg/doc_assets/icon_tienda2.png" width="40"> Estructura
 
 ```text
-
 LUP/
 ├── .gitignore
 ├── README.md
 ├── requirements.txt
 ├── manage.py
 │
-├── scr/                          <-- 🌐 CÓDIGO FUENTE DE LA PÁGINA WEB 
-│   ├── bd_lup/                   <-- Aplicaciones internas 
-│   └── lup/                      <-- Configuración principal de Django 
+├── scr/                          <-- 🌐 CÓDIGO FUENTE DE LA PÁGINA WEB
+│   ├── lup/                      <-- Configuración principal de Django (settings, urls)
+│   ├── bd_lup/                   <-- Aplicaciones internas
+│   │   ├── users/                <-- Usuario personalizado, organizaciones, login y registro
+│   │   ├── stores/               <-- Perfil de comercio (Tienda)
+│   │   └── products/             <-- Productos, reservas, donaciones, API y paneles
+│   ├── templates/                <-- Plantillas HTML
+│   └── static/                   <-- CSS, JS e imágenes de la web
 │
-├── app/                          <-- 📱 CÓDIGO FUENTE DE LA APP MÓVIL (React Native / Expo / Flutter)
-│   ├── src/
-│   ├── assets/
-│   └── App.js
+├── app/                          <-- 📱 APP MÓVIL (por ahora solo README con la API disponible)
 │
-├── doc/                          <-- 📄 DOCUMENTACIÓN Y RECURSOS DEL PROYECTO
-│   ├── diseno/                   <-- Wireframes, Figma, paleta de colores, maquetas
-│   ├── comercio/                 <-- Requerimientos de comercios, minutas de reuniones, PDFs
-│   ├── legal/                    <-- Términos y condiciones, contratos, alianzas
-│   └── manuales/                 <-- Manuales de usuario, guías de instalación
+├── doc/                          <-- 📄 DOCUMENTACIÓN DEL PROYECTO
+│   ├── comercio/                 <-- Break-even, costos, FODA, investigación de mercado
+│   ├── legales/                  <-- Pasos legales y propiedad intelectual
+│   └── manuales - de empresa/    <-- Backlog, documentación inicial, mockup, propuesta de valor
 │
-└── jpg/                          <-- 🖼️ IMÁGENES Y RECURSOS GRÁFICOS
-    ├── doc_assets/               <-- Capturas o fotos usadas en la documentación (ej. del README)
-    ├── productos/                <-- Fotos de prueba de productos/ofertas
-    ├── comercios/                <-- Logos/fotos de prueba de los comercios
-    └── marcas/                   <-- Logos oficiales de LÜP (isotipo, imagotipo, favicon)
+├── jpg/                          <-- 🖼️ IMÁGENES DE DOCUMENTACIÓN
+│   ├── diseño/                   <-- Logo y sublogo de Lüp
+│   ├── doc_assets/               <-- Íconos usados en este README
+│   ├── comercio/                 <-- Gráfico FODA, modelo de negocio
+│   └── manuales - de empresa/    <-- Balance del MVP
+│
+└── media/                        <-- Fotos subidas desde la web (se crea sola, no se sube a git)
 ```
 
 ---
@@ -160,6 +162,8 @@ python manage.py runserver
 Abrí http://127.0.0.1:8000. Usuarios de demo (clave `LupDemo2026!`): `panaderia_sol` (comercio), `consumidor_demo` (consumidor) y `comedor_demo` (organización).
 
 > Si tenías una base `db.sqlite3` de una versión anterior, borrala antes de `migrate`: los modelos se unificaron y las migraciones se regeneraron desde cero.
+>
+> Las fotos de productos ahora se guardan en `media/` (antes en `scr/jpg/`). Si tenés fotos viejas en tu compu, movelas de `scr/jpg/productos/` a `media/productos/`.
 
 ---
 

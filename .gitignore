@@ -216,3 +216,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Lüp: fotos subidas por los usuarios y archivos estáticos recolectados
+/media/
+/staticfiles/

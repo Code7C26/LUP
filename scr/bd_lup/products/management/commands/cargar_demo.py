@@ -1,8 +1,9 @@
-from datetime import date, timedelta
+from datetime import timedelta
 from decimal import Decimal
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.utils.timezone import localdate
 
 from scr.bd_lup.products.models import Producto
 from scr.bd_lup.stores.models import Tienda
@@ -31,7 +32,7 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, *args, **options):
-        hoy = date.today()
+        hoy = localdate()
         for i, (usuario, nombre, rubro, cuit, direccion, horario, productos) in enumerate(COMERCIOS):
             user, creado = Usuario.objects.get_or_create(
                 username=usuario, defaults={'email': f'{usuario}@lup.demo', 'rol': Usuario.COMERCIO}
