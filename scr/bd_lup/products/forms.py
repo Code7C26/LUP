@@ -1,6 +1,5 @@
-from datetime import date
-
 from django import forms
+from django.utils.timezone import localdate
 
 from scr.bd_lup.users.forms import EstiloBootstrapMixin
 
@@ -42,11 +41,11 @@ class ProductoForm(EstiloBootstrapMixin, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['fecha_vencimiento'].widget.attrs['min'] = date.today().isoformat()
+        self.fields['fecha_vencimiento'].widget.attrs['min'] = localdate().isoformat()
 
     def clean_fecha_vencimiento(self):
         fecha = self.cleaned_data['fecha_vencimiento']
-        if fecha < date.today():
+        if fecha < localdate():
             raise forms.ValidationError('La fecha límite no puede estar en el pasado.')
         return fecha
 
