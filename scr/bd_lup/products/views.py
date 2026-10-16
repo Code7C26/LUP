@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.db.models import Count, Q, Sum
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
@@ -249,6 +250,8 @@ def confirmar_retiro(request):
 @solo_comercios
 @require_POST
 def responder_donacion(request, pk, accion):
+    if accion not in ('aprobar', 'rechazar'):
+        raise Http404('Acción inválida')
     solicitud = get_object_or_404(
         SolicitudDonacion,
         pk=pk,
@@ -257,9 +260,12 @@ def responder_donacion(request, pk, accion):
     )
     if accion == 'aprobar':
         with transaction.atomic():
+            producto = Producto.objects.select_for_update().get(pk=solicitud.producto_id)
+            if not producto.esta_disponible:
+                messages.error(request, 'Este producto ya no está disponible para donar (sin stock, vencido o ya donado).')
+                return redirect('panel')
             solicitud.estado = SolicitudDonacion.APROBADA
             solicitud.save(update_fields=['estado'])
-            producto = solicitud.producto
             producto.estado = Producto.DONADO
             producto.save(update_fields=['estado', 'actualizado_en'])
             producto.solicitudes_donacion.filter(estado=SolicitudDonacion.PENDIENTE).update(
@@ -317,8 +323,9 @@ def panel(request):
 
     reservas = Reserva.objects.filter(consumidor=usuario).select_related('producto__comercio')
     no_canceladas = reservas.exclude(estado=Reserva.CANCELADA)
+    # Ahorro = lo que hubiera costado a precio original menos lo que realmente se pagó
     ahorro = sum(
-        ((r.producto.precio_original - r.producto.precio_descuento) * r.cantidad for r in no_canceladas),
+        (max(r.producto.precio_original * r.cantidad - r.precio_total, Decimal('0')) for r in no_canceladas),
         Decimal('0'),
     )
     contexto = {

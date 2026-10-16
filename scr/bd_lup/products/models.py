@@ -1,10 +1,10 @@
 import secrets
-from datetime import date
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.utils.timezone import localdate
 
 from scr.bd_lup.stores.models import Tienda
 
@@ -13,7 +13,7 @@ class ProductoQuerySet(models.QuerySet):
     def visibles(self):
         """Productos que se muestran en el catálogo: disponibles, con stock y sin vencer."""
         return self.filter(
-            estado=Producto.DISPONIBLE, stock__gt=0, fecha_vencimiento__gte=date.today()
+            estado=Producto.DISPONIBLE, stock__gt=0, fecha_vencimiento__gte=localdate()
         )
 
 
@@ -81,14 +81,14 @@ class Producto(models.Model):
 
     @property
     def vence_hoy(self):
-        return self.fecha_vencimiento == date.today()
+        return self.fecha_vencimiento == localdate()
 
     @property
     def esta_disponible(self):
         return (
             self.estado == self.DISPONIBLE
             and self.stock > 0
-            and self.fecha_vencimiento >= date.today()
+            and self.fecha_vencimiento >= localdate()
         )
 
     def descontar_stock(self, cantidad):

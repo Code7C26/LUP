@@ -11,7 +11,8 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# SEGURIDAD: en producción definir estas variables de entorno.
+# SEGURIDAD: esta clave solo sirve para desarrollo. En producción definir
+# DJANGO_SECRET_KEY, DJANGO_DEBUG=0 y DJANGO_ALLOWED_HOSTS como variables de entorno.
 SECRET_KEY = os.environ.get(
     'DJANGO_SECRET_KEY',
     'django-insecure-e!&2u4q_+m-9w$-ccqknc_4%ufg-n9@uq%as0rk!97dd1qvrti',
@@ -102,9 +103,10 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR.parent / 'staticfiles'
 
-# Archivos subidos por los usuarios (fotos de productos)
+# Archivos subidos por los usuarios (fotos de productos).
+# Quedan en LUP/media/, que está en .gitignore: no se suben al repositorio.
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'jpg'
+MEDIA_ROOT = BASE_DIR.parent / 'media'
 
 
 # Email (en desarrollo se imprime en consola)

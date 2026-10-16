@@ -1,8 +1,9 @@
-from datetime import date, timedelta
+from datetime import timedelta
 from decimal import Decimal
 
 from django.test import TestCase
 from django.urls import reverse
+from django.utils.timezone import localdate
 
 from scr.bd_lup.stores.models import Tienda
 from scr.bd_lup.users.models import Organizacion, Usuario
@@ -23,7 +24,7 @@ class FlujoLupTests(TestCase):
         self.producto = Producto.objects.create(
             comercio=self.tienda, titulo='Medialunas', descripcion='Docena', categoria='panificados',
             precio_original=Decimal('3000'), precio_descuento=Decimal('1200'), stock=5,
-            fecha_vencimiento=date.today() + timedelta(days=1), es_donacion=True,
+            fecha_vencimiento=localdate() + timedelta(days=1), es_donacion=True,
         )
 
     def test_porcentaje_descuento(self):
@@ -39,7 +40,7 @@ class FlujoLupTests(TestCase):
         self.assertContains(r, 'Medialunas')
 
     def test_vencidos_no_aparecen(self):
-        self.producto.fecha_vencimiento = date.today() - timedelta(days=1)
+        self.producto.fecha_vencimiento = localdate() - timedelta(days=1)
         self.producto.save()
         self.assertNotContains(self.client.get(reverse('catalogo')), 'Medialunas')
 
@@ -56,7 +57,7 @@ class FlujoLupTests(TestCase):
         r = self.client.post(reverse('publicar_excedente'), {
             'titulo': 'Vianda', 'categoria': 'comidas', 'descripcion': 'Pollo con papas',
             'precio_original': '5000', 'precio_descuento': '2500', 'stock': '3',
-            'fecha_vencimiento': date.today().isoformat(),
+            'fecha_vencimiento': localdate().isoformat(),
         })
         self.assertRedirects(r, reverse('panel'))
         vianda = Producto.objects.get(titulo='Vianda')
@@ -65,7 +66,7 @@ class FlujoLupTests(TestCase):
         r = self.client.post(reverse('editar_excedente', args=[vianda.pk]), {
             'titulo': 'Vianda XL', 'categoria': 'comidas', 'descripcion': 'Pollo',
             'precio_original': '5000', 'precio_descuento': '2000', 'stock': '2',
-            'fecha_vencimiento': date.today().isoformat(),
+            'fecha_vencimiento': localdate().isoformat(),
         })
         self.assertRedirects(r, reverse('panel'))
         vianda.refresh_from_db()
@@ -78,7 +79,7 @@ class FlujoLupTests(TestCase):
         self.client.force_login(self.comercio)
         r = self.client.post(reverse('publicar_excedente'), {
             'titulo': 'Caro', 'categoria': 'otros', 'descripcion': 'x', 'precio_original': '100',
-            'precio_descuento': '200', 'stock': '1', 'fecha_vencimiento': date.today().isoformat(),
+            'precio_descuento': '200', 'stock': '1', 'fecha_vencimiento': localdate().isoformat(),
         })
         self.assertEqual(r.status_code, 200)
         self.assertFalse(Producto.objects.filter(titulo='Caro').exists())
@@ -147,6 +148,34 @@ class FlujoLupTests(TestCase):
 
         self.client.force_login(self.org)
         self.assertContains(self.client.get(reverse('panel')), 'Aprobada')
+
+    def test_accion_de_donacion_invalida_da_404(self):
+        solicitud = SolicitudDonacion.objects.create(organizacion=self.org, producto=self.producto, mensaje='Hola')
+        self.client.force_login(self.comercio)
+        r = self.client.post(reverse('responder_donacion', args=[solicitud.pk, 'borrar']))
+        self.assertEqual(r.status_code, 404)
+        solicitud.refresh_from_db()
+        self.assertEqual(solicitud.estado, SolicitudDonacion.PENDIENTE)
+
+    def test_no_se_aprueba_donacion_de_producto_vencido(self):
+        solicitud = SolicitudDonacion.objects.create(organizacion=self.org, producto=self.producto, mensaje='Hola')
+        self.producto.fecha_vencimiento = localdate() - timedelta(days=1)
+        self.producto.save()
+        self.client.force_login(self.comercio)
+        self.client.post(reverse('responder_donacion', args=[solicitud.pk, 'aprobar']))
+        solicitud.refresh_from_db()
+        self.producto.refresh_from_db()
+        self.assertEqual(solicitud.estado, SolicitudDonacion.PENDIENTE)
+        self.assertEqual(self.producto.estado, Producto.DISPONIBLE)
+
+    def test_ahorro_usa_el_precio_pagado(self):
+        self.client.force_login(self.consumidor)
+        self.client.post(reverse('reservar', args=[self.producto.pk]), {'cantidad': 2})
+        # Si el comercio cambia el precio después, el ahorro de la reserva no cambia
+        self.producto.precio_descuento = Decimal('100')
+        self.producto.save()
+        r = self.client.get(reverse('panel'))
+        self.assertEqual(r.context['stats']['ahorro'], Decimal('3600'))
 
     def test_paneles_y_paginas(self):
         for usuario in (self.consumidor, self.comercio, self.org):
