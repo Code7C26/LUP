@@ -6,13 +6,14 @@ from rest_framework import serializers, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.response import Response
+from .permisos import EsComercio, EsConsumidor, EsOrganizacion
 
 from .models import Producto, Reserva, SolicitudDonacion
 from .permisos import EsComercio, EsConsumidor
 
 
 # ==========================================
-# PRODUCTOS (paso 27)
+# PRODUCTOS 
 # ==========================================
 
 class ProductoSerializer(serializers.ModelSerializer):
@@ -37,7 +38,7 @@ class ProductoViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 # ==========================================
-# RESERVAS DEL CONSUMIDOR (paso 29)
+# RESERVAS DEL CONSUMIDOR 
 # ==========================================
 
 class ReservaSerializer(serializers.ModelSerializer):
@@ -100,7 +101,7 @@ def cancelar_reserva(request, pk):
 
 
 # ==========================================
-# ACCIONES DEL COMERCIO (paso 30)
+# ACCIONES DEL COMERCIO 
 # ==========================================
 
 class MiProductoSerializer(ProductoSerializer):
@@ -223,3 +224,42 @@ def responder_solicitud(request, pk, accion):
         solicitud.estado = SolicitudDonacion.RECHAZADA
         solicitud.save(update_fields=['estado'])
     return Response(SolicitudSerializer(solicitud).data)
+
+# ==========================================
+# ACCIONES DE LA ORGANIZACIÓN 
+# ==========================================
+
+@api_view(['GET'])
+@permission_classes([EsOrganizacion])
+def donaciones_disponibles(request):
+    """Productos que los comercios marcaron como aptos para donación y siguen disponibles."""
+    productos = Producto.objects.visibles().filter(es_donacion=True).select_related('comercio')
+    return Response(ProductoSerializer(productos, many=True).data)
+
+
+@api_view(['POST'])
+@permission_classes([EsOrganizacion])
+def solicitar_donacion(request, pk):
+    """La organización pide un producto. La app manda: {"mensaje": "Para 40 chicos del comedor"}"""
+    producto = get_object_or_404(Producto, pk=pk, es_donacion=True)
+    if not producto.esta_disponible:
+        return Response({'error': 'Esta donación ya no está disponible.'}, status=400)
+    if producto.solicitudes_donacion.filter(organizacion=request.user).exists():
+        return Response({'error': 'Ya enviaste una solicitud por este producto.'}, status=400)
+    mensaje = str(request.data.get('mensaje', '')).strip()
+    if not mensaje:
+        return Response({'mensaje': ['Escribí un mensaje para el comercio.']}, status=400)
+    solicitud = SolicitudDonacion.objects.create(
+        organizacion=request.user, producto=producto, mensaje=mensaje
+    )
+    return Response(SolicitudSerializer(solicitud).data, status=201)
+
+
+@api_view(['GET'])
+@permission_classes([EsOrganizacion])
+def mis_solicitudes_donacion(request):
+    """Las solicitudes que hizo la organización, con su estado (pendiente, aprobada o rechazada)."""
+    solicitudes = SolicitudDonacion.objects.filter(
+        organizacion=request.user
+    ).select_related('producto', 'organizacion')
+    return Response(SolicitudSerializer(solicitudes, many=True).data)
