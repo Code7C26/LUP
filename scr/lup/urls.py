@@ -22,22 +22,27 @@ urlpatterns = [
     path('comercios/<int:pk>/', store_views.detalle_tienda, name='detalle_tienda'),
     path('usuarios/', include('scr.bd_lup.users.urls')),
 
-    # API: cuentas (paso 28)
+    # API: cuentas 
     path('api/auth/login/', users_api.login, name='api_login'),
     path('api/auth/registro/<str:rol>/', users_api.registro, name='api_registro'),
     path('api/auth/yo/', users_api.yo, name='api_yo'),
 
-    # API: consumidor (paso 29)
+    # API: consumidor 
     path('api/productos/<int:pk>/reservar/', products_api.reservar, name='api_reservar'),
     path('api/mis-reservas/', products_api.mis_reservas, name='api_mis_reservas'),
     path('api/reservas/<int:pk>/cancelar/', products_api.cancelar_reserva, name='api_cancelar_reserva'),
 
-    # API: comercio (paso 30)
+    # API: comercio 
     path('api/mis-productos/<int:pk>/estado/', products_api.cambiar_estado, name='api_cambiar_estado'),
     path('api/reservas-del-comercio/', products_api.reservas_del_comercio, name='api_reservas_comercio'),
     path('api/retiros/confirmar/', products_api.confirmar_retiro, name='api_confirmar_retiro'),
     path('api/mis-solicitudes/', products_api.mis_solicitudes, name='api_mis_solicitudes'),
     path('api/solicitudes/<int:pk>/<str:accion>/', products_api.responder_solicitud, name='api_responder_solicitud'),
+    
+    # API: organización 
+    path('api/donaciones/', products_api.donaciones_disponibles, name='api_donaciones'),
+    path('api/productos/<int:pk>/solicitar-donacion/', products_api.solicitar_donacion, name='api_solicitar_donacion'),
+    path('api/mis-solicitudes-donacion/', products_api.mis_solicitudes_donacion, name='api_mis_solicitudes_donacion'),
 
     # API: lista de productos y "mis productos" (router)
     path('api/', include(router.urls)),
