@@ -6,7 +6,7 @@
 <div class="container pt-4">
     <div class="panel-header mb-4">
         <div class="d-flex flex-wrap align-items-center gap-3">
-            <div class="rol-card comercio p-0 shadow-none border-0" style="height:auto;"><div class="icono mb-0"><i class="bi bi-shop"></i></div></div>
+            {% include 'includes/_avatar.html' with usuario=tienda.usuario tam='lg' icono='bi-shop' %}
             <div class="me-auto">
                 <span class="chip-rol comercio">{{ tienda.get_rubro_display }}</span>
                 <h1 class="h3 mb-1 mt-1">{{ tienda.nombre_fantasia }}</h1>

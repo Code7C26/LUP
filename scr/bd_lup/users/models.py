@@ -1,5 +1,13 @@
+import uuid
+
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+
+
+def ruta_foto_perfil(instancia, nombre_archivo):
+    """Guarda las fotos en media/perfiles/ con un nombre único (evita pisar archivos y caché vieja)."""
+    extension = nombre_archivo.rsplit('.', 1)[-1].lower() if '.' in nombre_archivo else 'jpg'
+    return f'perfiles/{instancia.pk or "nuevo"}-{uuid.uuid4().hex[:10]}.{extension}'
 
 
 class Usuario(AbstractUser):
@@ -18,6 +26,10 @@ class Usuario(AbstractUser):
     rol = models.CharField(max_length=20, choices=ROLES, default=CONSUMIDOR)
     telefono = models.CharField('teléfono', max_length=20, blank=True)
     ciudad = models.CharField(max_length=100, blank=True)
+    foto = models.ImageField(
+        'foto de perfil', upload_to=ruta_foto_perfil, null=True, blank=True,
+        help_text='Para comercios y organizaciones puede ser el logo.',
+    )
 
     class Meta:
         verbose_name = 'usuario'

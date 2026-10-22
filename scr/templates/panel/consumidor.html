@@ -6,7 +6,7 @@
 {% block content %}
 <div class="container pt-4">
     <div class="panel-header d-flex flex-wrap align-items-center gap-3 mb-4">
-        <span class="avatar" style="width:56px;height:56px;font-size:1.2rem;">{{ user|iniciales }}</span>
+        <a href="{% url 'perfil' %}" title="Cambiar foto de perfil">{% include 'includes/_avatar.html' with usuario=user tam='lg' %}</a>
         <div class="me-auto">
             <h1 class="h4 mb-0">¡Hola, {{ user.first_name|default:user.username }}! 👋</h1>
             <p class="text-muted-lup mb-0 small">Gracias por rescatar comida. Este es tu resumen.</p>

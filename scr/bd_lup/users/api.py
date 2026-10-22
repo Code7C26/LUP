@@ -7,7 +7,13 @@ from .forms import FORMULARIOS_REGISTRO
 
 def datos_sesion(usuario):
     token, _ = Token.objects.get_or_create(user=usuario)
-    return {'token': token.key, 'id': usuario.id, 'rol': usuario.rol, 'nombre': usuario.nombre_visible}
+    return {
+        'token': token.key,
+        'id': usuario.id,
+        'rol': usuario.rol,
+        'nombre': usuario.nombre_visible,
+        'foto': usuario.foto.url if usuario.foto else None,
+    }
 
 @api_view(['POST'])
 @permission_classes([AllowAny])

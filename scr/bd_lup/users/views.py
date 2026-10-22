@@ -113,7 +113,8 @@ def perfil_view(request):
         PerfilForm, instancia = OrganizacionForm, usuario.organizacion
 
     datos = request.POST if request.method == 'POST' else None
-    form_usuario = PerfilUsuarioForm(datos, instance=usuario, prefix='u')
+    archivos = request.FILES if request.method == 'POST' else None
+    form_usuario = PerfilUsuarioForm(datos, archivos, instance=usuario, prefix='u')
     form_perfil = PerfilForm(datos, instance=instancia, prefix='p') if PerfilForm else None
 
     if request.method == 'POST':

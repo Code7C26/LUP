@@ -1,0 +1,6 @@
+{% load lup_tags %}{% comment %}
+Avatar circular de un usuario: muestra su foto de perfil o, si no tiene, sus iniciales
+(o un ícono, si se pasa "icono"). Uso:
+    {% include 'includes/_avatar.html' with usuario=user tam='lg' %}
+Tamaños: sm (32px), por defecto (38px), md (48px), lg (64px), xl (112px).
+{% endcomment %}<span class="avatar{% if tam %} avatar-{{ tam }}{% endif %}{% if usuario.foto %} con-foto{% endif %}{% if extra %} {{ extra }}{% endif %}"{% if id %} id="{{ id }}"{% endif %}>{% if usuario.foto %}<img src="{{ usuario.foto.url }}" alt="Foto de {{ usuario.nombre_visible }}" loading="lazy">{% elif icono %}<i class="bi {{ icono }}" aria-hidden="true"></i>{% else %}{{ usuario|iniciales }}{% endif %}</span>

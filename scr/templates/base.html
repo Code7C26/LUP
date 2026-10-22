@@ -1,8 +1,21 @@
 {% load static lup_tags %}<!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-bs-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <script>
+        /* Aplica el tema guardado antes de pintar la página (evita el "parpadeo" blanco).
+           Si la persona nunca eligió, se respeta la preferencia del sistema operativo. */
+        (function () {
+            var tema;
+            try { tema = localStorage.getItem('lup-tema'); } catch (e) {}
+            if (tema !== 'light' && tema !== 'dark') {
+                tema = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            document.documentElement.setAttribute('data-bs-theme', tema);
+        })();
+    </script>
     <meta name="description" content="Lüp conecta comercios, consumidores y organizaciones para rescatar los excedentes de comida a precios reducidos.">
     <title>{% block title %}Lüp · Una segunda oportunidad para cada alimento{% endblock %}</title>
     <link rel="icon" href="{% static 'img/lup-isotipo.png' %}">
@@ -35,13 +48,16 @@
             </ul>
 
             <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2 pb-3 pb-lg-0">
+                <button type="button" class="btn btn-tema align-self-start align-self-lg-center" data-cambiar-tema aria-label="Cambiar a modo oscuro" title="Modo oscuro / claro">
+                    <i class="bi bi-moon-stars-fill" aria-hidden="true"></i><i class="bi bi-sun-fill" aria-hidden="true"></i>
+                </button>
                 {% if user.is_authenticated %}
                     {% if user.es_comercio %}
                         <a href="{% url 'publicar_excedente' %}" class="btn btn-lup btn-sm"><i class="bi bi-plus-lg me-1"></i>Publicar excedente</a>
                     {% endif %}
                     <div class="dropdown">
                         <button class="btn d-flex align-items-center gap-2 px-2 border-0" data-bs-toggle="dropdown" aria-expanded="false">
-                            <span class="avatar">{{ user|iniciales }}</span>
+                            {% include 'includes/_avatar.html' with usuario=user %}
                             <span class="text-start lh-sm">
                                 <span class="d-block fw-semibold small">{{ user.nombre_visible|truncatechars:22 }}</span>
                                 <span class="chip-rol {{ user.rol }}">{{ user.get_rol_display }}</span>
@@ -73,7 +89,7 @@
 {% if messages %}
 <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100; margin-top: 70px;">
     {% for message in messages %}
-    <div class="toast toast-lup {{ message.tags|default:'info' }} bg-white" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast toast-lup {{ message.tags|default:'info' }}" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="toast-body">
             <i class="toast-icono bi {% if message.tags == 'success' %}bi-check-circle-fill{% elif message.tags == 'danger' %}bi-x-circle-fill{% elif message.tags == 'warning' %}bi-exclamation-triangle-fill{% else %}bi-info-circle-fill{% endif %}"></i>
             <div class="flex-grow-1 small">{{ message }}</div>

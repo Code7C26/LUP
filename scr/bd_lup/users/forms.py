@@ -1,6 +1,8 @@
 import re
+from io import BytesIO
 
 from django import forms
+from django.core.files.base import ContentFile
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.db import transaction
 
@@ -173,17 +175,80 @@ class LoginForm(EstiloBootstrapMixin, AuthenticationForm):
             )
 
 
+FOTO_TAMANO_MAX_MB = 5
+FOTO_LADO_PX = 400  # las fotos se recortan en un cuadrado de 400×400
+
+
+def procesar_foto_perfil(archivo):
+    """Recorta la imagen en un cuadrado centrado y la achica, para que pese poco.
+
+    Devuelve un ContentFile listo para asignar al ImageField.
+    """
+    from PIL import Image, ImageOps
+
+    archivo.seek(0)
+    imagen = Image.open(archivo)
+    imagen = ImageOps.exif_transpose(imagen)  # respeta la orientación de las fotos del celular
+    tiene_transparencia = imagen.mode in ('RGBA', 'LA') or (imagen.mode == 'P' and 'transparency' in imagen.info)
+    imagen = imagen.convert('RGBA' if tiene_transparencia else 'RGB')
+    imagen = ImageOps.fit(imagen, (FOTO_LADO_PX, FOTO_LADO_PX), method=Image.Resampling.LANCZOS)
+
+    salida = BytesIO()
+    if tiene_transparencia:  # logos con fondo transparente
+        imagen.save(salida, format='PNG', optimize=True)
+        extension = 'png'
+    else:
+        imagen.save(salida, format='JPEG', quality=88, optimize=True)
+        extension = 'jpg'
+    return ContentFile(salida.getvalue(), name=f'perfil.{extension}')
+
+
 class PerfilUsuarioForm(EstiloBootstrapMixin, forms.ModelForm):
+    quitar_foto = forms.BooleanField(required=False, label='Quitar foto actual')
+
     class Meta:
         model = Usuario
-        fields = ('first_name', 'last_name', 'email', 'telefono', 'ciudad')
+        fields = ('foto', 'first_name', 'last_name', 'email', 'telefono', 'ciudad')
         labels = {'first_name': 'Nombre', 'last_name': 'Apellido'}
+        widgets = {'foto': forms.FileInput(attrs={'accept': 'image/jpeg,image/png,image/webp'})}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.foto_anterior = self.instance.foto.name if self.instance.foto else ''
 
     def clean_email(self):
         email = self.cleaned_data['email'].lower().strip()
         if Usuario.objects.filter(email__iexact=email).exclude(pk=self.instance.pk).exists():
             raise forms.ValidationError('Ya existe una cuenta con este email.')
         return email
+
+    def clean_foto(self):
+        foto = self.cleaned_data.get('foto')
+        es_nueva = foto and hasattr(foto, 'content_type')
+        if es_nueva and foto.size > FOTO_TAMANO_MAX_MB * 1024 * 1024:
+            raise forms.ValidationError(f'La foto no puede pesar más de {FOTO_TAMANO_MAX_MB} MB.')
+        return foto
+
+    def save(self, commit=True):
+        usuario = super().save(commit=False)
+        foto_subida = self.files.get(self.add_prefix('foto'))
+
+        if foto_subida:
+            contenido = procesar_foto_perfil(foto_subida)
+            usuario.foto.save(contenido.name, contenido, save=False)
+        elif self.cleaned_data.get('quitar_foto'):
+            usuario.foto = None
+
+        if commit:
+            usuario.save()
+            self._borrar_foto_anterior(usuario)
+        return usuario
+
+    def _borrar_foto_anterior(self, usuario):
+        """Si la foto se reemplazó o se quitó, borra el archivo viejo del disco."""
+        actual = usuario.foto.name if usuario.foto else ''
+        if self.foto_anterior and self.foto_anterior != actual:
+            usuario.foto.storage.delete(self.foto_anterior)
 
 
 class TiendaForm(EstiloBootstrapMixin, forms.ModelForm):

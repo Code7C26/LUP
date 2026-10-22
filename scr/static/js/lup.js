@@ -7,6 +7,33 @@
     const $ = (sel, ctx = document) => ctx.querySelector(sel);
     const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
 
+    /* ---------- Modo oscuro / claro ---------- */
+    // El tema inicial lo aplica un script en el <head> de base.html.
+    const raiz = document.documentElement;
+    const botonesTema = $$('[data-cambiar-tema]');
+    const etiquetarBotones = () => {
+        const oscuro = raiz.getAttribute('data-bs-theme') === 'dark';
+        botonesTema.forEach((b) => {
+            b.setAttribute('aria-label', oscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+            b.setAttribute('aria-pressed', oscuro ? 'true' : 'false');
+        });
+    };
+    botonesTema.forEach((b) => b.addEventListener('click', () => {
+        const nuevo = raiz.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+        raiz.setAttribute('data-bs-theme', nuevo);
+        try { localStorage.setItem('lup-tema', nuevo); } catch (e) { /* modo privado: no se recuerda */ }
+        etiquetarBotones();
+    }));
+    // Si la persona no eligió nada, seguir los cambios del sistema operativo
+    if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            let guardado = null;
+            try { guardado = localStorage.getItem('lup-tema'); } catch (err) { /* sin storage */ }
+            if (!guardado) { raiz.setAttribute('data-bs-theme', e.matches ? 'dark' : 'light'); etiquetarBotones(); }
+        });
+    }
+    etiquetarBotones();
+
     /* ---------- Navbar con sombra al hacer scroll ---------- */
     const navbar = $('.navbar-lup');
     if (navbar) {
@@ -290,6 +317,43 @@
                 refrescar();
             });
         });
+    }
+
+    /* ---------- Foto de perfil: vista previa antes de guardar ---------- */
+    const inputFoto = $('#id_u-foto');
+    const previewAvatar = $('#preview-avatar');
+    if (inputFoto && previewAvatar) {
+        const quitar = $('#id_u-quitar_foto');
+        const ayuda = $('#ayuda-foto');
+        const textoAyuda = ayuda ? ayuda.textContent : '';
+        inputFoto.addEventListener('change', () => {
+            const archivo = inputFoto.files && inputFoto.files[0];
+            if (!archivo) return;
+            if (archivo.size > 5 * 1024 * 1024) {
+                inputFoto.value = '';
+                if (ayuda) { ayuda.textContent = 'Esa imagen pesa más de 5 MB. Probá con una más liviana.'; ayuda.classList.add('text-danger'); }
+                return;
+            }
+            if (ayuda) { ayuda.textContent = textoAyuda; ayuda.classList.remove('text-danger'); }
+            const lector = new FileReader();
+            lector.onload = (e) => {
+                previewAvatar.innerHTML = '';
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.alt = 'Vista previa de tu foto';
+                previewAvatar.appendChild(img);
+                previewAvatar.classList.add('con-foto');
+                previewAvatar.style.opacity = '';
+            };
+            lector.readAsDataURL(archivo);
+            if (quitar) quitar.checked = false;
+        });
+        if (quitar) {
+            quitar.addEventListener('change', () => {
+                previewAvatar.style.opacity = quitar.checked ? '.35' : '';
+                if (quitar.checked) inputFoto.value = '';
+            });
+        }
     }
 
     /* ---------- Confirmaciones ---------- */
