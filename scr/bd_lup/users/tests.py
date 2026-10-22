@@ -228,3 +228,8 @@ class ModoOscuroTests(TestCase):
         r = self.client.get(reverse('home'))
         self.assertContains(r, 'data-cambiar-tema')
         self.assertContains(r, "localStorage.getItem('lup-tema')")
+
+    def test_css_y_js_con_version_para_evitar_cache_viejo(self):
+        r = self.client.get(reverse('home'))
+        self.assertRegex(r.content.decode(), r'css/lup\.css\?v=\d+')
+        self.assertRegex(r.content.decode(), r'js/lup\.js\?v=\d+')

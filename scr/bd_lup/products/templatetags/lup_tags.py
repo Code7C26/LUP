@@ -1,4 +1,8 @@
+import os
+
 from django import template
+from django.contrib.staticfiles import finders
+from django.templatetags.static import static
 
 register = template.Library()
 
@@ -45,3 +49,17 @@ def url_con(context, **kwargs):
         else:
             params[clave] = valor
     return '?' + params.urlencode() if params else '?'
+
+
+@register.simple_tag
+def static_v(ruta):
+    """Como {% static %}, pero agrega ?v=<fecha de modificación del archivo>.
+
+    Así, cada vez que cambia lup.css o lup.js el navegador descarga la versión
+    nueva en lugar de usar la copia vieja que tenía guardada en caché.
+    """
+    url = static(ruta)
+    archivo = finders.find(ruta)
+    if archivo:
+        url += f'?v={int(os.path.getmtime(archivo))}'
+    return url

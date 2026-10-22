@@ -665,7 +665,7 @@ h1, h2, h3, h4, h5, .h1, .h2, .h3, .h4, .h5 { color: var(--lup-titulo); font-wei
 }
 .cantidad button { border: 0; background: none; width: 42px; height: 42px; font-size: 1.2rem; color: var(--lup-titulo); border-radius: 50%; }
 .cantidad button:hover { background: var(--lup-menta); }
-.cantidad input { width: 52px; text-align: center; border: 0; font-weight: 700; background: transparent; -moz-appearance: textfield; }
+.cantidad input { width: 52px; text-align: center; border: 0; font-weight: 700; font-size: 1.05rem; color: var(--lup-titulo); background: transparent; -moz-appearance: textfield; }
 .cantidad input::-webkit-outer-spin-button, .cantidad input::-webkit-inner-spin-button { -webkit-appearance: none; }
 .info-retiro { background: var(--lup-menta); border-radius: 18px; padding: 1rem 1.2rem; }
 .info-retiro i { color: var(--lup-verde-2); }
