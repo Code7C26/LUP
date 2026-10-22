@@ -27,6 +27,14 @@ COMERCIOS = [
 ]
 
 
+# Ubicación aproximada de los comercios de demo (centro de Alta Gracia, Córdoba)
+UBICACIONES_DEMO = {
+    'panaderia_sol': (-31.6553, -64.4293),
+    'rotiseria_don_tito': (-31.6592, -64.4318),
+    'verde_fresco': (-31.6634, -64.4255),
+}
+
+
 class Command(BaseCommand):
     help = 'Carga comercios, ofertas y usuarios de ejemplo para probar Lüp.'
 
@@ -44,6 +52,9 @@ class Command(BaseCommand):
                 usuario=user,
                 defaults=dict(nombre_fantasia=nombre, rubro=rubro, cuit=cuit, direccion=direccion, horario_atencion=horario),
             )
+            if not tienda.tiene_ubicacion and usuario in UBICACIONES_DEMO:
+                tienda.latitud, tienda.longitud = UBICACIONES_DEMO[usuario]
+                tienda.save(update_fields=['latitud', 'longitud'])
             for j, (titulo, cat, desc, orig, desc_precio, stock, donable) in enumerate(productos):
                 Producto.objects.get_or_create(
                     comercio=tienda, titulo=titulo,

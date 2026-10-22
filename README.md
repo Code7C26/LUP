@@ -159,7 +159,50 @@ python manage.py createsuperuser  # opcional: acceso a /admin
 python manage.py runserver
 ```
 
-Abrí http://127.0.0.1:8000. Usuarios de demo (clave `LupDemo2026!`): `panaderia_sol` (comercio), `consumidor_demo` (consumidor) y `comedor_demo` (organización).
+Abrí http://127.0.0.1:8000.
+
+---
+
+## <img src="jpg/doc_assets/icon_ubicacion.png" width="40"> Gmail y Google Maps
+
+La configuración va en un archivo **`.env`** en la raíz del proyecto (nunca se sube a GitHub).
+Copiá el ejemplo y completalo:
+
+```bash
+cp .env.ejemplo .env
+```
+
+### Avisos por Gmail a los comercios
+
+Cada comercio recibe un email cuando alguien **reserva**, **cancela** o **pide una donación** de sus productos
+(desde la web o desde la app). Cada comercio puede apagarlos en *Mis datos → Avisos*.
+
+1. Usá una cuenta de Gmail para el proyecto (ej: `lup.avisos@gmail.com`) con la **verificación en 2 pasos** activada.
+2. Entrá a https://myaccount.google.com/apppasswords y creá una **contraseña de aplicación** (16 letras).
+3. En el `.env`:
+   ```
+   GMAIL_USUARIO=lup.avisos@gmail.com
+   GMAIL_CLAVE_APP=abcdefghijklmnop
+   ```
+4. Reiniciá el servidor.
+
+Sin esos datos los emails no se envían: se muestran en la consola donde corre `runserver` (sirve para probar).
+
+### Ubicación del dispositivo y Google Maps
+
+- **Catálogo → "Cerca mío":** el navegador pide permiso para usar la ubicación y ordena las ofertas por distancia ("a 350 m").
+- **Producto y página del comercio:** mapa de Google Maps, distancia ("A 1,2 km de vos") y botón **Cómo llegar**.
+- **Mis datos (comercio):** botón *"Usar la ubicación de este dispositivo"* para marcar dónde está el local.
+
+Funciona **sin clave**. Opcionalmente, con una clave de Google Cloud (activando *Maps Embed API* y *Geocoding API*)
+se usan los mapas oficiales y cada comercio se ubica solo a partir de su dirección:
+
+```
+GOOGLE_MAPS_API_KEY=tu_clave
+```
+
+> Los navegadores solo comparten la ubicación en `localhost` o en sitios con **https**.
+ Usuarios de demo (clave `LupDemo2026!`): `panaderia_sol` (comercio), `consumidor_demo` (consumidor) y `comedor_demo` (organización).
 
 > Si tenías una base `db.sqlite3` de una versión anterior, borrala antes de `migrate`: los modelos se unificaron y las migraciones se regeneraron desde cero.
 >

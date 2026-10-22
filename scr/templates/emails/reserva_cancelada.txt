@@ -1,0 +1,8 @@
+RESERVA CANCELADA en {{ tienda.nombre_fantasia }}
+
+{{ cliente.nombre_visible }} canceló su reserva de {{ reserva.cantidad }} × {{ producto.titulo }}.
+El código {{ reserva.codigo_retiro }} ya no es válido y las unidades volvieron al catálogo.
+
+Tu panel: {{ url_panel }}
+
+— Lüp · Podés desactivar estos avisos desde "Mis datos".

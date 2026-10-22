@@ -189,3 +189,179 @@ class FlujoLupTests(TestCase):
         r = self.client.get('/api/productos/')
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.json()[0]['porcentaje_descuento'], 60)
+
+
+# ==========================================================
+# Avisos por email (Gmail) a los comercios
+# ==========================================================
+from unittest import mock  # noqa: E402
+
+from django.core import mail  # noqa: E402
+from django.test import override_settings  # noqa: E402
+
+
+@override_settings(EMAIL_EN_SEGUNDO_PLANO=False, SITIO_URL='https://lup.test')
+class AvisosEmailTests(FlujoLupTests.__bases__[0]):
+    setUp = FlujoLupTests.setUp
+
+    def reservar_web(self, cantidad=2):
+        self.client.force_login(self.consumidor)
+        with self.captureOnCommitCallbacks(execute=True):
+            self.client.post(reverse('reservar', args=[self.producto.pk]), {'cantidad': cantidad})
+        return Reserva.objects.get(consumidor=self.consumidor)
+
+    def test_nueva_reserva_avisa_al_comercio(self):
+        reserva = self.reservar_web()
+        self.assertEqual(len(mail.outbox), 1)
+        aviso = mail.outbox[0]
+        self.assertEqual(aviso.to, ['p@lup.test'])
+        self.assertIn('Nueva reserva: 2 × Medialunas', aviso.subject)
+        self.assertIn(reserva.codigo_retiro, aviso.body)
+        self.assertIn('https://lup.test/panel/', aviso.body)
+        html = aviso.alternatives[0][0]
+        self.assertIn(reserva.codigo_retiro, html)
+        self.assertIn('$2.400', html)
+
+    def test_cancelacion_avisa_al_comercio(self):
+        reserva = self.reservar_web()
+        with self.captureOnCommitCallbacks(execute=True):
+            self.client.post(reverse('cancelar_reserva', args=[reserva.pk]))
+        self.assertEqual(len(mail.outbox), 2)
+        self.assertIn('Reserva cancelada', mail.outbox[1].subject)
+
+    def test_retiro_confirmado_no_manda_email(self):
+        reserva = self.reservar_web()
+        self.client.force_login(self.comercio)
+        with self.captureOnCommitCallbacks(execute=True):
+            self.client.post(reverse('confirmar_retiro'), {'codigo': reserva.codigo_retiro})
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_pedido_de_donacion_avisa_al_comercio(self):
+        self.client.force_login(self.org)
+        with self.captureOnCommitCallbacks(execute=True):
+            self.client.post(reverse('solicitar_donacion', args=[self.producto.pk]), {'mensaje': 'Para 40 chicos'})
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('Pedido de donación: Medialunas', mail.outbox[0].subject)
+        self.assertIn('Para 40 chicos', mail.outbox[0].body)
+
+    def test_reserva_desde_la_app_tambien_avisa(self):
+        self.client.force_login(self.consumidor)
+        with self.captureOnCommitCallbacks(execute=True):
+            r = self.client.post(reverse('api_reservar', args=[self.producto.pk]), {'cantidad': 1})
+        self.assertEqual(r.status_code, 201)
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_comercio_puede_desactivar_los_avisos(self):
+        self.tienda.notificaciones_email = False
+        self.tienda.save()
+        self.reservar_web()
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_si_gmail_falla_la_reserva_igual_se_hace(self):
+        with mock.patch('django.core.mail.EmailMultiAlternatives.send', side_effect=OSError('sin internet')):
+            with self.assertLogs('scr.bd_lup.products.notificaciones', level='ERROR'):
+                reserva = self.reservar_web()
+        self.assertEqual(reserva.estado, Reserva.PENDIENTE)
+        self.producto.refresh_from_db()
+        self.assertEqual(self.producto.stock, 3)
+
+
+# ==========================================================
+# Ubicación del dispositivo y Google Maps
+# ==========================================================
+
+class UbicacionTests(FlujoLupTests.__bases__[0]):
+    setUp = FlujoLupTests.setUp
+
+    def crear_tienda_lejana(self):
+        lejos = Usuario.objects.create_user('lejos', 'l@lup.test', 'Clave#2026', rol=Usuario.COMERCIO)
+        tienda = Tienda.objects.create(
+            usuario=lejos, nombre_fantasia='Verdulería Lejos', rubro='verduleria', direccion='Ruta 5',
+            cuit='20-33333333-3', horario_atencion='9 a 12', latitud=-31.42, longitud=-64.18,  # Córdoba capital
+        )
+        Producto.objects.create(
+            comercio=tienda, titulo='Bananas', descripcion='Cajón', precio_original=Decimal('100'),
+            precio_descuento=Decimal('50'), stock=2, fecha_vencimiento=localdate() + timedelta(days=1),
+        )
+
+    def test_distancia_km(self):
+        from scr.bd_lup.stores.ubicacion import distancia_km
+        # Alta Gracia → Córdoba capital: unos 36 km en línea recta
+        self.assertAlmostEqual(distancia_km(-31.6587, -64.4300, -31.4201, -64.1888), 35, delta=3)
+
+    def test_catalogo_ordena_por_cercania(self):
+        self.tienda.latitud, self.tienda.longitud = -31.6553, -64.4293  # Alta Gracia
+        self.tienda.save()
+        self.crear_tienda_lejana()
+        # Persona parada en Córdoba capital: primero lo de Córdoba
+        r = self.client.get(reverse('catalogo'), {'orden': 'cercania', 'lat': '-31.4201', 'lng': '-64.1888'})
+        html = r.content.decode()
+        self.assertLess(html.index('Bananas'), html.index('Medialunas'))
+        self.assertContains(r, 'class="distancia"')
+        # Persona en Alta Gracia: al revés
+        r = self.client.get(reverse('catalogo'), {'orden': 'cercania', 'lat': '-31.6587', 'lng': '-64.4300'})
+        html = r.content.decode()
+        self.assertLess(html.index('Medialunas'), html.index('Bananas'))
+
+    def test_comercio_sin_ubicacion_queda_al_final(self):
+        self.crear_tienda_lejana()
+        r = self.client.get(reverse('catalogo'), {'orden': 'cercania', 'lat': '-31.6587', 'lng': '-64.4300'})
+        html = r.content.decode()
+        self.assertLess(html.index('Bananas'), html.index('Medialunas'))
+
+    def test_coordenadas_invalidas_se_ignoran(self):
+        r = self.client.get(reverse('catalogo'), {'orden': 'cercania', 'lat': 'hola', 'lng': '999'})
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Medialunas')
+        self.assertNotContains(r, 'class="distancia"')
+
+    def test_detalle_muestra_mapa_y_como_llegar(self):
+        self.tienda.latitud, self.tienda.longitud = -31.6553, -64.4293
+        self.tienda.save()
+        r = self.client.get(reverse('detalle_producto', args=[self.producto.pk]))
+        self.assertContains(r, 'https://www.google.com/maps/dir/?api=1&amp;destination=-31.6553%2C-64.4293')
+        self.assertContains(r, 'output=embed')
+        self.assertContains(r, 'data-distancia-a="-31.6553,-64.4293"')
+        # Página pública del comercio
+        self.assertContains(self.client.get(reverse('detalle_tienda', args=[self.tienda.pk])), 'Cómo llegar')
+
+    @override_settings(GOOGLE_MAPS_API_KEY='CLAVE-TEST')
+    def test_con_clave_usa_la_api_oficial(self):
+        r = self.client.get(reverse('detalle_producto', args=[self.producto.pk]))
+        self.assertContains(r, 'https://www.google.com/maps/embed/v1/place?key=CLAVE-TEST')
+
+    def datos_perfil_comercio(self, **extra):
+        datos = {
+            'u-first_name': '', 'u-last_name': '', 'u-email': 'p@lup.test', 'u-telefono': '', 'u-ciudad': '',
+            'p-nombre_fantasia': 'Panadería Sol', 'p-rubro': 'panaderia', 'p-descripcion': '',
+            'p-direccion': 'Belgrano 1', 'p-horario_atencion': '18 a 20 hs', 'p-notificaciones_email': 'on',
+            'p-latitud': '', 'p-longitud': '',
+        }
+        datos.update(extra)
+        return datos
+
+    def test_comercio_guarda_la_ubicacion_del_dispositivo(self):
+        self.client.force_login(self.comercio)
+        r = self.client.post(reverse('perfil'), self.datos_perfil_comercio(**{'p-latitud': '-31.6553', 'p-longitud': '-64.4293'}))
+        self.assertRedirects(r, reverse('perfil'))
+        self.tienda.refresh_from_db()
+        self.assertAlmostEqual(self.tienda.latitud, -31.6553)
+        self.assertContains(self.client.get(reverse('perfil')), 'Ubicación guardada')
+
+    def test_comercio_puede_apagar_los_avisos(self):
+        self.client.force_login(self.comercio)
+        datos = self.datos_perfil_comercio()
+        del datos['p-notificaciones_email']
+        self.client.post(reverse('perfil'), datos)
+        self.tienda.refresh_from_db()
+        self.assertFalse(self.tienda.notificaciones_email)
+
+    @override_settings(GOOGLE_MAPS_API_KEY='CLAVE-TEST')
+    def test_con_clave_ubica_el_comercio_por_su_direccion(self):
+        self.client.force_login(self.comercio)
+        with mock.patch('scr.bd_lup.stores.ubicacion.geocodificar', return_value=(-31.66, -64.43)) as geo:
+            # importado dentro de TiendaForm.save, así que se parchea el módulo de origen
+            self.client.post(reverse('perfil'), self.datos_perfil_comercio(**{'p-direccion': 'Belgrano 999, Alta Gracia'}))
+        geo.assert_called_once_with('Belgrano 999, Alta Gracia')
+        self.tienda.refresh_from_db()
+        self.assertEqual((self.tienda.latitud, self.tienda.longitud), (-31.66, -64.43))

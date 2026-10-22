@@ -1,0 +1,10 @@
+{% extends 'emails/_base.html' %}
+{% block color_etiqueta %}#b5721a{% endblock %}
+{% block etiqueta %}Pedido de donación{% endblock %}
+{% block encabezado %}{{ organizacion.nombre_visible }} quiere recibir {{ producto.titulo }}{% endblock %}
+{% block cuerpo %}
+{% if solicitud.mensaje %}<p style="font-size:15px;line-height:1.6;margin:0 0 12px;padding:12px 16px;background:#FDF1DE;border-radius:12px;">“{{ solicitud.mensaje }}”</p>{% endif %}
+{% if organizacion.organizacion %}<p style="font-size:14px;line-height:1.6;color:#5c6b62;margin:0;">{{ organizacion.organizacion.get_tipo_display }} · {{ organizacion.organizacion.direccion }}{% if organizacion.organizacion.personas_asistidas %} · asiste a {{ organizacion.organizacion.personas_asistidas }} personas por semana{% endif %}</p>{% endif %}
+<p style="font-size:14px;line-height:1.6;color:#5c6b62;margin:12px 0 0;">Entrá a tu panel para aprobar o rechazar el pedido.</p>
+{% endblock %}
+{% block boton %}Responder el pedido{% endblock %}

@@ -356,6 +356,147 @@
         }
     }
 
+    /* ==========================================================
+       Ubicación del dispositivo (Geolocation API del navegador)
+       ========================================================== */
+    const CLAVE_UBICACION = 'lup-ubicacion';
+    const UBICACION_VALIDA_MS = 30 * 60 * 1000; // se reutiliza durante 30 minutos
+
+    const ubicacionGuardada = () => {
+        try {
+            const u = JSON.parse(localStorage.getItem(CLAVE_UBICACION) || 'null');
+            if (u && Date.now() - u.t < UBICACION_VALIDA_MS) return u;
+        } catch (e) { /* sin storage */ }
+        return null;
+    };
+
+    const mensajeErrorUbicacion = (err) => {
+        if (!window.isSecureContext) return 'El navegador solo comparte la ubicación en sitios seguros (https o localhost).';
+        if (!err) return 'Tu navegador no permite obtener la ubicación.';
+        if (err.code === 1) return 'No diste permiso para usar tu ubicación. Podés activarlo desde el candado de la barra de direcciones.';
+        if (err.code === 3) return 'Tardó demasiado en encontrar tu ubicación. Probá de nuevo.';
+        return 'No pudimos obtener tu ubicación. Probá de nuevo en unos segundos.';
+    };
+
+    // Pide la ubicación al dispositivo. Devuelve una promesa con {lat, lng, precision}.
+    const pedirUbicacion = (opciones = {}) => new Promise((resolver, rechazar) => {
+        if (!opciones.forzar) {
+            const guardada = ubicacionGuardada();
+            if (guardada) { resolver(guardada); return; }
+        }
+        if (!('geolocation' in navigator) || !window.isSecureContext) { rechazar(null); return; }
+        navigator.geolocation.getCurrentPosition((pos) => {
+            const u = {
+                lat: +pos.coords.latitude.toFixed(6),
+                lng: +pos.coords.longitude.toFixed(6),
+                precision: Math.round(pos.coords.accuracy),
+                t: Date.now(),
+            };
+            try { localStorage.setItem(CLAVE_UBICACION, JSON.stringify(u)); } catch (e) { /* sin storage */ }
+            resolver(u);
+        }, rechazar, { enableHighAccuracy: !!opciones.precisa, timeout: 12000, maximumAge: 60000 });
+    });
+
+    const radianes = (g) => g * Math.PI / 180;
+    const distanciaKm = (a, b) => {
+        const dLat = radianes(b.lat - a.lat);
+        const dLng = radianes(b.lng - a.lng);
+        const h = Math.sin(dLat / 2) ** 2 + Math.cos(radianes(a.lat)) * Math.cos(radianes(b.lat)) * Math.sin(dLng / 2) ** 2;
+        return 2 * 6371 * Math.asin(Math.sqrt(h));
+    };
+    const formatoDistancia = (km) => (km < 1
+        ? Math.max(Math.round(km * 100) * 10, 10) + ' m'
+        : (km < 10 ? km.toFixed(1).replace('.', ',') : Math.round(km)) + ' km');
+
+    /* ---------- Catálogo: "Cerca mío" ---------- */
+    const botonCerca = $('[data-cerca-mio]');
+    if (botonCerca && formFiltros) {
+        const inputLat = $('#id_lat');
+        const inputLng = $('#id_lng');
+        const selectOrden = $('#id_orden');
+        const aviso = $('[data-aviso-ubicacion]');
+        const textoBoton = $('span', botonCerca);
+
+        const avisar = (texto) => { if (aviso) { aviso.textContent = texto || ''; aviso.hidden = !texto; } };
+        const aplicar = (u) => {
+            inputLat.value = u.lat;
+            inputLng.value = u.lng;
+            selectOrden.value = 'cercania';
+            botonCerca.classList.add('activo');
+            botonCerca.setAttribute('aria-pressed', 'true');
+            textoBoton.textContent = 'Cerca tuyo';
+            avisar('');
+            formFiltros.dispatchEvent(new Event('submit', { cancelable: true }));
+        };
+        const activar = (forzar) => {
+            textoBoton.textContent = 'Buscando…';
+            botonCerca.disabled = true;
+            pedirUbicacion({ forzar })
+                .then(aplicar)
+                .catch((err) => {
+                    textoBoton.textContent = 'Cerca mío';
+                    avisar(mensajeErrorUbicacion(err));
+                    if (selectOrden.value === 'cercania' && !inputLat.value) selectOrden.value = 'recientes';
+                })
+                .finally(() => { botonCerca.disabled = false; });
+        };
+
+        botonCerca.addEventListener('click', () => activar(true));
+        // Elegir "Más cerca" en el orden también pide la ubicación
+        selectOrden.addEventListener('change', () => {
+            if (selectOrden.value === 'cercania' && !inputLat.value) activar(false);
+        });
+        // Si la URL ya pide ordenar por cercanía (por ej. desde un link), completar la ubicación sola
+        if (selectOrden.value === 'cercania' && !inputLat.value) activar(false);
+    }
+
+    /* ---------- Detalle / comercio: "A 1,2 km de vos" ---------- */
+    const etiquetasDistancia = $$('[data-distancia-a]');
+    if (etiquetasDistancia.length) {
+        const guardada = ubicacionGuardada();
+        if (guardada) {
+            etiquetasDistancia.forEach((el) => {
+                const [lat, lng] = el.dataset.distanciaA.split(',').map(Number);
+                el.innerHTML = '<i class="bi bi-geo-alt-fill text-lup"></i> A ' + formatoDistancia(distanciaKm(guardada, { lat, lng })) + ' de vos';
+            });
+        }
+    }
+
+    /* ---------- Mis datos (comercio): ubicación del local ---------- */
+    const bloqueLocal = $('[data-ubicacion-local]');
+    if (bloqueLocal) {
+        const boton = $('[data-usar-ubicacion]', bloqueLocal);
+        const estado = $('[data-estado-ubicacion]', bloqueLocal);
+        const mapa = $('[data-mapa]', bloqueLocal);
+        const inputLat = $('#id_p-latitud');
+        const inputLng = $('#id_p-longitud');
+        const clave = bloqueLocal.dataset.mapsKey;
+
+        boton.addEventListener('click', () => {
+            const original = boton.innerHTML;
+            boton.disabled = true;
+            boton.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Buscando…';
+            pedirUbicacion({ forzar: true, precisa: true })
+                .then((u) => {
+                    inputLat.value = u.lat;
+                    inputLng.value = u.lng;
+                    estado.innerHTML = '<i class="bi bi-geo-alt-fill text-lup"></i> Ubicación marcada'
+                        + (u.precision ? ' (±' + u.precision + ' m)' : '')
+                        + '. <strong>Guardá los cambios</strong> para confirmarla.';
+                    const q = encodeURIComponent(u.lat + ',' + u.lng);
+                    const src = clave
+                        ? 'https://www.google.com/maps/embed/v1/place?key=' + encodeURIComponent(clave) + '&q=' + q + '&zoom=17&language=es'
+                        : 'https://maps.google.com/maps?q=' + q + '&z=17&hl=es&output=embed';
+                    mapa.innerHTML = '<iframe src="' + src + '" title="Ubicación marcada en Google Maps" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>';
+                    mapa.hidden = false;
+                })
+                .catch((err) => {
+                    estado.innerHTML = '<span class="text-danger">' + mensajeErrorUbicacion(err) + '</span>';
+                })
+                .finally(() => { boton.disabled = false; boton.innerHTML = original; });
+        });
+    }
+
     /* ---------- Confirmaciones ---------- */
     document.addEventListener('submit', (ev) => {
         const msg = ev.target.dataset && ev.target.dataset.confirmar;

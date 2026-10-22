@@ -651,6 +651,25 @@ h1, h2, h3, h4, h5, .h1, .h2, .h3, .h4, .h5 { color: var(--lup-titulo); font-wei
 .min-retiro .form-control { letter-spacing: .12em; }
 .min-retiro .form-control::placeholder { text-transform: none; letter-spacing: 0; font-weight: 400; }
 
+/* ---------- Ubicación y Google Maps ---------- */
+.btn-cerca {
+    border: 1.5px solid var(--lup-borde); background: var(--lup-campo); color: var(--lup-texto);
+    border-radius: 14px; padding: .62rem 1rem; font-weight: 500; white-space: nowrap;
+}
+.btn-cerca:hover { border-color: var(--lup-verde); color: var(--lup-titulo); }
+.btn-cerca.activo { background: var(--lup-menta); border-color: var(--lup-verde); color: var(--lup-titulo); }
+.btn-cerca.activo i { color: var(--lup-verde-2); }
+.distancia { color: var(--lup-verde-2); font-weight: 600; }
+
+.mapa-wrap {
+    border-radius: 16px; overflow: hidden;
+    border: 1px solid var(--lup-borde); background: var(--lup-menta);
+    aspect-ratio: 16 / 7; min-height: 180px;
+}
+.mapa-wrap iframe { width: 100%; height: 100%; border: 0; display: block; }
+/* El mapa de Google no tiene modo oscuro: se atenúa un poco para que no encandile */
+[data-bs-theme="dark"] .mapa-wrap iframe { filter: brightness(.85) contrast(1.05); }
+
 /* ---------- Detalle de producto ---------- */
 .detalle-foto {
     border-radius: 28px; overflow: hidden;

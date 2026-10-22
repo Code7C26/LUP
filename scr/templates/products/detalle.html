@@ -44,6 +44,7 @@
                     <div class="col-sm-6"><i class="bi bi-calendar-check-fill me-2"></i><strong>Retirá hasta:</strong> {{ producto.fecha_vencimiento|date:"l j \d\e F" }}</div>
                     <div class="col-sm-6"><i class="bi bi-box-seam-fill me-2"></i><strong>Disponibles:</strong> {{ producto.stock }} unidad{{ producto.stock|pluralize:"es" }}</div>
                 </div>
+                {% include 'includes/_mapa_comercio.html' with tienda=producto.comercio %}
             </div>
 
             {% if not producto.esta_disponible %}

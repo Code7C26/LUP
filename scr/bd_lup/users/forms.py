@@ -254,8 +254,39 @@ class PerfilUsuarioForm(EstiloBootstrapMixin, forms.ModelForm):
 class TiendaForm(EstiloBootstrapMixin, forms.ModelForm):
     class Meta:
         model = Tienda
-        fields = ('nombre_fantasia', 'rubro', 'descripcion', 'direccion', 'horario_atencion')
-        widgets = {'descripcion': forms.Textarea(attrs={'rows': 3})}
+        fields = (
+            'nombre_fantasia', 'rubro', 'descripcion', 'direccion', 'horario_atencion',
+            'latitud', 'longitud', 'notificaciones_email',
+        )
+        widgets = {
+            'descripcion': forms.Textarea(attrs={'rows': 3}),
+            'latitud': forms.HiddenInput(),
+            'longitud': forms.HiddenInput(),
+        }
+
+    def clean(self):
+        datos = super().clean()
+        lat, lng = datos.get('latitud'), datos.get('longitud')
+        if (lat is None) != (lng is None):
+            raise forms.ValidationError('La ubicación quedó incompleta. Volvé a marcarla.')
+        if lat is not None and not (-90 <= lat <= 90 and -180 <= lng <= 180):
+            raise forms.ValidationError('La ubicación no es válida.')
+        return datos
+
+    def save(self, commit=True):
+        from scr.bd_lup.stores.ubicacion import geocodificar
+
+        tienda = super().save(commit=False)
+        cambio_direccion = 'direccion' in self.changed_data
+        marco_ubicacion = 'latitud' in self.changed_data or 'longitud' in self.changed_data
+        # Si cambió la dirección y no marcaron la ubicación a mano, se busca con Google Maps
+        if (cambio_direccion or not tienda.tiene_ubicacion) and not marco_ubicacion:
+            lat, lng = geocodificar(tienda.direccion)
+            if lat is not None:
+                tienda.latitud, tienda.longitud = lat, lng
+        if commit:
+            tienda.save()
+        return tienda
 
 
 class OrganizacionForm(EstiloBootstrapMixin, forms.ModelForm):

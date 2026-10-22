@@ -31,6 +31,10 @@ class Tienda(models.Model):
     )
     latitud = models.FloatField(blank=True, null=True)
     longitud = models.FloatField(blank=True, null=True)
+    notificaciones_email = models.BooleanField(
+        'recibir avisos por email', default=True,
+        help_text='Te avisamos cuando alguien reserva, cancela o pide una donación.',
+    )
     fecha_registro = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -40,3 +44,7 @@ class Tienda(models.Model):
 
     def __str__(self):
         return self.nombre_fantasia
+
+    @property
+    def tiene_ubicacion(self):
+        return self.latitud is not None and self.longitud is not None

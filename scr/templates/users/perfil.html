@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load lup_tags %}
 
 {% block title %}Mis datos · Lüp{% endblock %}
 
@@ -33,9 +34,37 @@
             <div class="form-seccion">{% if user.es_comercio %}Comercio{% else %}Organización{% endif %}</div>
             <div class="row">
                 {% for campo in form_perfil %}
-                    {% include 'includes/_campo.html' with campo=campo clase='col-md-6 mb-3' %}
+                    {% if campo.name != 'latitud' and campo.name != 'longitud' and campo.name != 'notificaciones_email' %}
+                        {% include 'includes/_campo.html' with campo=campo clase='col-md-6 mb-3' %}
+                    {% endif %}
                 {% endfor %}
             </div>
+            {% for error in form_perfil.non_field_errors %}<div class="alert alert-danger rounded-4 small py-2">{{ error }}</div>{% endfor %}
+
+            {% if user.es_comercio %}
+                {# ---------- Ubicación del local (Google Maps) ---------- #}
+                <div class="form-seccion">Ubicación del local</div>
+                {{ form_perfil.latitud }}{{ form_perfil.longitud }}
+                <div class="ubicacion-local" data-ubicacion-local data-maps-key="{{ GOOGLE_MAPS_API_KEY }}">
+                    <p class="small text-muted-lup mb-2">
+                        Así los clientes ven cuán cerca están y pueden abrir el recorrido en Google Maps.
+                        Si estás en el local, usá la ubicación de este dispositivo.
+                    </p>
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                        <button type="button" class="btn btn-lup-outline btn-sm" data-usar-ubicacion><i class="bi bi-crosshair me-1"></i>Usar la ubicación de este dispositivo</button>
+                        <span class="small" data-estado-ubicacion>
+                            {% if form_perfil.instance.tiene_ubicacion %}<i class="bi bi-check-circle-fill text-lup"></i> Ubicación guardada{% else %}<span class="text-muted-lup">Todavía sin ubicación</span>{% endif %}
+                        </span>
+                    </div>
+                    <div class="mapa-wrap" data-mapa {% if not form_perfil.instance.tiene_ubicacion %}hidden{% endif %}>
+                        {% if form_perfil.instance.tiene_ubicacion %}<iframe src="{{ form_perfil.instance|mapa_embebido }}" title="Ubicación del local en Google Maps" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>{% endif %}
+                    </div>
+                </div>
+
+                <div class="form-seccion">Avisos</div>
+                {% include 'includes/_campo.html' with campo=form_perfil.notificaciones_email clase='mb-1' %}
+                <p class="form-text mt-0 mb-2">Llegan a <strong>{{ user.email }}</strong>: nuevas reservas, cancelaciones y pedidos de donación.</p>
+            {% endif %}
         {% endif %}
 
         <div class="form-seccion">Datos personales</div>

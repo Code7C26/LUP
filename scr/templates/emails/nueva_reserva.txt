@@ -1,0 +1,13 @@
+{% load humanize %}NUEVA RESERVA en {{ tienda.nombre_fantasia }}
+
+{{ cliente.nombre_visible }} reservó {{ reserva.cantidad }} × {{ producto.titulo }}.
+
+Código de retiro: {{ reserva.codigo_retiro }}
+Total a cobrar en el local: ${{ reserva.precio_total|floatformat:"-2"|intcomma }}
+Retira hasta: {{ producto.fecha_vencimiento|date:"l j \d\e F" }}
+Stock que queda: {{ producto.stock }}
+
+Cuando el cliente pase por el local, pedile el código y confirmalo desde tu panel:
+{{ url_panel }}
+
+— Lüp · Podés desactivar estos avisos desde "Mis datos".

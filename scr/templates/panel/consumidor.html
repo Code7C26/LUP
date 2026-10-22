@@ -30,6 +30,7 @@
                         <strong class="d-block">{{ r.cantidad }} × {{ r.producto.titulo }}</strong>
                         <small class="text-muted-lup d-block"><i class="bi bi-shop"></i> {{ r.producto.comercio }} · {{ r.producto.comercio.direccion }}</small>
                         <small class="text-muted-lup"><i class="bi bi-clock"></i> {{ r.producto.comercio.horario_atencion }} · hasta el {{ r.producto.fecha_vencimiento|date:"d/m" }}</small>
+                        <a href="{{ r.producto.comercio|como_llegar }}" target="_blank" rel="noopener" class="d-block small mt-1 text-decoration-none"><i class="bi bi-sign-turn-right"></i> Cómo llegar</a>
                     </div>
                     <div class="text-end">
                         <small class="text-muted-lup d-block">Código de retiro</small>

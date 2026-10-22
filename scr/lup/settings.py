@@ -11,6 +11,26 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+def _cargar_env(ruta):
+    """Lee el archivo .env de la raíz del proyecto (si existe) y carga sus variables.
+
+    Formato: una variable por línea, CLAVE=valor. Las líneas con # se ignoran.
+    Las variables que ya estén definidas en el sistema tienen prioridad.
+    El .env está en .gitignore: las claves nunca se suben a GitHub.
+    """
+    if not ruta.exists():
+        return
+    for linea in ruta.read_text(encoding='utf-8').splitlines():
+        linea = linea.strip()
+        if not linea or linea.startswith('#') or '=' not in linea:
+            continue
+        clave, valor = linea.split('=', 1)
+        os.environ.setdefault(clave.strip(), valor.strip().strip('"').strip("'"))
+
+
+_cargar_env(BASE_DIR.parent / '.env')
+
+
 # SEGURIDAD: esta clave solo sirve para desarrollo. En producción definir
 # DJANGO_SECRET_KEY, DJANGO_DEBUG=0 y DJANGO_ALLOWED_HOSTS como variables de entorno.
 SECRET_KEY = os.environ.get(
@@ -59,6 +79,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'scr.bd_lup.products.context_processors.google_maps',
             ],
         },
     },
@@ -109,8 +130,36 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR.parent / 'media'
 
 
-# Email (en desarrollo se imprime en consola)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# Email · Avisos a los comercios por Gmail
+# Si GMAIL_USUARIO y GMAIL_CLAVE_APP están en el .env, los emails salen de verdad por Gmail.
+# Si no, se imprimen en la consola donde corre el servidor (útil para desarrollo).
+GMAIL_USUARIO = os.environ.get('GMAIL_USUARIO', '').strip()
+GMAIL_CLAVE_APP = os.environ.get('GMAIL_CLAVE_APP', '').replace(' ', '')
+
+if GMAIL_USUARIO and GMAIL_CLAVE_APP:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'smtp.gmail.com'
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = GMAIL_USUARIO
+    EMAIL_HOST_PASSWORD = GMAIL_CLAVE_APP
+    EMAIL_TIMEOUT = 15
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+DEFAULT_FROM_EMAIL = f'Lüp <{GMAIL_USUARIO or "avisos@lup.local"}>'
+
+# Los emails se mandan en segundo plano para que la reserva no espere a Gmail
+EMAIL_EN_SEGUNDO_PLANO = os.environ.get('EMAIL_EN_SEGUNDO_PLANO', '1') == '1'
+
+# Dirección pública del sitio, para armar los links de los emails
+SITIO_URL = os.environ.get('SITIO_URL', 'http://127.0.0.1:8000').rstrip('/')
+
+
+# Google Maps (opcional)
+# Con una clave se usa la API oficial para los mapas y para ubicar comercios por su dirección.
+# Sin clave, los mapas y los links "Cómo llegar" funcionan igual con Google Maps básico.
+GOOGLE_MAPS_API_KEY = os.environ.get('GOOGLE_MAPS_API_KEY', '').strip()
 
 
 # Modelo de usuario personalizado

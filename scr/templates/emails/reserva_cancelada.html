@@ -1,0 +1,7 @@
+{% extends 'emails/_base.html' %}
+{% block color_etiqueta %}#a23030{% endblock %}
+{% block etiqueta %}Reserva cancelada{% endblock %}
+{% block encabezado %}{{ cliente.nombre_visible }} canceló su reserva de {{ reserva.cantidad }} × {{ producto.titulo }}{% endblock %}
+{% block cuerpo %}
+<p style="font-size:14px;line-height:1.6;margin:0;">El código <strong style="font-family:Consolas,monospace;letter-spacing:2px;">{{ reserva.codigo_retiro }}</strong> ya no es válido. Las {{ reserva.cantidad }} unidad{{ reserva.cantidad|pluralize:"es" }} volvieron a estar disponibles en el catálogo.</p>
+{% endblock %}

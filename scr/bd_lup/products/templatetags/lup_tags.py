@@ -63,3 +63,32 @@ def static_v(ruta):
     if archivo:
         url += f'?v={int(os.path.getmtime(archivo))}'
     return url
+
+
+# ---------- Google Maps ----------
+
+@register.filter
+def como_llegar(tienda):
+    """Link de Google Maps con el recorrido hasta el comercio."""
+    from scr.bd_lup.stores.ubicacion import url_como_llegar
+    return url_como_llegar(tienda)
+
+
+@register.filter
+def mapa_embebido(tienda):
+    """URL del mapa de Google para usar en un <iframe>."""
+    from scr.bd_lup.stores.ubicacion import url_mapa_embebido
+    return url_mapa_embebido(tienda)
+
+
+@register.filter
+def distancia(km):
+    """Formatea una distancia: 350 m, 1,2 km, 12 km."""
+    if km is None or km == '':
+        return ''
+    km = float(km)
+    if km < 1:
+        return f'{max(round(km * 1000 / 10) * 10, 10):.0f} m'
+    if km < 10:
+        return f'{km:.1f} km'.replace('.', ',')
+    return f'{km:.0f} km'

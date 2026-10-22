@@ -1,0 +1,12 @@
+{% extends 'emails/_base.html' %}{% load humanize %}
+{% block etiqueta %}Nueva reserva{% endblock %}
+{% block encabezado %}{{ cliente.nombre_visible }} reservó {{ reserva.cantidad }} × {{ producto.titulo }}{% endblock %}
+{% block cuerpo %}
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="font-size:14px;line-height:1.6;">
+    <tr><td style="color:#5c6b62;padding:4px 0;">Código de retiro</td><td align="right" style="font-family:Consolas,monospace;font-size:18px;font-weight:bold;letter-spacing:3px;color:#073425;">{{ reserva.codigo_retiro }}</td></tr>
+    <tr><td style="color:#5c6b62;padding:4px 0;">Total a cobrar en el local</td><td align="right" style="font-weight:bold;">${{ reserva.precio_total|floatformat:"-2"|intcomma }}</td></tr>
+    <tr><td style="color:#5c6b62;padding:4px 0;">Retira hasta</td><td align="right">{{ producto.fecha_vencimiento|date:"l j \d\e F" }}</td></tr>
+    <tr><td style="color:#5c6b62;padding:4px 0;">Stock que queda</td><td align="right">{{ producto.stock }}</td></tr>
+</table>
+<p style="font-size:14px;line-height:1.6;color:#5c6b62;margin:16px 0 0;">Cuando el cliente pase por el local, pedile el código y confirmalo desde tu panel.</p>
+{% endblock %}

@@ -15,7 +15,7 @@
     <div class="cuerpo">
         <span class="tienda"><i class="bi bi-shop me-1"></i>{{ producto.comercio.nombre_fantasia }}</span>
         <h5>{{ producto.titulo }}</h5>
-        <div class="meta"><i class="bi bi-geo-alt me-1"></i>{{ producto.comercio.direccion|truncatechars:38 }}</div>
+        <div class="meta"><i class="bi bi-geo-alt me-1"></i>{% if producto.distancia_km is not None %}<strong class="distancia">a {{ producto.distancia_km|distancia }}</strong> · {{ producto.comercio.direccion|truncatechars:26 }}{% else %}{{ producto.comercio.direccion|truncatechars:38 }}{% endif %}</div>
         <div class="meta mt-1"><i class="bi bi-clock me-1"></i>Retirá hasta el {{ producto.fecha_vencimiento|date:"d/m" }}</div>
         <div class="pie">
             <div>

@@ -1,0 +1,10 @@
+PEDIDO DE DONACIÓN para {{ tienda.nombre_fantasia }}
+
+{{ organizacion.nombre_visible }} quiere recibir {{ producto.titulo }}.
+{% if solicitud.mensaje %}
+Mensaje: "{{ solicitud.mensaje }}"
+{% endif %}{% if organizacion.organizacion %}{{ organizacion.organizacion.get_tipo_display }} · {{ organizacion.organizacion.direccion }}
+{% endif %}
+Aprobalo o rechazalo desde tu panel: {{ url_panel }}
+
+— Lüp · Podés desactivar estos avisos desde "Mis datos".

@@ -9,6 +9,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from scr.bd_lup.stores.models import Tienda
+from scr.bd_lup.stores.ubicacion import distancia_km, leer_coordenadas
 from scr.bd_lup.users.decorators import rol_requerido
 from scr.bd_lup.users.models import Usuario
 
@@ -77,11 +78,25 @@ def catalogo(request):
         productos = productos.filter(es_donacion=True)
     productos = productos.order_by(ORDENES.get(orden, '-creado_en'))
 
+    # Ubicación del dispositivo (la manda el navegador cuando la persona toca "Cerca mío")
+    lat, lng = leer_coordenadas(request.GET.get('lat'), request.GET.get('lng'))
+    if lat is not None:
+        productos = list(productos)
+        for producto in productos:
+            tienda = producto.comercio
+            producto.distancia_km = (
+                distancia_km(lat, lng, tienda.latitud, tienda.longitud) if tienda.tiene_ubicacion else None
+            )
+        if orden == 'cercania':
+            # Los comercios sin ubicación cargada quedan al final
+            productos.sort(key=lambda p: (p.distancia_km is None, p.distancia_km or 0))
+
     contexto = {
         'productos': productos,
         'categorias': Producto.CATEGORIAS,
         'rubros': Tienda.RUBROS,
         'filtros': {'q': q, 'categoria': categoria, 'rubro': rubro, 'donacion': solo_donacion, 'orden': orden},
+        'ubicacion': {'lat': lat, 'lng': lng} if lat is not None else None,
     }
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         return render(request, 'products/_grilla.html', contexto)

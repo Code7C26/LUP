@@ -1,0 +1,24 @@
+{% load humanize %}<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>{% block titulo %}Lüp{% endblock %}</title></head>
+<body style="margin:0;padding:0;background:#F7F5EE;font-family:Arial,Helvetica,sans-serif;color:#1d2b23;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#F7F5EE;padding:24px 12px;">
+<tr><td align="center">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:520px;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #E2E8DF;">
+        <tr><td style="background:#073425;padding:18px 24px;color:#ffffff;font-size:22px;font-weight:bold;letter-spacing:-.5px;">lüp<span style="color:#71A24D;">.</span></td></tr>
+        <tr><td style="padding:28px 24px 8px;">
+            <p style="margin:0 0 4px;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:{% block color_etiqueta %}#5e8c3d{% endblock %};font-weight:bold;">{% block etiqueta %}{% endblock %}</p>
+            <h1 style="margin:0 0 16px;font-size:22px;line-height:1.3;color:#073425;">{% block encabezado %}{% endblock %}</h1>
+            {% block cuerpo %}{% endblock %}
+        </td></tr>
+        <tr><td style="padding:8px 24px 28px;">
+            <a href="{{ url_panel }}" style="display:inline-block;background:#71A24D;color:#ffffff;text-decoration:none;font-weight:bold;padding:12px 22px;border-radius:999px;">{% block boton %}Ir a mi panel{% endblock %}</a>
+        </td></tr>
+        <tr><td style="padding:16px 24px;background:#F7F5EE;font-size:12px;color:#5c6b62;line-height:1.5;">
+            Recibís este aviso porque {{ tienda.nombre_fantasia }} está en Lüp. Podés desactivar los avisos por email desde <strong>Mis datos</strong>.
+        </td></tr>
+    </table>
+</td></tr>
+</table>
+</body>
+</html>

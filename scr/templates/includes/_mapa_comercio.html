@@ -1,0 +1,14 @@
+{% load lup_tags %}{% comment %}
+Mapa de Google + botón "Cómo llegar" para un comercio. Uso:
+    {% include 'includes/_mapa_comercio.html' with tienda=producto.comercio %}
+Si el navegador ya conoce la ubicación de la persona, lup.js completa la distancia.
+{% endcomment %}
+<div class="mapa-comercio mt-3">
+    <div class="mapa-wrap">
+        <iframe src="{{ tienda|mapa_embebido }}" title="Mapa de {{ tienda.nombre_fantasia }} en Google Maps" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+    </div>
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-2">
+        <span class="small text-muted-lup" {% if tienda.tiene_ubicacion %}data-distancia-a="{{ tienda.latitud|stringformat:'s' }},{{ tienda.longitud|stringformat:'s' }}"{% endif %}></span>
+        <a href="{{ tienda|como_llegar }}" target="_blank" rel="noopener" class="btn btn-lup-outline btn-sm"><i class="bi bi-sign-turn-right me-1"></i>Cómo llegar</a>
+    </div>
+</div>
