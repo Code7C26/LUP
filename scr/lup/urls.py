@@ -3,6 +3,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
+from scr.bd_lup.stores import api as stores_api
 
 from scr.bd_lup.products import api as products_api
 from scr.bd_lup.products import views as product_views
@@ -21,6 +22,10 @@ urlpatterns = [
     path('productos/', include('scr.bd_lup.products.urls')),
     path('comercios/<int:pk>/', store_views.detalle_tienda, name='detalle_tienda'),
     path('usuarios/', include('scr.bd_lup.users.urls')),
+    
+    # API: comercios 
+    path('api/comercios/', stores_api.comercios, name='api_comercios'),
+    path('api/comercios/<int:pk>/', stores_api.detalle_comercio, name='api_detalle_comercio'),
 
     # API: cuentas 
     path('api/auth/login/', users_api.login, name='api_login'),
