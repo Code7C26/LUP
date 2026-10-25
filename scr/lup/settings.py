@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
     'rest_framework',
+    'rest_framework.authtoken',
 
     # Apps de Lüp
     'scr.bd_lup.users.apps.UsersConfig',

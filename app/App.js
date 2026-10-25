@@ -1,8 +1,9 @@
-// Pantalla de prueba del paso 35: muestra los componentes base de Lüp.
-// En el paso 37 este archivo se cambia para mostrar la navegación de la app.
-import { useState } from 'react';
+// App.js DE PRUEBA para los pasos 36 y 38 (sesión + login).
+// Todavía no hay navegación: eso es el paso 37.
+// Cuando se suba el paso 37, este archivo se reemplaza por el que muestra la navegación.
 import { StatusBar } from 'expo-status-bar';
-import { ScrollView, StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import {
   useFonts,
   Poppins_400Regular,
@@ -10,82 +11,78 @@ import {
   Poppins_700Bold,
 } from '@expo-google-fonts/poppins';
 
-import { espacio, fuentes, tamanos, useTema } from './src/tema';
 import Boton from './src/componentes/Boton';
-import Campo from './src/componentes/Campo';
-import MensajeError from './src/componentes/MensajeError';
-import TarjetaProducto from './src/componentes/TarjetaProducto';
+import Cargando from './src/componentes/Cargando';
+import { ProveedorSesion, useSesion } from './src/contexto/Sesion';
+import Login from './src/pantallas/Login';
+import { espacio, fuentes, tamanos, useTema } from './src/tema';
 
-// Producto de ejemplo, con la misma forma que devuelve /api/productos/
-const PRODUCTO_EJEMPLO = {
-  id: 1,
-  titulo: 'Docena de medialunas',
-  comercio: 'Panadería El Sol',
-  categoria: 'panificados',
-  imagen: null,
-  precio_original: '4200.00',
-  precio_descuento: '1700.00',
-  porcentaje_descuento: 60,
-  es_donacion: true,
-  distancia_km: 1.2,
-};
+const NOMBRE_ROL = { consumidor: 'Consumidor', comercio: 'Comercio', organizacion: 'Organización' };
+
+// Pantalla que se ve después de iniciar sesión (solo para probar)
+function Bienvenida() {
+  const { colores } = useTema();
+  const { usuario, invitado, cerrarSesion } = useSesion();
+
+  return (
+    <View style={[estilos.contenedor, { backgroundColor: colores.fondo }]}>
+      <Text style={[estilos.titulo, { color: colores.titulo }]}>
+        {usuario ? `¡Hola, ${usuario.nombre}!` : 'Entraste como invitado'}
+      </Text>
+      {usuario ? (
+        <Text style={[estilos.texto, { color: colores.gris }]}>
+          Iniciaste sesión como {NOMBRE_ROL[usuario.rol]}.{'\n'}
+          Cerrá la app y abrila de nuevo: tenés que seguir logueada.
+        </Text>
+      ) : null}
+      <Boton
+        texto={usuario ? 'Cerrar sesión' : 'Volver al login'}
+        variante="secundario"
+        onPress={cerrarSesion}
+      />
+    </View>
+  );
+}
+
+// Decide qué mostrar según haya sesión o no
+function Pantalla() {
+  const { usuario, cargando, invitado } = useSesion();
+  if (cargando) return <Cargando texto="Abriendo Lüp…" />;
+  if (!usuario && !invitado) return <Login />;
+  return <Bienvenida />;
+}
 
 export default function App() {
   const [fuentesListas] = useFonts({ Poppins_400Regular, Poppins_500Medium, Poppins_700Bold });
-  const { colores, esOscuro } = useTema();
-  const [usuario, setUsuario] = useState('');
+  const { esOscuro } = useTema();
 
   if (!fuentesListas) return null;
 
   return (
-    <ScrollView
-      style={{ backgroundColor: colores.fondo }}
-      contentContainerStyle={estilos.contenido}
-      keyboardShouldPersistTaps="handled"
-    >
-      <Text style={[estilos.titulo, { color: colores.titulo }]}>Componentes de Lüp</Text>
-
-      <Text style={[estilos.subtitulo, { color: colores.gris }]}>Botones</Text>
-      <Boton texto="Ingresar" onPress={() => {}} />
-      <Boton texto="Registrarme" variante="secundario" onPress={() => {}} />
-      <Boton texto="Cargando" cargando />
-
-      <Text style={[estilos.subtitulo, { color: colores.gris }]}>Campos</Text>
-      <Campo
-        etiqueta="Usuario o email"
-        placeholder="tu_usuario o tu@email.com"
-        autoCapitalize="none"
-        value={usuario}
-        onChangeText={setUsuario}
-      />
-      <Campo etiqueta="Contraseña" placeholder="••••••••" secureTextEntry error="Usuario/email o contraseña incorrectos." />
-
-      <Text style={[estilos.subtitulo, { color: colores.gris }]}>Tarjeta de producto</Text>
-      <TarjetaProducto producto={PRODUCTO_EJEMPLO} onPress={() => {}} />
-
-      <Text style={[estilos.subtitulo, { color: colores.gris }]}>Mensaje de error</Text>
-      <MensajeError mensaje="No pudimos conectar con Lüp." alReintentar={() => {}} />
-
+    <SafeAreaProvider>
+      <ProveedorSesion>
+        <Pantalla />
+      </ProveedorSesion>
       <StatusBar style={esOscuro ? 'light' : 'dark'} />
-    </ScrollView>
+    </SafeAreaProvider>
   );
 }
 
 const estilos = StyleSheet.create({
-  contenido: {
+  contenedor: {
+    flex: 1,
+    justifyContent: 'center',
     padding: espacio(3),
-    paddingTop: espacio(8),
-    gap: espacio(1.5),
+    gap: espacio(2),
   },
   titulo: {
     fontFamily: fuentes.negrita,
     fontSize: tamanos.grande,
-    marginBottom: espacio(1),
+    textAlign: 'center',
   },
-  subtitulo: {
-    fontFamily: fuentes.media,
-    fontSize: tamanos.chico,
-    textTransform: 'uppercase',
-    marginTop: espacio(2),
+  texto: {
+    fontFamily: fuentes.normal,
+    fontSize: tamanos.normal,
+    textAlign: 'center',
   },
 });
