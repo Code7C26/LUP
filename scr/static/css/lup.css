@@ -704,6 +704,14 @@ h1, h2, h3, h4, h5, .h1, .h2, .h3, .h4, .h5 { color: var(--lup-titulo); font-wei
 .footer-lup a:hover { color: #b8dd98; }
 .footer-lup .marca img { height: 44px; filter: brightness(0) invert(1); }
 .footer-lup hr { border-color: rgba(255, 255, 255, .12); opacity: 1; }
+.footer-lup .redes a {
+    width: 40px; height: 40px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 1.5px solid rgba(255, 255, 255, .25); border-radius: 50%;
+    font-size: 1.1rem;
+    transition: background-color .2s ease, color .2s ease, border-color .2s ease;
+}
+.footer-lup .redes a:hover { background: #b8dd98; border-color: #b8dd98; color: var(--lup-oscuro); }
 
 /* ---------- Animación al hacer scroll ---------- */
 .revelar { opacity: 0; transform: translateY(24px); transition: opacity .6s ease, transform .6s ease; }

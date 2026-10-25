@@ -110,9 +110,12 @@
         <div class="row g-4">
             <div class="col-lg-4">
                 <div class="marca mb-3"><img src="{% static 'img/lup-logo.png' %}" alt="Lüp"></div>
-                <p class="small mb-0">Una segunda oportunidad para cada alimento. Conectamos comercios, consumidores y organizaciones para reducir el desperdicio de comida.</p>
+                <p class="small mb-3">Una segunda oportunidad para cada alimento. Conectamos comercios, consumidores y organizaciones para reducir el desperdicio de comida.</p>
+                <div class="redes">
+                    <a href="https://www.instagram.com/lupcomidas/" target="_blank" rel="noopener" aria-label="Lüp en Instagram" title="@lupcomidas en Instagram"><i class="bi bi-instagram"></i></a>
+                </div>
             </div>
-            <div class="col-6 col-lg-2 offset-lg-2">
+            <div class="col-6 col-lg-2">
                 <h6>Explorar</h6>
                 <ul class="list-unstyled small d-grid gap-2">
                     <li><a href="{% url 'catalogo' %}">Ofertas</a></li>
@@ -128,9 +131,17 @@
                     <li><a href="{% url 'registro' 'organizacion' %}">Soy una organización</a></li>
                 </ul>
             </div>
-            <div class="col-lg-2">
+            <div class="col-6 col-lg-2">
                 <h6>Impacto</h6>
                 <p class="small mb-0">🌿 Ambiental<br>🤝 Social<br>💰 Económico</p>
+            </div>
+            <div class="col-6 col-lg-2" id="soporte">
+                <h6>Soporte al usuario</h6>
+                <p class="small mb-2">¿Tenés alguna duda o problema? Escribinos o llamanos.</p>
+                <ul class="list-unstyled small d-grid gap-2 mb-0">
+                    <li><a href="https://wa.me/5493547620629" target="_blank" rel="noopener"><i class="bi bi-whatsapp me-1"></i>WhatsApp</a></li>
+                    <li><a href="tel:+5493547620629"><i class="bi bi-telephone me-1"></i>+54 9 3547 62-0629</a></li>
+                </ul>
             </div>
         </div>
         <hr class="my-4">
