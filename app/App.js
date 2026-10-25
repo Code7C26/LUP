@@ -1,7 +1,8 @@
-// Pantalla de prueba del paso 34: muestra el logo, los colores y la tipografía de Lüp.
+// Pantalla de prueba del paso 35: muestra los componentes base de Lüp.
 // En el paso 37 este archivo se cambia para mostrar la navegación de la app.
+import { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text } from 'react-native';
 import {
   useFonts,
   Poppins_400Regular,
@@ -9,78 +10,82 @@ import {
   Poppins_700Bold,
 } from '@expo-google-fonts/poppins';
 
-import { espacio, fuentes, radio, tamanos, useTema } from './src/tema';
+import { espacio, fuentes, tamanos, useTema } from './src/tema';
+import Boton from './src/componentes/Boton';
+import Campo from './src/componentes/Campo';
+import MensajeError from './src/componentes/MensajeError';
+import TarjetaProducto from './src/componentes/TarjetaProducto';
+
+// Producto de ejemplo, con la misma forma que devuelve /api/productos/
+const PRODUCTO_EJEMPLO = {
+  id: 1,
+  titulo: 'Docena de medialunas',
+  comercio: 'Panadería El Sol',
+  categoria: 'panificados',
+  imagen: null,
+  precio_original: '4200.00',
+  precio_descuento: '1700.00',
+  porcentaje_descuento: 60,
+  es_donacion: true,
+  distancia_km: 1.2,
+};
 
 export default function App() {
   const [fuentesListas] = useFonts({ Poppins_400Regular, Poppins_500Medium, Poppins_700Bold });
   const { colores, esOscuro } = useTema();
+  const [usuario, setUsuario] = useState('');
 
-  // Hasta que no carga Poppins, no se muestra nada (así no se ve la letra cambiar).
   if (!fuentesListas) return null;
 
   return (
-    <View style={[estilos.contenedor, { backgroundColor: colores.fondo }]}>
-      {/* El logo va sobre un círculo crema para que se lea también en modo oscuro */}
-      <View style={estilos.circuloLogo}>
-        <Image source={require('./assets/logo.png')} style={estilos.logo} resizeMode="contain" />
-      </View>
+    <ScrollView
+      style={{ backgroundColor: colores.fondo }}
+      contentContainerStyle={estilos.contenido}
+      keyboardShouldPersistTaps="handled"
+    >
+      <Text style={[estilos.titulo, { color: colores.titulo }]}>Componentes de Lüp</Text>
 
-      <Text style={[estilos.titulo, { color: colores.titulo }]}>
-        Una segunda oportunidad para cada alimento
-      </Text>
-      <Text style={[estilos.texto, { color: colores.gris }]}>Más valor. Menos desperdicio.</Text>
+      <Text style={[estilos.subtitulo, { color: colores.gris }]}>Botones</Text>
+      <Boton texto="Ingresar" onPress={() => {}} />
+      <Boton texto="Registrarme" variante="secundario" onPress={() => {}} />
+      <Boton texto="Cargando" cargando />
 
-      {/* Muestra de los colores principales */}
-      <View style={estilos.muestras}>
-        {[colores.verdeProfundo, colores.verde, colores.menta, colores.ambar].map((color) => (
-          <View key={color} style={[estilos.muestra, { backgroundColor: color, borderColor: colores.borde }]} />
-        ))}
-      </View>
+      <Text style={[estilos.subtitulo, { color: colores.gris }]}>Campos</Text>
+      <Campo
+        etiqueta="Usuario o email"
+        placeholder="tu_usuario o tu@email.com"
+        autoCapitalize="none"
+        value={usuario}
+        onChangeText={setUsuario}
+      />
+      <Campo etiqueta="Contraseña" placeholder="••••••••" secureTextEntry error="Usuario/email o contraseña incorrectos." />
+
+      <Text style={[estilos.subtitulo, { color: colores.gris }]}>Tarjeta de producto</Text>
+      <TarjetaProducto producto={PRODUCTO_EJEMPLO} onPress={() => {}} />
+
+      <Text style={[estilos.subtitulo, { color: colores.gris }]}>Mensaje de error</Text>
+      <MensajeError mensaje="No pudimos conectar con Lüp." alReintentar={() => {}} />
 
       <StatusBar style={esOscuro ? 'light' : 'dark'} />
-    </View>
+    </ScrollView>
   );
 }
 
 const estilos = StyleSheet.create({
-  contenedor: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+  contenido: {
     padding: espacio(3),
-    gap: espacio(2),
-  },
-  circuloLogo: {
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    backgroundColor: '#F7F5EE',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logo: {
-    width: 150,
-    height: 125,
+    paddingTop: espacio(8),
+    gap: espacio(1.5),
   },
   titulo: {
     fontFamily: fuentes.negrita,
     fontSize: tamanos.grande,
-    textAlign: 'center',
+    marginBottom: espacio(1),
   },
-  texto: {
-    fontFamily: fuentes.normal,
-    fontSize: tamanos.normal,
-    textAlign: 'center',
-  },
-  muestras: {
-    flexDirection: 'row',
-    gap: espacio(1),
-    marginTop: espacio(1),
-  },
-  muestra: {
-    width: 40,
-    height: 40,
-    borderRadius: radio,
-    borderWidth: 1,
+  subtitulo: {
+    fontFamily: fuentes.media,
+    fontSize: tamanos.chico,
+    textTransform: 'uppercase',
+    marginTop: espacio(2),
   },
 });
