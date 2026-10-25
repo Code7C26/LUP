@@ -1,9 +1,10 @@
-// App.js DE PRUEBA para los pasos 36 y 38 (sesión + login).
-// Todavía no hay navegación: eso es el paso 37.
+// App.js DE PRUEBA para los pasos 36, 38, 39 y 40.
+// Todavía no hay navegación (es el paso 37), así que acá se cambia de pantalla "a mano".
 // Cuando se suba el paso 37, este archivo se reemplaza por el que muestra la navegación.
+import { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Alert, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   useFonts,
   Poppins_400Regular,
@@ -11,45 +12,72 @@ import {
   Poppins_700Bold,
 } from '@expo-google-fonts/poppins';
 
-import Boton from './src/componentes/Boton';
 import Cargando from './src/componentes/Cargando';
 import { ProveedorSesion, useSesion } from './src/contexto/Sesion';
+import Inicio from './src/pantallas/Inicio';
 import Login from './src/pantallas/Login';
+import Registro from './src/pantallas/Registro';
+import RegistroSeleccion from './src/pantallas/RegistroSeleccion';
 import { espacio, fuentes, tamanos, useTema } from './src/tema';
 
-const NOMBRE_ROL = { consumidor: 'Consumidor', comercio: 'Comercio', organizacion: 'Organización' };
-
-// Pantalla que se ve después de iniciar sesión (solo para probar)
-function Bienvenida() {
+// Barra de arriba de prueba: muestra quién está logueado y el botón para salir
+function BarraDePrueba() {
   const { colores } = useTema();
-  const { usuario, invitado, cerrarSesion } = useSesion();
+  const { usuario, cerrarSesion } = useSesion();
+  const { top } = useSafeAreaInsets();
 
   return (
-    <View style={[estilos.contenedor, { backgroundColor: colores.fondo }]}>
-      <Text style={[estilos.titulo, { color: colores.titulo }]}>
-        {usuario ? `¡Hola, ${usuario.nombre}!` : 'Entraste como invitado'}
+    <View style={[estilos.barra, { paddingTop: top + espacio(1), backgroundColor: colores.superficie, borderColor: colores.borde }]}>
+      <Text style={[estilos.hola, { color: colores.titulo }]} numberOfLines={1}>
+        {usuario ? `Hola, ${usuario.nombre}` : 'Invitado'}
       </Text>
-      {usuario ? (
-        <Text style={[estilos.texto, { color: colores.gris }]}>
-          Iniciaste sesión como {NOMBRE_ROL[usuario.rol]}.{'\n'}
-          Cerrá la app y abrila de nuevo: tenés que seguir logueada.
-        </Text>
-      ) : null}
-      <Boton
-        texto={usuario ? 'Cerrar sesión' : 'Volver al login'}
-        variante="secundario"
-        onPress={cerrarSesion}
-      />
+      <Text style={[estilos.salir, { color: colores.verdeHover }]} onPress={cerrarSesion}>
+        {usuario ? 'Cerrar sesión' : 'Iniciar sesión'}
+      </Text>
     </View>
   );
 }
 
-// Decide qué mostrar según haya sesión o no
-function Pantalla() {
+function Pantallas() {
   const { usuario, cargando, invitado } = useSesion();
+  const [pantalla, setPantalla] = useState({ nombre: 'Login', params: {} });
+
+  // Al cerrar sesión, se vuelve al login (y no al formulario donde se había quedado)
+  useEffect(() => {
+    if (!usuario && !invitado) setPantalla({ nombre: 'Login', params: {} });
+  }, [usuario, invitado]);
+
   if (cargando) return <Cargando texto="Abriendo Lüp…" />;
-  if (!usuario && !invitado) return <Login />;
-  return <Bienvenida />;
+
+  // Con sesión (o como invitado): Inicio "Cerca tuyo"
+  if (usuario || invitado) {
+    const navegacionInicio = {
+      navigate: (nombre) =>
+        Alert.alert('Todavía no está', `La pantalla "${nombre}" se hace en el paso 41.`),
+    };
+    return (
+      <View style={{ flex: 1 }}>
+        <BarraDePrueba />
+        <Inicio navigation={navegacionInicio} />
+      </View>
+    );
+  }
+
+  // Sin sesión: Login → elegir tipo de cuenta → formulario de registro
+  const navegacionFalsa = {
+    navigate: (nombre, params = {}) => setPantalla({ nombre, params }),
+    goBack: () =>
+      setPantalla((actual) =>
+        actual.nombre === 'RegistroFormulario' ? { nombre: 'Registro', params: {} } : { nombre: 'Login', params: {} }
+      ),
+    canGoBack: () => false,
+  };
+
+  if (pantalla.nombre === 'Registro') return <RegistroSeleccion navigation={navegacionFalsa} />;
+  if (pantalla.nombre === 'RegistroFormulario') {
+    return <Registro navigation={navegacionFalsa} route={{ params: pantalla.params }} />;
+  }
+  return <Login navigation={navegacionFalsa} />;
 }
 
 export default function App() {
@@ -61,7 +89,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <ProveedorSesion>
-        <Pantalla />
+        <Pantallas />
       </ProveedorSesion>
       <StatusBar style={esOscuro ? 'light' : 'dark'} />
     </SafeAreaProvider>
@@ -69,20 +97,22 @@ export default function App() {
 }
 
 const estilos = StyleSheet.create({
-  contenedor: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: espacio(3),
+  barra: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: espacio(2),
+    paddingBottom: espacio(1.5),
+    borderBottomWidth: 1,
     gap: espacio(2),
   },
-  titulo: {
-    fontFamily: fuentes.negrita,
-    fontSize: tamanos.grande,
-    textAlign: 'center',
-  },
-  texto: {
-    fontFamily: fuentes.normal,
+  hola: {
+    flex: 1,
+    fontFamily: fuentes.media,
     fontSize: tamanos.normal,
-    textAlign: 'center',
+  },
+  salir: {
+    fontFamily: fuentes.media,
+    fontSize: tamanos.normal,
   },
 });
