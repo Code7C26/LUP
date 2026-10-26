@@ -75,6 +75,22 @@ class FlujoLupTests(TestCase):
         self.client.post(reverse('eliminar_excedente', args=[vianda.pk]))
         self.assertFalse(Producto.objects.filter(pk=vianda.pk).exists())
 
+    def test_api_editar_producto_agotado_lo_vuelve_a_publicar(self):
+        self.producto.stock = 0
+        self.producto.estado = Producto.AGOTADO
+        self.producto.save()
+        self.client.force_login(self.comercio)
+        url = f'/api/mis-productos/{self.producto.pk}/'
+
+        r = self.client.patch(url, {'stock': 0}, content_type='application/json')
+        self.assertEqual(r.status_code, 400)
+
+        r = self.client.patch(url, {'stock': 4}, content_type='application/json')
+        self.assertEqual(r.status_code, 200)
+        self.producto.refresh_from_db()
+        self.assertEqual(self.producto.estado, Producto.DISPONIBLE)
+        self.assertEqual(self.producto.stock, 4)
+
     def test_precio_lup_mayor_al_original_es_invalido(self):
         self.client.force_login(self.comercio)
         r = self.client.post(reverse('publicar_excedente'), {

@@ -171,6 +171,11 @@ class MiProductoSerializer(ProductoSerializer):
     class Meta(ProductoSerializer.Meta):
         fields = ProductoSerializer.Meta.fields + ['estado']
 
+    def validate_stock(self, stock):
+        if stock < 1:
+            raise serializers.ValidationError('Publicá al menos una unidad.')
+        return stock
+
     def validate(self, datos):
         original = datos.get('precio_original', getattr(self.instance, 'precio_original', None))
         descuento = datos.get('precio_descuento', getattr(self.instance, 'precio_descuento', None))
@@ -197,6 +202,13 @@ class MisProductosViewSet(viewsets.ModelViewSet):
         if tienda is None:
             raise serializers.ValidationError({'error': 'Completá los datos de tu comercio antes de publicar.'})
         serializer.save(comercio=tienda)
+
+    def perform_update(self, serializer):
+        # Igual que editar_excedente en la web: si estaba agotado y se le carga stock, se vuelve a publicar
+        producto = serializer.save()
+        if producto.stock > 0 and producto.estado == Producto.AGOTADO:
+            producto.estado = Producto.DISPONIBLE
+            producto.save(update_fields=['estado', 'actualizado_en'])
 
 
 @api_view(['POST'])
