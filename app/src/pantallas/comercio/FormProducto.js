@@ -5,6 +5,7 @@
 // Editar: PATCH /api/mis-productos/<id>/   → navigation.navigate('FormProducto', { id })
 import { useEffect, useState } from 'react';
 import { Alert, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { File } from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 
 import { api, urlCompleta } from '../../api/cliente';
@@ -152,11 +153,9 @@ export default function FormProducto({ navigation, route }) {
     datos.append('fecha_vencimiento', fecha);
     datos.append('es_donacion', valores.es_donacion ? 'true' : 'false');
     if (fotoNueva) {
-      datos.append('imagen', {
-        uri: fotoNueva.uri,
-        name: fotoNueva.fileName || 'producto.jpg',
-        type: fotoNueva.mimeType || 'image/jpeg',
-      });
+      // El fetch de Expo no acepta { uri, name, type } (el formato viejo de React Native):
+      // la foto tiene que ir como un File de expo-file-system, que ya trae nombre y tipo.
+      datos.append('imagen', new File(fotoNueva.uri));
     }
 
     setEnviando(true);
