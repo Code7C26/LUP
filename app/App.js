@@ -1,4 +1,4 @@
-// App.js DE PRUEBA para los pasos 36, 38, 39, 40, 41 y 42.
+// App.js DE PRUEBA para los pasos 36 y 38 a 44.
 // Todavía no hay navegación (es el paso 37), así que acá se cambia de pantalla "a mano".
 // Cuando se suba el paso 37, este archivo se reemplaza por el que muestra la navegación.
 import { useEffect, useState } from 'react';
@@ -15,9 +15,11 @@ import {
 import Cargando from './src/componentes/Cargando';
 import { ProveedorSesion, useSesion } from './src/contexto/Sesion';
 import Catalogo from './src/pantallas/Catalogo';
+import DetalleComercio from './src/pantallas/DetalleComercio';
 import DetalleProducto from './src/pantallas/DetalleProducto';
 import Inicio from './src/pantallas/Inicio';
 import Login from './src/pantallas/Login';
+import MisReservas from './src/pantallas/MisReservas';
 import Registro from './src/pantallas/Registro';
 import RegistroSeleccion from './src/pantallas/RegistroSeleccion';
 import { espacio, fuentes, tamanos, useTema } from './src/tema';
@@ -61,6 +63,7 @@ function PestanasDePrueba({ activa, alCambiar }) {
   const pestanas = [
     ['Inicio', '📍 Cerca tuyo'],
     ['Catalogo', '🔎 Catálogo'],
+    ['MisReservas', '🎟️ Reservas'],
   ];
 
   return (
@@ -108,14 +111,11 @@ function Pantallas() {
   if (usuario || invitado) {
     const navegacion = {
       navigate: (nombre, params = {}) => {
-        if (nombre === 'Catalogo' || nombre === 'Inicio') {
+        if (['Inicio', 'Catalogo', 'MisReservas'].includes(nombre)) {
           setEncima([]);
           setPestana({ nombre, params });
-        } else if (['DetalleProducto', 'Login', 'Registro', 'RegistroFormulario'].includes(nombre)) {
+        } else if (['DetalleProducto', 'DetalleComercio', 'Login', 'Registro', 'RegistroFormulario'].includes(nombre)) {
           setEncima((pila) => [...pila, { nombre, params }]);
-        } else if (nombre === 'MisReservas') {
-          setEncima([]);
-          Alert.alert('Todavía no está', 'La pantalla "Mis reservas" se hace en el paso 44.');
         } else {
           Alert.alert('Todavía no está', `La pantalla "${nombre}" se hace en otro paso.`);
         }
@@ -128,12 +128,15 @@ function Pantallas() {
     if (arriba) {
       // El login, al entrar o tocar "Omitir", cierra todo lo de cuentas y vuelve al detalle
       const navegacionLogin = { ...navegacion, goBack: () => setEncima(sinLoginNiRegistro), canGoBack: () => true };
+      const esDetalle = arriba.nombre === 'DetalleProducto' || arriba.nombre === 'DetalleComercio';
       return (
         <View style={{ flex: 1 }}>
-          {arriba.nombre === 'DetalleProducto' ? <BarraVolver alVolver={navegacion.goBack} /> : null}
+          {esDetalle ? <BarraVolver alVolver={navegacion.goBack} /> : null}
           <View style={{ flex: 1 }}>
             {arriba.nombre === 'DetalleProducto' ? (
-              <DetalleProducto key={arriba.params.id} navigation={navegacion} route={{ params: arriba.params }} />
+              <DetalleProducto key={encima.length} navigation={navegacion} route={{ params: arriba.params }} />
+            ) : arriba.nombre === 'DetalleComercio' ? (
+              <DetalleComercio key={encima.length} navigation={navegacion} route={{ params: arriba.params }} />
             ) : arriba.nombre === 'Login' ? (
               <Login navigation={navegacionLogin} />
             ) : arriba.nombre === 'Registro' ? (
@@ -152,6 +155,8 @@ function Pantallas() {
         <View style={{ flex: 1 }}>
           {pestana.nombre === 'Catalogo' ? (
             <Catalogo navigation={navegacion} route={{ params: pestana.params }} />
+          ) : pestana.nombre === 'MisReservas' ? (
+            <MisReservas navigation={navegacion} />
           ) : (
             <Inicio navigation={navegacion} />
           )}

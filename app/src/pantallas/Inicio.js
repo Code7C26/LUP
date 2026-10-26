@@ -10,23 +10,7 @@ import Boton from '../componentes/Boton';
 import Cargando from '../componentes/Cargando';
 import MensajeError from '../componentes/MensajeError';
 import { espacio, fuentes, radio, tamanos, useTema } from '../tema';
-
-const EMOJI_RUBRO = {
-  panaderia: '🥐',
-  restaurante: '🍲',
-  verduleria: '🥕',
-  supermercado: '🛒',
-  cafeteria: '☕',
-  carniceria: '🥩',
-  otro: '🏪',
-};
-
-// "a 350 m" o "a 1,2 km"
-function textoDistancia(km) {
-  if (km === null || km === undefined) return null;
-  if (km < 1) return `a ${Math.round(km * 1000)} m`;
-  return `a ${km.toFixed(1).replace('.', ',')} km`;
-}
+import { emojiRubro, textoDistancia } from '../utilidades';
 
 function TarjetaComercio({ comercio, alVerCatalogo }) {
   const { colores } = useTema();
@@ -36,7 +20,7 @@ function TarjetaComercio({ comercio, alVerCatalogo }) {
     <View style={[estilos.tarjeta, { backgroundColor: colores.superficie, borderColor: colores.borde }]}>
       <View style={estilos.fila}>
         <View style={[estilos.icono, { backgroundColor: colores.menta }]}>
-          <Text style={estilos.emoji}>{EMOJI_RUBRO[comercio.rubro] || '🏪'}</Text>
+          <Text style={estilos.emoji}>{emojiRubro(comercio.rubro)}</Text>
         </View>
         <View style={{ flex: 1, gap: 2 }}>
           <Text style={[estilos.nombre, { color: colores.titulo }]} numberOfLines={1}>
