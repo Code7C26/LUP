@@ -1,4 +1,4 @@
-// App.js DE PRUEBA para los pasos 36, 38, 39, 40 y 41.
+// App.js DE PRUEBA para los pasos 36, 38, 39, 40, 41 y 42.
 // Todavía no hay navegación (es el paso 37), así que acá se cambia de pantalla "a mano".
 // Cuando se suba el paso 37, este archivo se reemplaza por el que muestra la navegación.
 import { useEffect, useState } from 'react';
@@ -15,6 +15,7 @@ import {
 import Cargando from './src/componentes/Cargando';
 import { ProveedorSesion, useSesion } from './src/contexto/Sesion';
 import Catalogo from './src/pantallas/Catalogo';
+import DetalleProducto from './src/pantallas/DetalleProducto';
 import Inicio from './src/pantallas/Inicio';
 import Login from './src/pantallas/Login';
 import Registro from './src/pantallas/Registro';
@@ -34,6 +35,20 @@ function BarraDePrueba() {
       </Text>
       <Text style={[estilos.salir, { color: colores.verdeHover }]} onPress={cerrarSesion}>
         {usuario ? 'Cerrar sesión' : 'Iniciar sesión'}
+      </Text>
+    </View>
+  );
+}
+
+// Barra de arriba para las pantallas que se abren "encima" (detalle, login): solo "Volver"
+function BarraVolver({ alVolver }) {
+  const { colores } = useTema();
+  const { top } = useSafeAreaInsets();
+
+  return (
+    <View style={[estilos.barra, { paddingTop: top + espacio(1), backgroundColor: colores.superficie, borderColor: colores.borde }]}>
+      <Text style={[estilos.salir, { color: colores.verdeHover }]} onPress={alVolver} accessibilityRole="button">
+        ‹ Volver
       </Text>
     </View>
   );
@@ -61,18 +76,31 @@ function PestanasDePrueba({ activa, alCambiar }) {
   );
 }
 
+const sinLoginNiRegistro = (pila) =>
+  pila.filter((p) => !['Login', 'Registro', 'RegistroFormulario'].includes(p.nombre));
+
 function Pantallas() {
   const { usuario, cargando, invitado } = useSesion();
   const [pantalla, setPantalla] = useState({ nombre: 'Login', params: {} });
   const [pestana, setPestana] = useState({ nombre: 'Inicio', params: {} });
+  // Pantallas abiertas encima de las pestañas (como un "stack"): la última es la que se ve
+  const [encima, setEncima] = useState([]);
 
   // Al cerrar sesión, se vuelve al login (y no al formulario donde se había quedado)
   useEffect(() => {
     if (!usuario && !invitado) {
       setPantalla({ nombre: 'Login', params: {} });
       setPestana({ nombre: 'Inicio', params: {} });
+      setEncima([]);
     }
   }, [usuario, invitado]);
+
+  // Si se creó la cuenta desde "Ingresá para reservar", se cierra el registro y se vuelve al detalle
+  useEffect(() => {
+    if (usuario) {
+      setEncima((pila) => (pila[pila.length - 1]?.nombre === 'RegistroFormulario' ? sinLoginNiRegistro(pila) : pila));
+    }
+  }, [usuario]);
 
   if (cargando) return <Cargando texto="Abriendo Lüp…" />;
 
@@ -80,10 +108,44 @@ function Pantallas() {
   if (usuario || invitado) {
     const navegacion = {
       navigate: (nombre, params = {}) => {
-        if (nombre === 'Catalogo' || nombre === 'Inicio') setPestana({ nombre, params });
-        else Alert.alert('Todavía no está', `La pantalla "${nombre}" se hace en el paso 42.`);
+        if (nombre === 'Catalogo' || nombre === 'Inicio') {
+          setEncima([]);
+          setPestana({ nombre, params });
+        } else if (['DetalleProducto', 'Login', 'Registro', 'RegistroFormulario'].includes(nombre)) {
+          setEncima((pila) => [...pila, { nombre, params }]);
+        } else if (nombre === 'MisReservas') {
+          setEncima([]);
+          Alert.alert('Todavía no está', 'La pantalla "Mis reservas" se hace en el paso 44.');
+        } else {
+          Alert.alert('Todavía no está', `La pantalla "${nombre}" se hace en otro paso.`);
+        }
       },
+      goBack: () => setEncima((pila) => pila.slice(0, -1)),
+      canGoBack: () => encima.length > 0,
     };
+
+    const arriba = encima[encima.length - 1];
+    if (arriba) {
+      // El login, al entrar o tocar "Omitir", cierra todo lo de cuentas y vuelve al detalle
+      const navegacionLogin = { ...navegacion, goBack: () => setEncima(sinLoginNiRegistro), canGoBack: () => true };
+      return (
+        <View style={{ flex: 1 }}>
+          {arriba.nombre === 'DetalleProducto' ? <BarraVolver alVolver={navegacion.goBack} /> : null}
+          <View style={{ flex: 1 }}>
+            {arriba.nombre === 'DetalleProducto' ? (
+              <DetalleProducto key={arriba.params.id} navigation={navegacion} route={{ params: arriba.params }} />
+            ) : arriba.nombre === 'Login' ? (
+              <Login navigation={navegacionLogin} />
+            ) : arriba.nombre === 'Registro' ? (
+              <RegistroSeleccion navigation={navegacion} />
+            ) : (
+              <Registro navigation={navegacion} route={{ params: arriba.params }} />
+            )}
+          </View>
+        </View>
+      );
+    }
+
     return (
       <View style={{ flex: 1 }}>
         <BarraDePrueba />
