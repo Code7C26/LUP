@@ -2,13 +2,15 @@
 // Uso:
 //   <Campo etiqueta="Usuario o email" value={usuario} onChangeText={setUsuario} />
 //   <Campo etiqueta="Contraseña" secureTextEntry value={clave} onChangeText={setClave} error={errores.password} />
+//   <Campo etiqueta="Descripción" multiline estiloInput={{ minHeight: 96 }} />
 // Acepta cualquier otra propiedad de TextInput (placeholder, keyboardType, autoCapitalize...).
+// "estilo" es para el contenedor y "estiloInput" se suma al estilo de la caja de texto.
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { espacio, fuentes, tamanos, useTema } from '../tema';
 import { textoError } from '../utilidades';
 
-export default function Campo({ etiqueta, error, estilo, ...propsDelInput }) {
+export default function Campo({ etiqueta, error, estilo, estiloInput, ...propsDelInput }) {
   const { colores } = useTema();
   const mensaje = textoError(error);
 
@@ -25,6 +27,7 @@ export default function Campo({ etiqueta, error, estilo, ...propsDelInput }) {
             borderColor: mensaje ? colores.error : colores.borde,
             color: colores.texto,
           },
+          estiloInput,
         ]}
         {...propsDelInput}
       />

@@ -77,8 +77,9 @@ const TIPOS_ORGANIZACION = [
   ['otra', 'Otra'],
 ];
 
-// Botones para elegir una opción (en lugar de una lista desplegable)
-function Opciones({ etiqueta, opciones, valor, alElegir, error }) {
+// Botones para elegir una opción (en lugar de una lista desplegable).
+// También la usa el formulario de producto del comercio (paso 46).
+export function Opciones({ etiqueta, opciones, valor, alElegir, error }) {
   const { colores } = useTema();
   return (
     <View style={{ gap: espacio(0.75) }}>

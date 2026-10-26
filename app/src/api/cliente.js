@@ -48,8 +48,10 @@ export async function api(ruta, { metodo = 'GET', datos } = {}) {
   let respuesta;
   try {
     respuesta = await fetch(URL_API + ruta, { method: metodo, headers, body });
-  } catch {
-    // No llegó ni a Django (servidor apagado, otra red, etc.)
+  } catch (e) {
+    // No llegó ni a Django (servidor apagado, otra red, un FormData mal armado, etc.)
+    // El error real queda en la terminal de Expo para poder ver qué pasó.
+    console.warn(`api(${metodo} ${ruta}) falló antes de llegar a Django:`, e?.message || e);
     throw {
       sinConexion: true,
       error: 'No pudimos conectar con Lüp. Revisá que el servidor de Django esté corriendo.',
