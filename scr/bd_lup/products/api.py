@@ -1,40 +1,101 @@
 """API REST de Lüp para la app móvil."""
 from django.db import transaction
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import localdate
 from rest_framework import serializers, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.response import Response
-from .permisos import EsComercio, EsConsumidor, EsOrganizacion
+
+from scr.bd_lup.stores.models import Tienda
+from scr.bd_lup.stores.ubicacion import distancia_km, leer_coordenadas
 
 from .models import Producto, Reserva, SolicitudDonacion
-from .permisos import EsComercio, EsConsumidor
+from .permisos import EsComercio, EsConsumidor, EsOrganizacion
 
 
 # ==========================================
-# PRODUCTOS 
+# PRODUCTOS (catálogo de la app: paso 41)
 # ==========================================
+
+# Mismos órdenes que el catálogo de la web
+ORDENES = {
+    'recientes': '-creado_en',
+    'precio': 'precio_descuento',
+    'vencimiento': 'fecha_vencimiento',
+}
+
 
 class ProductoSerializer(serializers.ModelSerializer):
     comercio = serializers.CharField(source='comercio.nombre_fantasia', read_only=True)
+    comercio_id = serializers.IntegerField(source='comercio.id', read_only=True)
     direccion = serializers.CharField(source='comercio.direccion', read_only=True)
+    horario = serializers.CharField(source='comercio.horario_atencion', read_only=True)
+    categoria_texto = serializers.CharField(source='get_categoria_display', read_only=True)
     porcentaje_descuento = serializers.IntegerField(read_only=True)
+    distancia_km = serializers.SerializerMethodField()
 
     class Meta:
         model = Producto
         fields = [
-            'id', 'titulo', 'descripcion', 'categoria', 'comercio', 'direccion', 'imagen',
+            'id', 'titulo', 'descripcion', 'categoria', 'categoria_texto',
+            'comercio', 'comercio_id', 'direccion', 'horario', 'imagen',
             'precio_original', 'precio_descuento', 'porcentaje_descuento',
-            'es_donacion', 'stock', 'fecha_vencimiento',
+            'es_donacion', 'stock', 'fecha_vencimiento', 'distancia_km',
         ]
+
+    def get_distancia_km(self, producto):
+        distancia = getattr(producto, 'distancia_km', None)
+        return round(distancia, 2) if distancia is not None else None
 
 
 class ProductoViewSet(viewsets.ReadOnlyModelViewSet):
+    """GET /api/productos/ con los mismos filtros que el catálogo de la web:
+    ?q=texto  ?categoria=panificados  ?rubro=panaderia  ?comercio=3  ?donacion=1
+    ?orden=recientes|precio|vencimiento|cercania  ?lat=..&lng=.. (para las distancias)
+    """
     serializer_class = ProductoSerializer
 
     def get_queryset(self):
-        return Producto.objects.visibles().select_related('comercio')
+        productos = Producto.objects.visibles().select_related('comercio')
+        parametros = self.request.query_params
+
+        q = parametros.get('q', '').strip()
+        if q:
+            productos = productos.filter(
+                Q(titulo__icontains=q)
+                | Q(descripcion__icontains=q)
+                | Q(comercio__nombre_fantasia__icontains=q)
+                | Q(comercio__direccion__icontains=q)
+            )
+        categoria = parametros.get('categoria', '')
+        if categoria in dict(Producto.CATEGORIAS):
+            productos = productos.filter(categoria=categoria)
+        rubro = parametros.get('rubro', '')
+        if rubro in dict(Tienda.RUBROS):
+            productos = productos.filter(comercio__rubro=rubro)
+        comercio = parametros.get('comercio', '')
+        if comercio.isdigit():
+            productos = productos.filter(comercio_id=int(comercio))
+        if parametros.get('donacion') == '1':
+            productos = productos.filter(es_donacion=True)
+
+        return productos.order_by(ORDENES.get(parametros.get('orden'), '-creado_en'))
+
+    def list(self, request, *args, **kwargs):
+        productos = list(self.get_queryset())
+        lat, lng = leer_coordenadas(request.query_params.get('lat'), request.query_params.get('lng'))
+        for producto in productos:
+            tienda = producto.comercio
+            producto.distancia_km = (
+                distancia_km(lat, lng, tienda.latitud, tienda.longitud)
+                if lat is not None and tienda.tiene_ubicacion else None
+            )
+        if lat is not None and request.query_params.get('orden') == 'cercania':
+            # Los comercios sin ubicación cargada quedan al final
+            productos.sort(key=lambda p: (p.distancia_km is None, p.distancia_km or 0))
+        return Response(self.get_serializer(productos, many=True).data)
 
 
 # ==========================================
