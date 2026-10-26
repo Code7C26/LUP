@@ -1,4 +1,4 @@
-// App.js DE PRUEBA para los pasos 36 y 38 a 44.
+// App.js DE PRUEBA para los pasos 36 y 38 a 47.
 // Todavía no hay navegación (es el paso 37), así que acá se cambia de pantalla "a mano".
 // Cuando se suba el paso 37, este archivo se reemplaza por el que muestra la navegación.
 import { useEffect, useState } from 'react';
@@ -15,6 +15,10 @@ import {
 import Cargando from './src/componentes/Cargando';
 import { ProveedorSesion, useSesion } from './src/contexto/Sesion';
 import Catalogo from './src/pantallas/Catalogo';
+import ConfirmarRetiro from './src/pantallas/comercio/ConfirmarRetiro';
+import FormProducto from './src/pantallas/comercio/FormProducto';
+import MisProductos from './src/pantallas/comercio/MisProductos';
+import Solicitudes from './src/pantallas/comercio/Solicitudes';
 import DetalleComercio from './src/pantallas/DetalleComercio';
 import DetalleProducto from './src/pantallas/DetalleProducto';
 import Inicio from './src/pantallas/Inicio';
@@ -56,15 +60,26 @@ function BarraVolver({ alVolver }) {
   );
 }
 
-// Pestañas de abajo de prueba (las de verdad son del paso 37)
-function PestanasDePrueba({ activa, alCambiar }) {
+// Pestañas de cada rol: [nombre, texto, pantalla]. Las de verdad son del paso 37.
+// (La organización todavía ve las del consumidor: sus pantallas son el paso 48)
+const PESTANAS_CONSUMIDOR = [
+  ['Inicio', '📍 Cerca tuyo', Inicio],
+  ['Catalogo', '🔎 Catálogo', Catalogo],
+  ['MisReservas', '🎟️ Reservas', MisReservas],
+];
+const PESTANAS_COMERCIO = [
+  ['MisProductos', '📦 Productos', MisProductos],
+  ['ConfirmarRetiro', '📷 Retiros', ConfirmarRetiro],
+  ['Solicitudes', '💚 Donaciones', Solicitudes],
+];
+
+// Pantallas que se abren encima de las pestañas
+const PANTALLAS_ENCIMA = ['DetalleProducto', 'DetalleComercio', 'FormProducto', 'Login', 'Registro', 'RegistroFormulario'];
+
+// Pestañas de abajo de prueba
+function PestanasDePrueba({ pestanas, activa, alCambiar }) {
   const { colores } = useTema();
   const { bottom } = useSafeAreaInsets();
-  const pestanas = [
-    ['Inicio', '📍 Cerca tuyo'],
-    ['Catalogo', '🔎 Catálogo'],
-    ['MisReservas', '🎟️ Reservas'],
-  ];
 
   return (
     <View style={[estilos.pestanas, { paddingBottom: bottom + espacio(1), backgroundColor: colores.superficie, borderColor: colores.borde }]}>
@@ -107,14 +122,17 @@ function Pantallas() {
 
   if (cargando) return <Cargando texto="Abriendo Lüp…" />;
 
-  // Con sesión (o como invitado): "Cerca tuyo" y "Catálogo"
+  // Con sesión (o como invitado): las pestañas de su rol
   if (usuario || invitado) {
+    const pestanas = usuario?.rol === 'comercio' ? PESTANAS_COMERCIO : PESTANAS_CONSUMIDOR;
+    const [nombreActiva, , PantallaActiva] = pestanas.find(([nombre]) => nombre === pestana.nombre) || pestanas[0];
+
     const navegacion = {
       navigate: (nombre, params = {}) => {
-        if (['Inicio', 'Catalogo', 'MisReservas'].includes(nombre)) {
+        if (pestanas.some(([n]) => n === nombre)) {
           setEncima([]);
           setPestana({ nombre, params });
-        } else if (['DetalleProducto', 'DetalleComercio', 'Login', 'Registro', 'RegistroFormulario'].includes(nombre)) {
+        } else if (PANTALLAS_ENCIMA.includes(nombre)) {
           setEncima((pila) => [...pila, { nombre, params }]);
         } else {
           Alert.alert('Todavía no está', `La pantalla "${nombre}" se hace en otro paso.`);
@@ -128,15 +146,17 @@ function Pantallas() {
     if (arriba) {
       // El login, al entrar o tocar "Omitir", cierra todo lo de cuentas y vuelve al detalle
       const navegacionLogin = { ...navegacion, goBack: () => setEncima(sinLoginNiRegistro), canGoBack: () => true };
-      const esDetalle = arriba.nombre === 'DetalleProducto' || arriba.nombre === 'DetalleComercio';
+      const conVolver = ['DetalleProducto', 'DetalleComercio', 'FormProducto'].includes(arriba.nombre);
       return (
         <View style={{ flex: 1 }}>
-          {esDetalle ? <BarraVolver alVolver={navegacion.goBack} /> : null}
+          {conVolver ? <BarraVolver alVolver={navegacion.goBack} /> : null}
           <View style={{ flex: 1 }}>
             {arriba.nombre === 'DetalleProducto' ? (
               <DetalleProducto key={encima.length} navigation={navegacion} route={{ params: arriba.params }} />
             ) : arriba.nombre === 'DetalleComercio' ? (
               <DetalleComercio key={encima.length} navigation={navegacion} route={{ params: arriba.params }} />
+            ) : arriba.nombre === 'FormProducto' ? (
+              <FormProducto key={encima.length} navigation={navegacion} route={{ params: arriba.params }} />
             ) : arriba.nombre === 'Login' ? (
               <Login navigation={navegacionLogin} />
             ) : arriba.nombre === 'Registro' ? (
@@ -153,15 +173,13 @@ function Pantallas() {
       <View style={{ flex: 1 }}>
         <BarraDePrueba />
         <View style={{ flex: 1 }}>
-          {pestana.nombre === 'Catalogo' ? (
-            <Catalogo navigation={navegacion} route={{ params: pestana.params }} />
-          ) : pestana.nombre === 'MisReservas' ? (
-            <MisReservas navigation={navegacion} />
-          ) : (
-            <Inicio navigation={navegacion} />
-          )}
+          <PantallaActiva key={nombreActiva} navigation={navegacion} route={{ params: pestana.params }} />
         </View>
-        <PestanasDePrueba activa={pestana.nombre} alCambiar={(nombre) => setPestana({ nombre, params: {} })} />
+        <PestanasDePrueba
+          pestanas={pestanas}
+          activa={nombreActiva}
+          alCambiar={(nombre) => setPestana({ nombre, params: {} })}
+        />
       </View>
     );
   }
