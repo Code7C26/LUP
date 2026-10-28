@@ -256,12 +256,20 @@ def confirmar_retiro(request):
 class SolicitudSerializer(serializers.ModelSerializer):
     producto_id = serializers.IntegerField(source='producto.id', read_only=True)
     producto = serializers.CharField(source='producto.titulo', read_only=True)
+    # Del comercio: para que la organización sepa dónde retirar si se aprueba
+    comercio_id = serializers.IntegerField(source='producto.comercio.id', read_only=True)
+    comercio = serializers.CharField(source='producto.comercio.nombre_fantasia', read_only=True)
+    direccion = serializers.CharField(source='producto.comercio.direccion', read_only=True)
+    horario = serializers.CharField(source='producto.comercio.horario_atencion', read_only=True)
     organizacion = serializers.CharField(source='organizacion.nombre_visible', read_only=True)
     estado_texto = serializers.CharField(source='get_estado_display', read_only=True)
 
     class Meta:
         model = SolicitudDonacion
-        fields = ['id', 'producto_id', 'producto', 'organizacion', 'mensaje', 'estado', 'estado_texto', 'creada_en']
+        fields = [
+            'id', 'producto_id', 'producto', 'comercio_id', 'comercio', 'direccion', 'horario',
+            'organizacion', 'mensaje', 'estado', 'estado_texto', 'creada_en',
+        ]
 
 
 @api_view(['GET'])
@@ -269,7 +277,7 @@ class SolicitudSerializer(serializers.ModelSerializer):
 def mis_solicitudes(request):
     solicitudes = SolicitudDonacion.objects.filter(
         producto__comercio__usuario=request.user
-    ).select_related('producto', 'organizacion')
+    ).select_related('producto__comercio', 'organizacion__organizacion')
     return Response(SolicitudSerializer(solicitudes, many=True).data)
 
 
@@ -302,12 +310,28 @@ def responder_solicitud(request, pk, accion):
 # ACCIONES DE LA ORGANIZACIÓN 
 # ==========================================
 
+class DonacionSerializer(ProductoSerializer):
+    """Un producto para donar, con "ya_solicitado" si esta organización ya lo pidió."""
+    ya_solicitado = serializers.SerializerMethodField()
+
+    class Meta(ProductoSerializer.Meta):
+        fields = ProductoSerializer.Meta.fields + ['ya_solicitado']
+
+    def get_ya_solicitado(self, producto):
+        return producto.id in self.context.get('solicitados', set())
+
+
 @api_view(['GET'])
 @permission_classes([EsOrganizacion])
 def donaciones_disponibles(request):
     """Productos que los comercios marcaron como aptos para donación y siguen disponibles."""
     productos = Producto.objects.visibles().filter(es_donacion=True).select_related('comercio')
-    return Response(ProductoSerializer(productos, many=True).data)
+    solicitados = set(
+        SolicitudDonacion.objects.filter(organizacion=request.user).values_list('producto_id', flat=True)
+    )
+    return Response(DonacionSerializer(
+        productos, many=True, context={'request': request, 'solicitados': solicitados}
+    ).data)
 
 
 @api_view(['POST'])
@@ -334,5 +358,5 @@ def mis_solicitudes_donacion(request):
     """Las solicitudes que hizo la organización, con su estado (pendiente, aprobada o rechazada)."""
     solicitudes = SolicitudDonacion.objects.filter(
         organizacion=request.user
-    ).select_related('producto', 'organizacion')
+    ).select_related('producto__comercio', 'organizacion__organizacion')
     return Response(SolicitudSerializer(solicitudes, many=True).data)

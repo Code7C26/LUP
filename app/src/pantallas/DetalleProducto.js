@@ -10,6 +10,7 @@ import { api, urlCompleta } from '../api/cliente';
 import Boton from '../componentes/Boton';
 import Cargando from '../componentes/Cargando';
 import MensajeError from '../componentes/MensajeError';
+import ModalSolicitudDonacion from '../componentes/ModalSolicitudDonacion';
 import { useSesion } from '../contexto/Sesion';
 import { espacio, fuentes, radio, tamanos, useTema } from '../tema';
 import { emojiCategoria, formatoPrecio, textoError } from '../utilidades';
@@ -58,6 +59,8 @@ export default function DetalleProducto({ navigation, route }) {
   const [error, setError] = useState('');
   const [cantidad, setCantidad] = useState(1);
   const [reservando, setReservando] = useState(false);
+  const [pidiendo, setPidiendo] = useState(false); // cuadro para pedirlo en donación (organizaciones)
+  const [pedido, setPedido] = useState(false);
 
   const cargar = useCallback(async () => {
     setError('');
@@ -228,13 +231,31 @@ export default function DetalleProducto({ navigation, route }) {
             Recibirás un código para mostrar al retirar.
           </Text>
         </View>
+      ) : usuario.rol === 'organizacion' && producto.es_donacion ? (
+        // La organización lo puede pedir en donación desde acá (paso 48)
+        <View style={{ gap: espacio(1) }}>
+          <Boton
+            texto={pedido ? '✓ Ya lo pediste' : 'Pedir en donación'}
+            onPress={() => setPidiendo(true)}
+            deshabilitado={pedido}
+          />
+          <Text style={[estilos.aviso, { color: colores.gris }]}>
+            El comercio recibe tu mensaje y te responde en "Mis solicitudes".
+          </Text>
+        </View>
       ) : (
-        <Text style={[estilos.aviso, { color: colores.gris }]}>
-          {usuario.rol === 'organizacion' && producto.es_donacion
-            ? 'Para pedir este producto, buscalo en la pestaña Donaciones.'
-            : 'Las reservas son solo para cuentas de consumidor.'}
-        </Text>
+        <Text style={[estilos.aviso, { color: colores.gris }]}>Las reservas son solo para cuentas de consumidor.</Text>
       )}
+
+      <ModalSolicitudDonacion
+        producto={pidiendo ? producto : null}
+        alCerrar={() => setPidiendo(false)}
+        alEnviar={() => {
+          setPidiendo(false);
+          setPedido(true);
+          Alert.alert('Solicitud enviada', `${producto.comercio} recibió tu pedido. Vas a ver su respuesta en "Mis solicitudes".`);
+        }}
+      />
     </ScrollView>
   );
 }
