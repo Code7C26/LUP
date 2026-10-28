@@ -109,6 +109,22 @@ class LoginTests(TestCase):
         r = self.client.get(reverse('perfil'))
         self.assertEqual(r.status_code, 302)
 
+    def test_api_yo_devuelve_el_perfil_con_token(self):
+        Tienda.objects.create(
+            usuario=self.usuario, nombre_fantasia='Panadería Sol', rubro='panaderia',
+            direccion='Belgrano 1', cuit='20-11111111-1', horario_atencion='18 a 20 hs',
+        )
+        self.assertEqual(self.client.get('/api/auth/yo/').status_code, 401)
+
+        token = self.client.post(
+            '/api/auth/login/', {'username': 'comercio1', 'password': 'ClaveSegura#2026'},
+            content_type='application/json',
+        ).json()['token']
+        datos = self.client.get('/api/auth/yo/', HTTP_AUTHORIZATION=f'Token {token}').json()
+        self.assertEqual(datos['email'], 'comercio1@lup.test')
+        self.assertEqual(datos['comercio']['nombre'], 'Panadería Sol')
+        self.assertNotIn('organizacion', datos)
+
 
 def imagen_de_prueba(ancho=800, alto=600, formato='JPEG', nombre='foto.jpg'):
     from io import BytesIO

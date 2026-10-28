@@ -15,6 +15,35 @@ def datos_sesion(usuario):
         'foto': usuario.foto.url if usuario.foto else None,
     }
 
+def datos_perfil(usuario):
+    """Lo de la sesión, más los datos que muestra el Perfil de la app (paso 49)."""
+    datos = {
+        **datos_sesion(usuario),
+        'username': usuario.username,
+        'email': usuario.email,
+        'telefono': usuario.telefono,
+        'ciudad': usuario.ciudad,
+    }
+    tienda = getattr(usuario, 'tienda', None)
+    if usuario.es_comercio and tienda is not None:
+        datos['comercio'] = {
+            'nombre': tienda.nombre_fantasia,
+            'rubro': tienda.get_rubro_display(),
+            'cuit': tienda.cuit,
+            'direccion': tienda.direccion,
+            'horario': tienda.horario_atencion,
+        }
+    organizacion = getattr(usuario, 'organizacion', None)
+    if usuario.es_organizacion and organizacion is not None:
+        datos['organizacion'] = {
+            'nombre': organizacion.nombre,
+            'tipo': organizacion.get_tipo_display(),
+            'cuit': organizacion.cuit,
+            'direccion': organizacion.direccion,
+            'personas_asistidas': organizacion.personas_asistidas,
+        }
+    return datos
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login(request):
@@ -37,4 +66,4 @@ def registro(request, rol):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def yo(request):
-    return Response(datos_sesion(request.user))
+    return Response(datos_perfil(request.user))
