@@ -1,4 +1,4 @@
-// App.js DE PRUEBA para los pasos 36 y 38 a 48.
+// App.js DE PRUEBA para los pasos 36 y 38 a 49.
 // Todavía no hay navegación (es el paso 37), así que acá se cambia de pantalla "a mano".
 // Cuando se suba el paso 37, este archivo se reemplaza por el que muestra la navegación.
 import { useEffect, useState } from 'react';
@@ -24,6 +24,7 @@ import DetalleProducto from './src/pantallas/DetalleProducto';
 import Inicio from './src/pantallas/Inicio';
 import Login from './src/pantallas/Login';
 import MisReservas from './src/pantallas/MisReservas';
+import Perfil from './src/pantallas/Perfil';
 import Donaciones from './src/pantallas/organizacion/Donaciones';
 import MisSolicitudes from './src/pantallas/organizacion/MisSolicitudes';
 import Registro from './src/pantallas/Registro';
@@ -67,15 +68,18 @@ const PESTANAS_CONSUMIDOR = [
   ['Inicio', '📍 Cerca tuyo', Inicio],
   ['Catalogo', '🔎 Catálogo', Catalogo],
   ['MisReservas', '🎟️ Reservas', MisReservas],
+  ['Perfil', '👤 Perfil', Perfil],
 ];
 const PESTANAS_COMERCIO = [
   ['MisProductos', '📦 Productos', MisProductos],
   ['ConfirmarRetiro', '📷 Retiros', ConfirmarRetiro],
   ['Solicitudes', '💚 Donaciones', Solicitudes],
+  ['Perfil', '👤 Perfil', Perfil],
 ];
 const PESTANAS_ORGANIZACION = [
   ['Donaciones', '💚 Donaciones', Donaciones],
-  ['MisSolicitudes', '📋 Mis solicitudes', MisSolicitudes],
+  ['MisSolicitudes', '📋 Solicitudes', MisSolicitudes],
+  ['Perfil', '👤 Perfil', Perfil],
 ];
 const PESTANAS_POR_ROL = { comercio: PESTANAS_COMERCIO, organizacion: PESTANAS_ORGANIZACION };
 
@@ -254,6 +258,7 @@ const estilos = StyleSheet.create({
   },
   textoPestana: {
     fontFamily: fuentes.media,
-    fontSize: tamanos.normal,
+    fontSize: tamanos.chico,
+    textAlign: 'center',
   },
 });
