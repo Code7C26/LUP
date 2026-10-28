@@ -91,6 +91,29 @@ class FlujoLupTests(TestCase):
         self.assertEqual(self.producto.estado, Producto.DISPONIBLE)
         self.assertEqual(self.producto.stock, 4)
 
+    def test_api_organizacion_pide_una_donacion(self):
+        # Solo las organizaciones ven las donaciones
+        self.client.force_login(self.consumidor)
+        self.assertEqual(self.client.get('/api/donaciones/').status_code, 403)
+
+        self.client.force_login(self.org)
+        donaciones = self.client.get('/api/donaciones/').json()
+        self.assertEqual([(d['titulo'], d['ya_solicitado']) for d in donaciones], [('Medialunas', False)])
+
+        url = f'/api/productos/{self.producto.pk}/solicitar-donacion/'
+        self.assertEqual(self.client.post(url, {'mensaje': ' '}, content_type='application/json').status_code, 400)
+        r = self.client.post(url, {'mensaje': 'Para 40 chicos'}, content_type='application/json')
+        self.assertEqual(r.status_code, 201)
+        self.assertEqual(r.json()['comercio'], 'Panadería Sol')
+        # Una sola solicitud por producto
+        self.assertEqual(self.client.post(url, {'mensaje': 'Otra'}, content_type='application/json').status_code, 400)
+
+        self.assertTrue(self.client.get('/api/donaciones/').json()[0]['ya_solicitado'])
+        solicitudes = self.client.get('/api/mis-solicitudes-donacion/').json()
+        self.assertEqual(len(solicitudes), 1)
+        self.assertEqual(solicitudes[0]['estado'], SolicitudDonacion.PENDIENTE)
+        self.assertEqual(solicitudes[0]['direccion'], 'Belgrano 1')
+
     def test_precio_lup_mayor_al_original_es_invalido(self):
         self.client.force_login(self.comercio)
         r = self.client.post(reverse('publicar_excedente'), {

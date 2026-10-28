@@ -1,4 +1,4 @@
-// App.js DE PRUEBA para los pasos 36 y 38 a 47.
+// App.js DE PRUEBA para los pasos 36 y 38 a 48.
 // Todavía no hay navegación (es el paso 37), así que acá se cambia de pantalla "a mano".
 // Cuando se suba el paso 37, este archivo se reemplaza por el que muestra la navegación.
 import { useEffect, useState } from 'react';
@@ -24,6 +24,8 @@ import DetalleProducto from './src/pantallas/DetalleProducto';
 import Inicio from './src/pantallas/Inicio';
 import Login from './src/pantallas/Login';
 import MisReservas from './src/pantallas/MisReservas';
+import Donaciones from './src/pantallas/organizacion/Donaciones';
+import MisSolicitudes from './src/pantallas/organizacion/MisSolicitudes';
 import Registro from './src/pantallas/Registro';
 import RegistroSeleccion from './src/pantallas/RegistroSeleccion';
 import { espacio, fuentes, tamanos, useTema } from './src/tema';
@@ -61,7 +63,6 @@ function BarraVolver({ alVolver }) {
 }
 
 // Pestañas de cada rol: [nombre, texto, pantalla]. Las de verdad son del paso 37.
-// (La organización todavía ve las del consumidor: sus pantallas son el paso 48)
 const PESTANAS_CONSUMIDOR = [
   ['Inicio', '📍 Cerca tuyo', Inicio],
   ['Catalogo', '🔎 Catálogo', Catalogo],
@@ -72,6 +73,11 @@ const PESTANAS_COMERCIO = [
   ['ConfirmarRetiro', '📷 Retiros', ConfirmarRetiro],
   ['Solicitudes', '💚 Donaciones', Solicitudes],
 ];
+const PESTANAS_ORGANIZACION = [
+  ['Donaciones', '💚 Donaciones', Donaciones],
+  ['MisSolicitudes', '📋 Mis solicitudes', MisSolicitudes],
+];
+const PESTANAS_POR_ROL = { comercio: PESTANAS_COMERCIO, organizacion: PESTANAS_ORGANIZACION };
 
 // Pantallas que se abren encima de las pestañas
 const PANTALLAS_ENCIMA = ['DetalleProducto', 'DetalleComercio', 'FormProducto', 'Login', 'Registro', 'RegistroFormulario'];
@@ -124,7 +130,7 @@ function Pantallas() {
 
   // Con sesión (o como invitado): las pestañas de su rol
   if (usuario || invitado) {
-    const pestanas = usuario?.rol === 'comercio' ? PESTANAS_COMERCIO : PESTANAS_CONSUMIDOR;
+    const pestanas = PESTANAS_POR_ROL[usuario?.rol] || PESTANAS_CONSUMIDOR;
     const [nombreActiva, , PantallaActiva] = pestanas.find(([nombre]) => nombre === pestana.nombre) || pestanas[0];
 
     const navegacion = {
