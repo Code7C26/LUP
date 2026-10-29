@@ -404,3 +404,210 @@ class UbicacionTests(FlujoLupTests.__bases__[0]):
         geo.assert_called_once_with('Belgrano 999, Alta Gracia')
         self.tienda.refresh_from_db()
         self.assertEqual((self.tienda.latitud, self.tienda.longitud), (-31.66, -64.43))
+
+
+# ==========================================================
+# #93 · Marcar producto como vendido o no disponible
+# ==========================================================
+
+class EstadoManualTests(FlujoLupTests.__bases__[0]):
+    setUp = FlujoLupTests.setUp
+
+    def cambiar(self, estado, usuario=None):
+        self.client.force_login(usuario or self.comercio)
+        return self.client.post(reverse('cambiar_estado_producto', args=[self.producto.pk]), {'estado': estado})
+
+    def test_marcar_como_vendido_lo_saca_del_catalogo(self):
+        self.assertRedirects(self.cambiar(Producto.AGOTADO), reverse('panel'))
+        self.producto.refresh_from_db()
+        self.assertEqual(self.producto.estado, Producto.AGOTADO)
+        self.assertNotContains(self.client.get(reverse('catalogo')), 'Medialunas')
+        self.assertContains(self.client.get(reverse('panel')), 'Vendido')
+
+    def test_no_disponible_y_volver_a_publicar(self):
+        self.cambiar(Producto.PAUSADO)
+        self.producto.refresh_from_db()
+        self.assertEqual(self.producto.estado, Producto.PAUSADO)
+        self.assertFalse(self.producto.esta_disponible)
+        self.assertContains(self.client.get(reverse('panel')), 'No disponible')
+        self.cambiar(Producto.DISPONIBLE)
+        self.producto.refresh_from_db()
+        self.assertTrue(self.producto.esta_disponible)
+
+    def test_no_se_reserva_un_producto_no_disponible(self):
+        self.cambiar(Producto.PAUSADO)
+        self.client.force_login(self.consumidor)
+        self.client.post(reverse('reservar', args=[self.producto.pk]), {'cantidad': 1})
+        self.assertFalse(Reserva.objects.exists())
+
+    def test_sin_stock_no_se_puede_volver_a_publicar(self):
+        self.producto.stock = 0
+        self.producto.estado = Producto.AGOTADO
+        self.producto.save()
+        r = self.cambiar(Producto.DISPONIBLE)
+        self.assertRedirects(r, reverse('editar_excedente', args=[self.producto.pk]))
+        self.producto.refresh_from_db()
+        self.assertEqual(self.producto.estado, Producto.AGOTADO)
+
+    def test_otro_comercio_no_puede_cambiarlo(self):
+        otro = Usuario.objects.create_user('otro', 'x@lup.test', 'Clave#2026', rol=Usuario.COMERCIO)
+        self.assertEqual(self.cambiar(Producto.AGOTADO, usuario=otro).status_code, 404)
+
+    def test_estado_invalido_o_donado(self):
+        self.cambiar('DONADO')
+        self.producto.refresh_from_db()
+        self.assertEqual(self.producto.estado, Producto.DISPONIBLE)
+
+    def test_api_acepta_no_disponible(self):
+        self.client.force_login(self.comercio)
+        r = self.client.post(reverse('api_cambiar_estado', args=[self.producto.pk]), {'estado': 'PAUSADO'})
+        self.assertEqual(r.status_code, 200)
+        self.producto.refresh_from_db()
+        self.assertEqual(self.producto.estado, Producto.PAUSADO)
+
+
+# ==========================================================
+# #98 · Sistema de calificaciones
+# ==========================================================
+
+class CalificacionesTests(FlujoLupTests.__bases__[0]):
+    setUp = FlujoLupTests.setUp
+
+    def reserva_retirada(self, consumidor=None):
+        return Reserva.objects.create(
+            consumidor=consumidor or self.consumidor, producto=self.producto, cantidad=1,
+            precio_total=self.producto.precio_descuento, estado=Reserva.RETIRADA,
+        )
+
+    def calificar(self, reserva, puntaje, comentario=''):
+        self.client.force_login(reserva.consumidor)
+        return self.client.post(reverse('calificar_reserva', args=[reserva.pk]), {'puntaje': puntaje, 'comentario': comentario})
+
+    def test_consumidor_califica_despues_de_retirar(self):
+        reserva = self.reserva_retirada()
+        self.client.force_login(self.consumidor)
+        self.assertContains(self.client.get(reverse('panel')), '¿Qué tal te fue?')
+        self.assertRedirects(self.calificar(reserva, 5, 'Riquísimas'), reverse('panel'))
+        from .models import Calificacion
+        c = Calificacion.objects.get()
+        self.assertEqual((c.puntaje, c.tienda, c.comentario), (5, self.tienda, 'Riquísimas'))
+        self.assertNotContains(self.client.get(reverse('panel')), '¿Qué tal te fue?')
+
+    def test_volver_a_calificar_la_actualiza(self):
+        from .models import Calificacion
+        reserva = self.reserva_retirada()
+        self.calificar(reserva, 2)
+        self.calificar(reserva, 4)
+        self.assertEqual(Calificacion.objects.get().puntaje, 4)
+
+    def test_no_se_califica_una_reserva_pendiente_ni_ajena(self):
+        from .models import Calificacion
+        pendiente = Reserva.objects.create(consumidor=self.consumidor, producto=self.producto, cantidad=1, precio_total=1)
+        self.assertEqual(self.calificar(pendiente, 5).status_code, 404)
+        otro = Usuario.objects.create_user('otro', 'otro@lup.test', 'Clave#2026', rol=Usuario.CONSUMIDOR)
+        ajena = self.reserva_retirada(otro)
+        self.client.force_login(self.consumidor)
+        r = self.client.post(reverse('calificar_reserva', args=[ajena.pk]), {'puntaje': 1})
+        self.assertEqual(r.status_code, 404)
+        self.assertFalse(Calificacion.objects.exists())
+
+    def test_puntaje_fuera_de_rango(self):
+        from .models import Calificacion
+        self.calificar(self.reserva_retirada(), 9)
+        self.assertFalse(Calificacion.objects.exists())
+
+    def test_promedio_en_tienda_catalogo_y_panel(self):
+        otro = Usuario.objects.create_user('otro', 'otro@lup.test', 'Clave#2026', rol=Usuario.CONSUMIDOR)
+        self.calificar(self.reserva_retirada(), 5, 'Excelente atención')
+        self.calificar(self.reserva_retirada(otro), 4)
+        r = self.client.get(reverse('detalle_tienda', args=[self.tienda.pk]))
+        self.assertContains(r, '4,5')
+        self.assertContains(r, 'Excelente atención')
+        self.assertContains(r, '2 opiniones')
+        self.assertContains(self.client.get(reverse('catalogo')), 'calif-mini')
+        self.client.force_login(self.comercio)
+        self.assertContains(self.client.get(reverse('panel')), '4,5')
+
+    def test_api_calificar_y_promedio_del_comercio(self):
+        reserva = self.reserva_retirada()
+        self.client.force_login(self.consumidor)
+        r = self.client.post(reverse('api_calificar_reserva', args=[reserva.pk]), {'puntaje': 3, 'comentario': 'Bien'}, content_type='application/json')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.json()['calificacion'], {'puntaje': 3, 'comentario': 'Bien'})
+        datos = self.client.get(reverse('api_detalle_comercio', args=[self.tienda.pk])).json()
+        self.assertEqual((datos['calificacion_promedio'], datos['calificaciones']), (3.0, 1))
+        # Los campos que ya usaba la app siguen estando
+        for campo in ('id', 'nombre_fantasia', 'ofertas', 'distancia_km', 'como_llegar'):
+            self.assertIn(campo, datos)
+
+
+# ==========================================================
+# #99 · Estadísticas para cada comercio
+# ==========================================================
+
+class EstadisticasTests(FlujoLupTests.__bases__[0]):
+    setUp = FlujoLupTests.setUp
+
+    def reserva(self, cantidad, estado, dias_atras=0):
+        from datetime import datetime, time
+
+        from django.utils import timezone
+
+        r = Reserva.objects.create(
+            consumidor=self.consumidor, producto=self.producto, cantidad=cantidad,
+            precio_total=self.producto.precio_descuento * cantidad, estado=estado,
+        )
+        fecha = localdate() - timedelta(days=dias_atras)
+        Reserva.objects.filter(pk=r.pk).update(creada_en=timezone.make_aware(datetime.combine(fecha, time(12))))
+        return r
+
+    def test_numeros_del_periodo(self):
+        self.reserva(2, Reserva.RETIRADA, 1)
+        self.reserva(3, Reserva.RETIRADA, 5)
+        self.reserva(1, Reserva.CANCELADA, 2)
+        self.reserva(4, Reserva.RETIRADA, 40)  # fuera de los últimos 30 días
+        self.client.force_login(self.comercio)
+        r = self.client.get(reverse('estadisticas_comercio'))
+        self.assertEqual(r.status_code, 200)
+        k = r.context['kpis']
+        self.assertEqual(k['unidades'], 5)
+        self.assertEqual(k['ingresos'], Decimal('6000'))
+        self.assertEqual(k['reservas'], 3)
+        self.assertEqual(k['tasa_retiro'], 67)
+        self.assertEqual(k['ahorro_clientes'], Decimal('9000'))  # (3000-1200) × 5
+        self.assertEqual(len(r.context['serie']), 30)
+        self.assertEqual(r.context['top'][0]['producto__titulo'], 'Medialunas')
+        # Con 90 días entra la reserva vieja
+        r = self.client.get(reverse('estadisticas_comercio'), {'dias': '90'})
+        self.assertEqual(r.context['kpis']['unidades'], 9)
+        self.assertEqual(len(r.context['serie']), 90)
+
+    def test_periodo_invalido_usa_30_dias(self):
+        self.client.force_login(self.comercio)
+        r = self.client.get(reverse('estadisticas_comercio'), {'dias': 'mil'})
+        self.assertEqual(r.context['periodo'], '30')
+
+    def test_sin_datos_muestra_mensaje(self):
+        self.client.force_login(self.comercio)
+        self.assertContains(self.client.get(reverse('estadisticas_comercio')), 'Todavía no hay retiros')
+
+    def test_solo_comercios(self):
+        self.client.force_login(self.consumidor)
+        self.assertNotEqual(self.client.get(reverse('estadisticas_comercio')).status_code, 200)
+
+    def test_cada_comercio_ve_solo_lo_suyo(self):
+        self.reserva(2, Reserva.RETIRADA, 1)
+        otro = Usuario.objects.create_user('otro', 'otro@lup.test', 'Clave#2026', rol=Usuario.COMERCIO)
+        Tienda.objects.create(usuario=otro, nombre_fantasia='Otra', rubro='otro', direccion='Y',
+                              cuit='20-99999999-9', horario_atencion='x')
+        self.client.force_login(otro)
+        self.assertEqual(self.client.get(reverse('estadisticas_comercio')).context['kpis']['unidades'], 0)
+
+    def test_demo_carga_historial_sin_mandar_emails(self):
+        from django.core import mail
+        from django.core.management import call_command
+        from io import StringIO
+        call_command('cargar_demo', stdout=StringIO())
+        call_command('cargar_demo', stdout=StringIO())  # se puede correr dos veces
+        self.assertEqual(len(mail.outbox), 0)
+        self.assertTrue(Reserva.objects.filter(estado=Reserva.RETIRADA, consumidor__username='consumidor_demo').exists())

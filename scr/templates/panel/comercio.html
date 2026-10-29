@@ -15,11 +15,13 @@
                 {% if tienda %}
                     {{ tienda.get_rubro_display }} · {{ tienda.direccion }} ·
                     <a href="{% url 'detalle_tienda' tienda.pk %}">Ver página pública <i class="bi bi-arrow-up-right"></i></a>
+                    {% if calificaciones.cantidad %} · <a href="{% url 'detalle_tienda' tienda.pk %}#opiniones" class="calif-mini"><i class="bi bi-star-fill"></i> {{ calificaciones.promedio|promedio }} <span class="text-muted-lup fw-normal">({{ calificaciones.cantidad }})</span></a>{% endif %}
                 {% else %}
                     <a href="{% url 'perfil' %}">Completá los datos de tu comercio</a>
                 {% endif %}
             </p>
         </div>
+        {% if tienda %}<a href="{% url 'estadisticas_comercio' %}" class="btn btn-min btn-sm"><i class="bi bi-bar-chart me-1"></i>Estadísticas</a>{% endif %}
         {# En escritorio el botón ya está en la barra superior #}
         <a href="{% url 'publicar_excedente' %}" class="btn btn-lup btn-sm d-lg-none"><i class="bi bi-plus-lg me-1"></i>Publicar excedente</a>
     </header>
@@ -31,6 +33,7 @@
         <div><span class="min-num">{{ stats.rescatados }}</span><span class="min-label">Unidades rescatadas</span></div>
         <div><span class="min-num">${{ stats.ingresos|floatformat:0|intcomma }}</span><span class="min-label">Ingresos recuperados</span></div>
     </section>
+
 
     <div class="row g-4 g-lg-5">
 
@@ -85,7 +88,7 @@
             <h2 class="min-titulo">Mis publicaciones <span class="min-contador">{{ productos|length }}</span></h2>
             <ul class="min-lista">
                 {% for p in productos %}
-                    <li>
+                    <li{% if not p.esta_disponible %} class="min-inactiva"{% endif %}>
                         <div class="min-w-0 flex-grow-1">
                             <a href="{% url 'detalle_producto' p.pk %}" class="d-block text-truncate text-reset text-decoration-none fw-medium">{{ p.titulo }}</a>
                             <small class="text-muted-lup">
@@ -101,7 +104,24 @@
                         </div>
                         <div class="min-acciones">
                             <a href="{% url 'editar_excedente' p.pk %}" title="Editar" aria-label="Editar {{ p.titulo }}"><i class="bi bi-pencil"></i></a>
+                            {% if p.estado != 'DONADO' %}
+                            <div class="dropdown">
+                                <button type="button" class="min-mas" data-bs-toggle="dropdown" aria-expanded="false" title="Cambiar estado" aria-label="Cambiar estado de {{ p.titulo }}"><i class="bi bi-three-dots-vertical"></i></button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 p-2">
+                                    {% if p.estado == 'DISPONIBLE' %}
+                                        <li><form method="post" action="{% url 'cambiar_estado_producto' p.pk %}">{% csrf_token %}<input type="hidden" name="estado" value="AGOTADO"><button class="dropdown-item rounded-3"><i class="bi bi-bag-check me-2"></i>Marcar como vendido</button></form></li>
+                                        <li><form method="post" action="{% url 'cambiar_estado_producto' p.pk %}">{% csrf_token %}<input type="hidden" name="estado" value="PAUSADO"><button class="dropdown-item rounded-3"><i class="bi bi-pause-circle me-2"></i>Marcar como no disponible</button></form></li>
+                                    {% else %}
+                                        <li><form method="post" action="{% url 'cambiar_estado_producto' p.pk %}">{% csrf_token %}<input type="hidden" name="estado" value="DISPONIBLE"><button class="dropdown-item rounded-3"><i class="bi bi-arrow-counterclockwise me-2"></i>Volver a publicar</button></form></li>
+                                        {% if p.estado == 'PAUSADO' %}<li><form method="post" action="{% url 'cambiar_estado_producto' p.pk %}">{% csrf_token %}<input type="hidden" name="estado" value="AGOTADO"><button class="dropdown-item rounded-3"><i class="bi bi-bag-check me-2"></i>Marcar como vendido</button></form></li>{% endif %}
+                                    {% endif %}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item rounded-3 text-danger" href="{% url 'eliminar_excedente' p.pk %}"><i class="bi bi-trash me-2"></i>Eliminar</a></li>
+                                </ul>
+                            </div>
+                            {% else %}
                             <a href="{% url 'eliminar_excedente' p.pk %}" class="peligro" title="Eliminar" aria-label="Eliminar {{ p.titulo }}"><i class="bi bi-trash"></i></a>
+                            {% endif %}
                         </div>
                     </li>
                 {% empty %}

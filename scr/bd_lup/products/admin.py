@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Producto, Reserva, SolicitudDonacion
+from .models import Calificacion, Producto, Reserva, SolicitudDonacion
 
 
 @admin.register(Producto)
@@ -21,3 +21,11 @@ class ReservaAdmin(admin.ModelAdmin):
 class SolicitudDonacionAdmin(admin.ModelAdmin):
     list_display = ('producto', 'organizacion', 'estado', 'creada_en')
     list_filter = ('estado',)
+
+
+@admin.register(Calificacion)
+class CalificacionAdmin(admin.ModelAdmin):
+    list_display = ('tienda', 'puntaje', 'consumidor', 'creada_en')
+    list_filter = ('puntaje', 'tienda')
+    search_fields = ('comentario', 'tienda__nombre_fantasia')
+    raw_id_fields = ('reserva',)

@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load lup_tags %}
 
 {% block title %}{{ tienda.nombre_fantasia }} · Lüp{% endblock %}
 
@@ -11,6 +12,7 @@
                 <span class="chip-rol comercio">{{ tienda.get_rubro_display }}</span>
                 <h1 class="h3 mb-1 mt-1">{{ tienda.nombre_fantasia }}</h1>
                 <p class="text-muted-lup small mb-0"><i class="bi bi-geo-alt"></i> {{ tienda.direccion }} · <i class="bi bi-clock"></i> {{ tienda.horario_atencion }}</p>
+                {% if calificaciones.cantidad %}<a href="#opiniones" class="d-inline-flex align-items-center gap-2 mt-1 small text-decoration-none text-reset">{% include 'includes/_estrellas.html' with valor=calificaciones.promedio %}<strong>{{ calificaciones.promedio|promedio }}</strong><span class="text-muted-lup">· {{ calificaciones.cantidad }} opinion{{ calificaciones.cantidad|pluralize:'es' }}</span></a>{% endif %}
             </div>
         </div>
         {% if tienda.descripcion %}<p class="mt-3 mb-0">{{ tienda.descripcion }}</p>{% endif %}
@@ -25,5 +27,54 @@
             <div class="col-12"><div class="vacio"><div class="emoji">⏳</div><p class="text-muted-lup mb-0">Este comercio no tiene ofertas activas ahora. ¡Volvé más tarde!</p></div></div>
         {% endfor %}
     </div>
+
+    {# ---------- Opiniones (calificaciones de los clientes) ---------- #}
+    <section id="opiniones" class="mt-5">
+        <h2 class="h5 mb-3">Opiniones de clientes</h2>
+        {% if calificaciones.cantidad %}
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="tarjeta p-4 resumen-calif">
+                        <div class="d-flex align-items-baseline gap-2">
+                            <span class="resumen-num">{{ calificaciones.promedio|promedio }}</span><span class="text-muted-lup">de 5</span>
+                        </div>
+                        {% include 'includes/_estrellas.html' with valor=calificaciones.promedio tam='lg' %}
+                        <p class="small text-muted-lup mt-1 mb-3">{{ calificaciones.cantidad }} opinion{{ calificaciones.cantidad|pluralize:'es' }} de personas que retiraron</p>
+                        {% for fila in distribucion %}
+                            <div class="barra-calif">
+                                <span>{{ fila.puntaje }} <i class="bi bi-star-fill" aria-hidden="true"></i></span>
+                                <div class="barra" role="img" aria-label="{{ fila.cantidad }} opiniones de {{ fila.puntaje }} estrellas"><span style="width: {{ fila.porcentaje }}%"></span></div>
+                                <span class="text-muted-lup">{{ fila.cantidad }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <ul class="min-lista opiniones">
+                        {% for o in opiniones %}
+                            <li class="flex-column align-items-stretch gap-1">
+                                <div class="d-flex align-items-center gap-2">
+                                    {% include 'includes/_avatar.html' with usuario=o.consumidor tam='sm' %}
+                                    <strong class="small">{{ o.consumidor.first_name|default:o.consumidor.username }}</strong>
+                                    {% include 'includes/_estrellas.html' with valor=o.puntaje %}
+                                    <small class="text-muted-lup ms-auto">{{ o.creada_en|date:"d/m/Y" }}</small>
+                                </div>
+                                {% if o.comentario %}<p class="mb-0 small">{{ o.comentario }}</p>{% endif %}
+                                <small class="text-muted-lup">Retiró: {{ o.reserva.producto.titulo }}</small>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    {% if opiniones.has_other_pages %}
+                        <div class="d-flex justify-content-between mt-2 small">
+                            {% if opiniones.has_previous %}<a href="?opiniones={{ opiniones.previous_page_number }}#opiniones">← Más nuevas</a>{% else %}<span></span>{% endif %}
+                            {% if opiniones.has_next %}<a href="?opiniones={{ opiniones.next_page_number }}#opiniones">Más viejas →</a>{% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <p class="text-muted-lup small">Todavía no tiene opiniones. Las pueden dejar quienes retiran una reserva en este comercio.</p>
+        {% endif %}
+    </section>
 </div>
 {% endblock %}

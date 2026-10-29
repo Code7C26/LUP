@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load lup_tags humanize %}
+
+{% block title %}Estadísticas · {{ tienda.nombre_fantasia }} · Lüp{% endblock %}
+
+{% block content %}
+<div class="container pt-4 panel-min">
+
+    <a href="{% url 'panel' %}" class="small text-decoration-none"><i class="bi bi-arrow-left me-1"></i>Volver a mi panel</a>
+
+    <header class="min-header mt-2">
+        <div class="me-auto min-w-0">
+            <h1 class="h4 mb-0">Estadísticas</h1>
+            <p class="min-sub mb-0">{{ tienda.nombre_fantasia }} · del {{ desde|date:"j/n" }} al {{ hoy|date:"j/n/Y" }}</p>
+        </div>
+        <nav class="chips" aria-label="Período">
+            {% for valor, texto in periodos %}
+                <a href="?dias={{ valor }}" class="chip text-decoration-none {% if periodo == valor %}activo{% endif %}" {% if periodo == valor %}aria-current="true"{% endif %}>{{ texto }}</a>
+            {% endfor %}
+        </nav>
+    </header>
+
+    {# ---------- Números del período ---------- #}
+    <section class="min-stats min-stats-6" aria-label="Resumen del período">
+        <div><span class="min-num">{{ kpis.unidades }}</span><span class="min-label">Unidades rescatadas</span></div>
+        <div><span class="min-num">${{ kpis.ingresos|floatformat:0|intcomma }}</span><span class="min-label">Ingresos recuperados</span></div>
+        <div><span class="min-num">{{ kpis.reservas }}</span><span class="min-label">Reservas recibidas</span></div>
+        <div><span class="min-num">{% if kpis.tasa_retiro is not None %}{{ kpis.tasa_retiro }}%{% else %}—{% endif %}</span><span class="min-label">Se retiraron</span></div>
+        <div><span class="min-num">${{ kpis.ahorro_clientes|floatformat:0|intcomma }}</span><span class="min-label">Ahorro de tus clientes</span></div>
+        <div><span class="min-num">{{ kpis.donaciones }}</span><span class="min-label">Donaciones entregadas</span></div>
+    </section>
+
+    <div class="row g-4 g-lg-5">
+        {# ---------- Gráfico diario ---------- #}
+        <div class="col-lg-8">
+            <h2 class="min-titulo">Unidades rescatadas por día</h2>
+            <div class="grafico-wrap">
+                {% if maximo %}
+                    <div class="grafico" style="--columnas: {{ serie|length }}">
+                        <div class="grafico-eje" aria-hidden="true">
+                            <span>{{ maximo }}</span><span>{{ mitad|default_if_none:'' }}</span><span>0</span>
+                        </div>
+                        <div class="grafico-barras" role="img" aria-label="Unidades rescatadas por día. Máximo: {{ maximo }} en un día. La tabla de abajo tiene todos los valores.">
+                            {% for d in serie %}
+                                <div class="grafico-col" tabindex="0" aria-label="{{ d.fecha|date:'l j/n' }}: {{ d.valor }} unidades">
+                                    <span class="grafico-barra{% if not d.valor %} cero{% endif %}" style="height: {{ d.alto }}%"></span>
+                                    <span class="grafico-tip">{{ d.fecha|date:"D j/n" }} · <strong>{{ d.valor }}</strong> u.</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="grafico-fechas" aria-hidden="true">
+                            <span>{{ serie.0.fecha|date:"j/n" }}</span><span>Hoy</span>
+                        </div>
+                    </div>
+                {% else %}
+                    <p class="min-vacio py-5 mb-0">Todavía no hay retiros en este período.</p>
+                {% endif %}
+            </div>
+            {% if maximo %}
+                <details class="mt-2 small">
+                    <summary class="text-muted-lup">Ver como tabla</summary>
+                    <div class="tabla-lup table-responsive mt-2">
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>Día</th><th class="text-end">Unidades</th></tr></thead>
+                            <tbody>{% for d in serie %}{% if d.valor %}<tr><td>{{ d.fecha|date:"l j/n" }}</td><td class="text-end">{{ d.valor }}</td></tr>{% endif %}{% endfor %}</tbody>
+                        </table>
+                    </div>
+                </details>
+            {% endif %}
+
+            <h2 class="min-titulo mt-4">Productos más rescatados</h2>
+            <ul class="min-lista">
+                {% for fila in top %}
+                    <li class="d-block">
+                        <div class="d-flex justify-content-between gap-3 small">
+                            <span class="text-truncate fw-medium">{{ fila.producto__titulo }}</span>
+                            <span class="text-nowrap"><strong>{{ fila.unidades }}</strong> u. · <span class="text-muted-lup">${{ fila.ingresos|floatformat:0|intcomma }}</span></span>
+                        </div>
+                        <div class="barra-top" aria-hidden="true"><span style="width: {{ fila.ancho }}%"></span></div>
+                    </li>
+                {% empty %}
+                    <li class="min-vacio">Cuando tus clientes retiren reservas, vas a ver acá lo que más se rescata.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        {# ---------- Columna lateral ---------- #}
+        <div class="col-lg-4">
+            <h2 class="min-titulo">Reservas del período</h2>
+            <ul class="min-lista mb-4">
+                <li><span class="min-estado ok flex-grow-1">Retiradas</span><strong>{{ cuenta.retirada }}</strong></li>
+                <li><span class="min-estado agotado flex-grow-1">Pendientes de retiro</span><strong>{{ cuenta.pendiente }}</strong></li>
+                <li><span class="min-estado mal flex-grow-1">Canceladas</span><strong>{{ cuenta.cancelada }}</strong></li>
+            </ul>
+
+            <h2 class="min-titulo">Opiniones</h2>
+            <div class="min-lista p-3 mb-4">
+                {% if calificaciones_total.cantidad %}
+                    <div class="d-flex align-items-baseline gap-2">
+                        <span class="min-num">{{ calificaciones_total.promedio|promedio }}</span>
+                        {% include 'includes/_estrellas.html' with valor=calificaciones_total.promedio %}
+                    </div>
+                    <p class="min-label mb-0">{{ calificaciones_total.cantidad }} en total{% if calificaciones.cantidad %} · {{ calificaciones.cantidad }} en este período ({{ calificaciones.promedio|promedio }} ★){% endif %}</p>
+                    <a href="{% url 'detalle_tienda' tienda.pk %}#opiniones" class="small d-inline-block mt-2 text-decoration-none">Leer opiniones <i class="bi bi-arrow-right"></i></a>
+                {% else %}
+                    <p class="small text-muted-lup mb-0">Todavía no tenés opiniones. Las dejan los clientes después de retirar.</p>
+                {% endif %}
+            </div>
+
+            <h2 class="min-titulo">Publicaciones</h2>
+            <ul class="min-lista">
+                <li><span class="flex-grow-1">Activas ahora</span><strong>{{ publicaciones.activas }}</strong></li>
+                <li><span class="flex-grow-1">Publicadas en total</span><strong>{{ publicaciones.total }}</strong></li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

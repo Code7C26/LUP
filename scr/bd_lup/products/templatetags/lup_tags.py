@@ -92,3 +92,31 @@ def distancia(km):
     if km < 10:
         return f'{km:.1f} km'.replace('.', ',')
     return f'{km:.0f} km'
+
+
+# ---------- Calificaciones ----------
+
+@register.filter
+def estrellas(valor):
+    """Lista de 5 elementos ('llena', 'media', 'vacia') para dibujar un promedio de estrellas."""
+    try:
+        valor = float(valor or 0)
+    except (TypeError, ValueError):
+        valor = 0
+    resultado = []
+    for i in range(1, 6):
+        if valor >= i - 0.25:
+            resultado.append('llena')
+        elif valor >= i - 0.75:
+            resultado.append('media')
+        else:
+            resultado.append('vacia')
+    return resultado
+
+
+@register.filter
+def promedio(valor):
+    """4.666 → '4,7'."""
+    if valor is None or valor == '':
+        return ''
+    return f'{float(valor):.1f}'.replace('.', ',')

@@ -3,7 +3,7 @@ from django.utils.timezone import localdate
 
 from scr.bd_lup.users.forms import EstiloBootstrapMixin
 
-from .models import Producto, Reserva, SolicitudDonacion
+from .models import Calificacion, Producto, Reserva, SolicitudDonacion
 
 
 class ProductoForm(EstiloBootstrapMixin, forms.ModelForm):
@@ -87,3 +87,15 @@ class SolicitudDonacionForm(EstiloBootstrapMixin, forms.ModelForm):
             )
         }
         labels = {'mensaje': 'Mensaje para el comercio'}
+
+
+class CalificacionForm(forms.ModelForm):
+    puntaje = forms.TypedChoiceField(
+        choices=[(n, n) for n in range(1, 6)], coerce=int, widget=forms.RadioSelect,
+        error_messages={'required': 'Elegí de 1 a 5 estrellas.'},
+    )
+
+    class Meta:
+        model = Calificacion
+        fields = ('puntaje', 'comentario')
+        widgets = {'comentario': forms.Textarea(attrs={'rows': 2, 'maxlength': 500})}

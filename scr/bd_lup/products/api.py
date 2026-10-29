@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from scr.bd_lup.stores.models import Tienda
 from scr.bd_lup.stores.ubicacion import distancia_km, leer_coordenadas
 
-from .models import Producto, Reserva, SolicitudDonacion
+from .models import Calificacion, Producto, Reserva, SolicitudDonacion
 from .permisos import EsComercio, EsConsumidor, EsOrganizacion
 
 
@@ -109,13 +109,20 @@ class ReservaSerializer(serializers.ModelSerializer):
     direccion = serializers.CharField(source='producto.comercio.direccion', read_only=True)
     horario = serializers.CharField(source='producto.comercio.horario_atencion', read_only=True)
     estado_texto = serializers.CharField(source='get_estado_display', read_only=True)
+    # Calificación que dejó el consumidor (null si todavía no calificó). Campo nuevo, solo lectura.
+    calificacion = serializers.SerializerMethodField()
 
     class Meta:
         model = Reserva
         fields = [
             'id', 'producto_id', 'producto', 'comercio', 'direccion', 'horario',
             'cantidad', 'precio_total', 'codigo_retiro', 'estado', 'estado_texto', 'creada_en',
+            'calificacion',
         ]
+
+    def get_calificacion(self, reserva):
+        c = Calificacion.objects.filter(reserva=reserva).first()
+        return {'puntaje': c.puntaje, 'comentario': c.comentario} if c else None
 
 
 @api_view(['POST'])
@@ -215,10 +222,11 @@ class MisProductosViewSet(viewsets.ModelViewSet):
 @permission_classes([EsComercio])
 def cambiar_estado(request, pk):
     producto = get_object_or_404(Producto, pk=pk, comercio__usuario=request.user)
-    permitidos = [Producto.DISPONIBLE, Producto.AGOTADO]  # paso 19: sumar Producto.PAUSADO
     nuevo = request.data.get('estado')
-    if nuevo not in permitidos:
+    if nuevo not in Producto.ESTADOS_MANUALES or producto.estado == Producto.DONADO:
         return Response({'error': 'Estado inválido.'}, status=400)
+    if nuevo == Producto.DISPONIBLE and producto.stock <= 0:
+        return Response({'error': 'Cargá stock antes de volver a publicarlo.'}, status=400)
     producto.estado = nuevo
     producto.save(update_fields=['estado', 'actualizado_en'])
     return Response(MiProductoSerializer(producto).data)
@@ -360,3 +368,32 @@ def mis_solicitudes_donacion(request):
         organizacion=request.user
     ).select_related('producto__comercio', 'organizacion__organizacion')
     return Response(SolicitudSerializer(solicitudes, many=True).data)
+
+
+# ==========================================
+# CALIFICACIONES (#98) · endpoint nuevo, no cambia los existentes
+# ==========================================
+
+@api_view(['POST'])
+@permission_classes([EsConsumidor])
+def calificar_reserva(request, pk):
+    """El consumidor califica al comercio de una reserva retirada.
+    La app manda: {"puntaje": 5, "comentario": "Todo riquísimo"}. Si ya había calificado, se actualiza.
+    """
+    reserva = get_object_or_404(
+        Reserva.objects.select_related('producto__comercio'),
+        pk=pk, consumidor=request.user, estado=Reserva.RETIRADA,
+    )
+    try:
+        puntaje = int(request.data.get('puntaje'))
+    except (TypeError, ValueError):
+        puntaje = 0
+    if not 1 <= puntaje <= 5:
+        return Response({'puntaje': ['Elegí de 1 a 5 estrellas.']}, status=400)
+    comentario = str(request.data.get('comentario', '')).strip()[:500]
+    Calificacion.objects.update_or_create(
+        reserva=reserva,
+        defaults={'tienda': reserva.producto.comercio, 'consumidor': request.user,
+                  'puntaje': puntaje, 'comentario': comentario},
+    )
+    return Response(ReservaSerializer(reserva).data)

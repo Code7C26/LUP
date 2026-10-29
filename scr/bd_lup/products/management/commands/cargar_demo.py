@@ -85,6 +85,60 @@ class Command(BaseCommand):
                           direccion='Sarmiento 300, Alta Gracia', personas_asistidas=120),
         )
 
+        self._historial_demo(consumidor, hoy)
+
         self.stdout.write(self.style.SUCCESS(
             f'Datos de demo cargados. Usuarios: panaderia_sol, consumidor_demo, comedor_demo · Clave: {CLAVE}'
         ))
+
+    def _historial_demo(self, consumidor, hoy):
+        """Retiros de las últimas semanas con calificaciones, para ver estadísticas y opiniones.
+
+        Solo se cargan una vez (si el consumidor de demo todavía no tiene retiros).
+        """
+        from datetime import datetime, time
+
+        from django.utils import timezone
+
+        from scr.bd_lup.products.models import Calificacion, Reserva
+
+        if Reserva.objects.filter(consumidor=consumidor, estado=Reserva.RETIRADA).exists():
+            return
+        clientes = [consumidor]
+        for nombre in ('Martín', 'Sofía', 'Julián'):
+            u, creado = Usuario.objects.get_or_create(
+                username=f'cliente_{nombre.lower().replace("í", "i").replace("á", "a")}',
+                defaults={'email': f'{nombre.lower()}@lup.demo'.replace('í', 'i').replace('á', 'a'),
+                          'first_name': nombre, 'rol': Usuario.CONSUMIDOR},
+            )
+            if creado:
+                u.set_password(CLAVE)
+                u.save()
+            clientes.append(u)
+        opiniones = [
+            (5, 'Todo riquísimo y súper bien atendidos.'), (4, 'Muy buena relación precio/calidad.'),
+            (5, ''), (3, 'Tuve que esperar un rato, pero valió la pena.'), (5, 'Vuelvo seguro 💚'), (4, ''),
+        ]
+        n = 0
+        for tienda in Tienda.objects.all():
+            productos = list(tienda.productos.all())
+            for k in range(9):
+                producto = productos[k % len(productos)]
+                cliente = clientes[k % len(clientes)]
+                cantidad = 1 + (k % 3)
+                # bulk_create no dispara los avisos por email (son reservas viejas de ejemplo)
+                [reserva] = Reserva.objects.bulk_create([Reserva(
+                    consumidor=cliente, producto=producto, cantidad=cantidad,
+                    precio_total=producto.precio_descuento * cantidad,
+                    estado=Reserva.CANCELADA if k == 7 else Reserva.RETIRADA,
+                )])
+                fecha = hoy - timedelta(days=(k * 3 + n) % 26 + 1)
+                Reserva.objects.filter(pk=reserva.pk).update(
+                    creada_en=timezone.make_aware(datetime.combine(fecha, time(19, 15)))
+                )
+                if reserva.estado == Reserva.RETIRADA and k % 4 != 3:
+                    puntaje, comentario = opiniones[(k + n) % len(opiniones)]
+                    Calificacion.objects.create(
+                        reserva=reserva, tienda=tienda, consumidor=cliente, puntaje=puntaje, comentario=comentario,
+                    )
+            n += 1

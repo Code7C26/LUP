@@ -1,5 +1,5 @@
 """API de comercios para la app (paso 40: "Cerca tuyo")."""
-from django.db.models import Count, Q
+from django.db.models import Avg, Count, Q
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.decorators import api_view
@@ -16,13 +16,21 @@ class TiendaSerializer(serializers.ModelSerializer):
     ofertas = serializers.IntegerField(read_only=True)
     distancia_km = serializers.SerializerMethodField()
     como_llegar = serializers.SerializerMethodField()
+    # Campos nuevos (#98): promedio de estrellas y cantidad de opiniones
+    calificacion_promedio = serializers.SerializerMethodField()
+    calificaciones = serializers.IntegerField(source='calif_cantidad', read_only=True, default=0)
 
     class Meta:
         model = Tienda
         fields = [
             'id', 'nombre_fantasia', 'rubro', 'rubro_texto', 'descripcion', 'direccion',
             'horario_atencion', 'latitud', 'longitud', 'ofertas', 'distancia_km', 'como_llegar',
+            'calificacion_promedio', 'calificaciones',
         ]
+
+    def get_calificacion_promedio(self, tienda):
+        valor = getattr(tienda, 'calif_promedio', None)
+        return round(valor, 1) if valor is not None else None
 
     def get_distancia_km(self, tienda):
         distancia = getattr(tienda, 'distancia_km', None)
@@ -35,7 +43,9 @@ class TiendaSerializer(serializers.ModelSerializer):
 def _tiendas_con_ofertas():
     """Comercios con la cantidad de ofertas disponibles (igual que la home de la web)."""
     return Tienda.objects.annotate(
-        ofertas=Count('productos', filter=Q(productos__in=Producto.objects.visibles()))
+        ofertas=Count('productos', filter=Q(productos__in=Producto.objects.visibles()), distinct=True),
+        calif_promedio=Avg('calificaciones__puntaje'),
+        calif_cantidad=Count('calificaciones', distinct=True),
     )
 
 

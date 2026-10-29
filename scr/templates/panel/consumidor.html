@@ -48,14 +48,24 @@
                 <div class="vacio py-4"><div class="emoji">🛍️</div><p class="text-muted-lup mb-3">No tenés reservas pendientes.</p><a href="{% url 'catalogo' %}" class="btn btn-lup btn-sm">Explorar ofertas</a></div>
             {% endfor %}
 
+            {% if por_calificar %}
+                <h2 class="h5 mt-5 mb-3">¿Qué tal te fue?</h2>
+                {% for r in por_calificar %}
+                    <div class="lista-item flex-column align-items-stretch">
+                        <div class="small"><strong>{{ r.producto.comercio }}</strong> · {{ r.cantidad }} × {{ r.producto.titulo }} <span class="text-muted-lup">· {{ r.creada_en|date:"d/m" }}</span></div>
+                        {% include 'includes/_form_calificacion.html' with reserva=r %}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
             {% if historial %}
                 <h2 class="h5 mt-5 mb-3">Historial</h2>
                 <div class="tabla-lup table-responsive">
                     <table class="table">
-                        <thead><tr><th>Producto</th><th>Comercio</th><th>Fecha</th><th>Total</th><th>Estado</th></tr></thead>
+                        <thead><tr><th>Producto</th><th>Comercio</th><th>Fecha</th><th>Total</th><th>Estado</th><th>Tu opinión</th></tr></thead>
                         <tbody>
                         {% for r in historial %}
-                            <tr><td>{{ r.cantidad }} × {{ r.producto.titulo }}</td><td>{{ r.producto.comercio }}</td><td>{{ r.creada_en|date:"d/m/Y" }}</td><td>${{ r.precio_total|floatformat:"-2"|intcomma }}</td><td><span class="estado {{ r.estado }}">{{ r.get_estado_display }}</span></td></tr>
+                            <tr><td>{{ r.cantidad }} × {{ r.producto.titulo }}</td><td>{{ r.producto.comercio }}</td><td>{{ r.creada_en|date:"d/m/Y" }}</td><td>${{ r.precio_total|floatformat:"-2"|intcomma }}</td><td><span class="estado {{ r.estado }}">{{ r.get_estado_display }}</span></td><td class="text-nowrap">{% if r.calificacion %}{% include 'includes/_estrellas.html' with valor=r.calificacion.puntaje %}{% elif r.estado == 'retirada' %}<span class="small text-muted-lup">Sin calificar</span>{% else %}<span class="text-muted-lup">—</span>{% endif %}</td></tr>
                         {% endfor %}
                         </tbody>
                     </table>

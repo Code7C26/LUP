@@ -26,6 +26,7 @@
 
         <div class="col-lg-6">
             <a href="{% url 'detalle_tienda' producto.comercio.pk %}" class="text-decoration-none fw-semibold text-lup"><i class="bi bi-shop me-1"></i>{{ producto.comercio }}</a>
+            {% if producto.calif_cantidad %}<a href="{% url 'detalle_tienda' producto.comercio.pk %}#opiniones" class="calif-mini ms-2 text-decoration-none"><i class="bi bi-star-fill"></i> {{ producto.calif_promedio|promedio }} <span class="text-muted-lup fw-normal">({{ producto.calif_cantidad }})</span></a>{% endif %}
             <h1 class="h2 mt-1 mb-2">{{ producto.titulo }}</h1>
             <span class="estado {{ producto.estado|lower }}">{{ producto.get_categoria_display }}</span>
             {% if not producto.esta_disponible %}<span class="estado vencido ms-1">No disponible</span>{% endif %}

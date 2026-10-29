@@ -19,6 +19,7 @@ urlpatterns = [
     # Web
     path('', product_views.home, name='home'),
     path('panel/', product_views.panel, name='panel'),
+    path('panel/estadisticas/', product_views.estadisticas_comercio, name='estadisticas_comercio'),
     path('productos/', include('scr.bd_lup.products.urls')),
     path('comercios/<int:pk>/', store_views.detalle_tienda, name='detalle_tienda'),
     path('usuarios/', include('scr.bd_lup.users.urls')),
@@ -36,6 +37,7 @@ urlpatterns = [
     path('api/productos/<int:pk>/reservar/', products_api.reservar, name='api_reservar'),
     path('api/mis-reservas/', products_api.mis_reservas, name='api_mis_reservas'),
     path('api/reservas/<int:pk>/cancelar/', products_api.cancelar_reserva, name='api_cancelar_reserva'),
+    path('api/reservas/<int:pk>/calificar/', products_api.calificar_reserva, name='api_calificar_reserva'),
 
     # API: comercio 
     path('api/mis-productos/<int:pk>/estado/', products_api.cambiar_estado, name='api_cambiar_estado'),

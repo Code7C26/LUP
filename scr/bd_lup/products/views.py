@@ -1,11 +1,14 @@
+from datetime import timedelta
 from decimal import Decimal
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from django.db.models import Count, Q, Sum
+from django.db.models import Avg, Count, Q, Sum
+from django.db.models.functions import TruncDate
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.timezone import localdate
 from django.views.decorators.http import require_POST
 
 from scr.bd_lup.stores.models import Tienda
@@ -13,8 +16,8 @@ from scr.bd_lup.stores.ubicacion import distancia_km, leer_coordenadas
 from scr.bd_lup.users.decorators import rol_requerido
 from scr.bd_lup.users.models import Usuario
 
-from .forms import ProductoForm, ReservaForm, SolicitudDonacionForm
-from .models import Producto, Reserva, SolicitudDonacion
+from .forms import CalificacionForm, ProductoForm, ReservaForm, SolicitudDonacionForm
+from .models import Calificacion, Producto, Reserva, SolicitudDonacion, resumen_calificaciones
 
 ORDENES = {
     'recientes': '-creado_en',
@@ -40,7 +43,7 @@ def _tienda_de(usuario):
 def home(request):
     visibles = Producto.objects.visibles().select_related('comercio')
     contexto = {
-        'destacados': visibles[:6],
+        'destacados': visibles.con_calificacion()[:6],
         'tiendas': Tienda.objects.annotate(
             ofertas=Count('productos', filter=Q(productos__in=Producto.objects.visibles()))
         ).order_by('-ofertas')[:6],
@@ -55,7 +58,7 @@ def home(request):
 
 
 def catalogo(request):
-    productos = Producto.objects.visibles().select_related('comercio')
+    productos = Producto.objects.visibles().select_related('comercio').con_calificacion()
 
     q = request.GET.get('q', '').strip()
     categoria = request.GET.get('categoria', '')
@@ -104,7 +107,7 @@ def catalogo(request):
 
 
 def detalle_producto(request, pk):
-    producto = get_object_or_404(Producto.objects.select_related('comercio'), pk=pk)
+    producto = get_object_or_404(Producto.objects.select_related('comercio').con_calificacion(), pk=pk)
     usuario = request.user
     contexto = {'producto': producto}
     if usuario.is_authenticated:
@@ -116,7 +119,7 @@ def detalle_producto(request, pk):
         elif usuario.es_comercio and producto.comercio == _tienda_de(usuario):
             contexto['es_propio'] = True
     contexto['relacionados'] = (
-        Producto.objects.visibles().filter(comercio=producto.comercio).exclude(pk=producto.pk)[:3]
+        Producto.objects.visibles().filter(comercio=producto.comercio).exclude(pk=producto.pk).con_calificacion()[:3]
     )
     return render(request, 'products/detalle.html', contexto)
 
@@ -167,6 +170,28 @@ def cancelar_reserva(request, pk):
             producto.estado = Producto.DISPONIBLE
         producto.save(update_fields=['stock', 'estado', 'actualizado_en'])
     messages.info(request, 'Reserva cancelada. Las unidades volvieron a estar disponibles.')
+    return redirect('panel')
+
+
+@solo_consumidores
+@require_POST
+def calificar_reserva(request, pk):
+    """El consumidor califica al comercio (1 a 5 estrellas) después de retirar. Puede cambiarla luego."""
+    reserva = get_object_or_404(
+        Reserva.objects.select_related('producto__comercio'),
+        pk=pk, consumidor=request.user, estado=Reserva.RETIRADA,
+    )
+    existente = Calificacion.objects.filter(reserva=reserva).first()
+    form = CalificacionForm(request.POST, instance=existente)
+    if form.is_valid():
+        calificacion = form.save(commit=False)
+        calificacion.reserva = reserva
+        calificacion.tienda = reserva.producto.comercio
+        calificacion.consumidor = request.user
+        calificacion.save()
+        messages.success(request, f'¡Gracias! Tu opinión sobre {reserva.producto.comercio} ya está publicada.')
+    else:
+        messages.error(request, 'Elegí de 1 a 5 estrellas para calificar.')
     return redirect('panel')
 
 
@@ -242,6 +267,34 @@ def eliminar_excedente(request, pk):
     return render(request, 'products/confirmar_eliminacion.html', {'producto': producto})
 
 
+MENSAJES_ESTADO = {
+    Producto.AGOTADO: '"{}" quedó marcado como vendido y ya no aparece en el catálogo.',
+    Producto.PAUSADO: '"{}" quedó como no disponible. Podés volver a publicarlo cuando quieras.',
+    Producto.DISPONIBLE: '"{}" volvió a estar publicado en el catálogo.',
+}
+
+
+@solo_comercios
+@require_POST
+def cambiar_estado_producto(request, pk):
+    """Marcar una publicación como vendida, no disponible o volver a publicarla."""
+    producto = get_object_or_404(Producto, pk=pk, comercio__usuario=request.user)
+    nuevo = request.POST.get('estado')
+    if nuevo not in Producto.ESTADOS_MANUALES or producto.estado == Producto.DONADO:
+        messages.error(request, 'No se puede cambiar el estado de esta publicación.')
+    elif nuevo == Producto.DISPONIBLE and producto.stock <= 0:
+        messages.warning(request, 'No le queda stock. Editá la publicación para cargar unidades y volver a publicarla.')
+        return redirect('editar_excedente', pk=pk)
+    elif nuevo == Producto.DISPONIBLE and producto.fecha_vencimiento < localdate():
+        messages.warning(request, 'La fecha límite de retiro ya pasó. Actualizala para volver a publicarla.')
+        return redirect('editar_excedente', pk=pk)
+    else:
+        producto.estado = nuevo
+        producto.save(update_fields=['estado', 'actualizado_en'])
+        messages.success(request, MENSAJES_ESTADO[nuevo].format(producto.titulo))
+    return redirect('panel')
+
+
 @solo_comercios
 @require_POST
 def confirmar_retiro(request):
@@ -314,6 +367,7 @@ def panel(request):
             'solicitudes': SolicitudDonacion.objects.filter(
                 producto__comercio=tienda, estado=SolicitudDonacion.PENDIENTE
             ).select_related('producto', 'organizacion'),
+            'calificaciones': resumen_calificaciones(tienda) if tienda else {'promedio': None, 'cantidad': 0},
             'stats': {
                 'activas': productos.visibles().count(),
                 'pendientes': reservas.filter(estado=Reserva.PENDIENTE).count(),
@@ -327,7 +381,7 @@ def panel(request):
         solicitudes = SolicitudDonacion.objects.filter(organizacion=usuario).select_related('producto__comercio')
         contexto = {
             'solicitudes': solicitudes,
-            'donaciones_disponibles': Producto.objects.visibles().filter(es_donacion=True).select_related('comercio')[:6],
+            'donaciones_disponibles': Producto.objects.visibles().filter(es_donacion=True).select_related('comercio').con_calificacion()[:6],
             'stats': {
                 'total': solicitudes.count(),
                 'aprobadas': solicitudes.filter(estado=SolicitudDonacion.APROBADA).count(),
@@ -336,7 +390,7 @@ def panel(request):
         }
         return render(request, 'panel/organizacion.html', contexto)
 
-    reservas = Reserva.objects.filter(consumidor=usuario).select_related('producto__comercio')
+    reservas = Reserva.objects.filter(consumidor=usuario).select_related('producto__comercio', 'calificacion')
     no_canceladas = reservas.exclude(estado=Reserva.CANCELADA)
     # Ahorro = lo que hubiera costado a precio original menos lo que realmente se pagó
     ahorro = sum(
@@ -346,7 +400,8 @@ def panel(request):
     contexto = {
         'reservas_pendientes': reservas.filter(estado=Reserva.PENDIENTE),
         'historial': reservas.exclude(estado=Reserva.PENDIENTE),
-        'recomendados': Producto.objects.visibles().select_related('comercio')[:3],
+        'por_calificar': reservas.filter(estado=Reserva.RETIRADA, calificacion__isnull=True)[:3],
+        'recomendados': Producto.objects.visibles().select_related('comercio').con_calificacion()[:3],
         'stats': {
             'reservas': no_canceladas.count(),
             'rescatados': no_canceladas.aggregate(t=Sum('cantidad'))['t'] or 0,
@@ -354,3 +409,94 @@ def panel(request):
         },
     }
     return render(request, 'panel/consumidor.html', contexto)
+
+
+# ==========================================
+# ESTADÍSTICAS DEL COMERCIO (#99)
+# ==========================================
+
+PERIODOS = {'7': 7, '30': 30, '90': 90}
+
+
+@solo_comercios
+def estadisticas_comercio(request):
+    tienda = _tienda_de(request.user)
+    if tienda is None:
+        messages.error(request, 'Completá los datos de tu comercio para ver tus estadísticas.')
+        return redirect('perfil')
+
+    clave = request.GET.get('dias', '30')
+    dias = PERIODOS.get(clave, 30)
+    clave = str(dias)
+    hoy = localdate()
+    desde = hoy - timedelta(days=dias - 1)
+
+    reservas = Reserva.objects.filter(producto__comercio=tienda, creada_en__date__gte=desde)
+    retiradas = reservas.filter(estado=Reserva.RETIRADA)
+    totales = retiradas.aggregate(unidades=Sum('cantidad'), ingresos=Sum('precio_total'))
+    unidades = totales['unidades'] or 0
+    ingresos = totales['ingresos'] or Decimal('0')
+    cuenta = {
+        estado: reservas.filter(estado=estado).count()
+        for estado in (Reserva.RETIRADA, Reserva.PENDIENTE, Reserva.CANCELADA)
+    }
+    cerradas = cuenta[Reserva.RETIRADA] + cuenta[Reserva.CANCELADA]
+
+    # Ahorro que le dio el comercio a sus clientes (precio original - precio pagado)
+    ahorro_clientes = sum(
+        (max(r.producto.precio_original * r.cantidad - r.precio_total, Decimal('0'))
+         for r in retiradas.select_related('producto')),
+        Decimal('0'),
+    )
+
+    # Unidades rescatadas por día (según la fecha de la reserva)
+    por_dia = {
+        fila['dia']: fila['unidades']
+        for fila in retiradas.annotate(dia=TruncDate('creada_en')).values('dia').annotate(unidades=Sum('cantidad'))
+    }
+    serie = [{'fecha': desde + timedelta(days=i), 'valor': por_dia.get(desde + timedelta(days=i), 0)} for i in range(dias)]
+    maximo = max((d['valor'] for d in serie), default=0)
+    for d in serie:
+        d['alto'] = round(d['valor'] * 100 / maximo) if maximo else 0
+
+    top = list(
+        retiradas.values('producto__titulo').annotate(unidades=Sum('cantidad'), ingresos=Sum('precio_total'))
+        .order_by('-unidades')[:5]
+    )
+    top_max = top[0]['unidades'] if top else 0
+    for fila in top:
+        fila['ancho'] = round(fila['unidades'] * 100 / top_max) if top_max else 0
+
+    donaciones = SolicitudDonacion.objects.filter(
+        producto__comercio=tienda, estado=SolicitudDonacion.APROBADA, creada_en__date__gte=desde
+    ).count()
+    calif = tienda.calificaciones.filter(creada_en__date__gte=desde)
+    resumen_periodo = calif.aggregate(promedio=Avg('puntaje'), cantidad=Count('pk'))
+
+    contexto = {
+        'tienda': tienda,
+        'periodo': clave,
+        'periodos': [('7', '7 días'), ('30', '30 días'), ('90', '90 días')],
+        'desde': desde,
+        'hoy': hoy,
+        'kpis': {
+            'unidades': unidades,
+            'ingresos': ingresos,
+            'reservas': sum(cuenta.values()),
+            'tasa_retiro': round(cuenta[Reserva.RETIRADA] * 100 / cerradas) if cerradas else None,
+            'ahorro_clientes': ahorro_clientes,
+            'donaciones': donaciones,
+        },
+        'cuenta': cuenta,
+        'serie': serie,
+        'maximo': maximo,
+        'mitad': maximo // 2 if maximo and maximo % 2 == 0 else None,
+        'top': top,
+        'calificaciones': resumen_periodo,
+        'calificaciones_total': resumen_calificaciones(tienda),
+        'publicaciones': {
+            'activas': Producto.objects.filter(comercio=tienda).visibles().count(),
+            'total': Producto.objects.filter(comercio=tienda).count(),
+        },
+    }
+    return render(request, 'panel/estadisticas.html', contexto)

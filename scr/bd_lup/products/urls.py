@@ -10,7 +10,9 @@ urlpatterns = [
     path('publicar/', views.publicar_excedente, name='publicar_excedente'),
     path('<int:pk>/editar/', views.editar_excedente, name='editar_excedente'),
     path('<int:pk>/eliminar/', views.eliminar_excedente, name='eliminar_excedente'),
+    path('<int:pk>/estado/', views.cambiar_estado_producto, name='cambiar_estado_producto'),
     path('reservas/<int:pk>/cancelar/', views.cancelar_reserva, name='cancelar_reserva'),
+    path('reservas/<int:pk>/calificar/', views.calificar_reserva, name='calificar_reserva'),
     path('reservas/confirmar-retiro/', views.confirmar_retiro, name='confirmar_retiro'),
     path(
         'donaciones/<int:pk>/<str:accion>/',

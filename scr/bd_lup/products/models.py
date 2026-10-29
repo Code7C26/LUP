@@ -2,8 +2,9 @@ import secrets
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.validators import MinValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.db.models import Avg, Count, OuterRef, Subquery
 from django.utils.timezone import localdate
 
 from scr.bd_lup.stores.models import Tienda
@@ -16,18 +17,30 @@ class ProductoQuerySet(models.QuerySet):
             estado=Producto.DISPONIBLE, stock__gt=0, fecha_vencimiento__gte=localdate()
         )
 
+    def con_calificacion(self):
+        """Agrega el promedio de estrellas del comercio (calif_promedio, calif_cantidad) a cada producto."""
+        por_tienda = Calificacion.objects.filter(tienda=OuterRef('comercio')).values('tienda')
+        return self.annotate(
+            calif_promedio=Subquery(por_tienda.annotate(v=Avg('puntaje')).values('v')[:1]),
+            calif_cantidad=Subquery(por_tienda.annotate(v=Count('pk')).values('v')[:1]),
+        )
+
 
 class Producto(models.Model):
     """Excedente de comida publicado por un comercio."""
 
     DISPONIBLE = 'DISPONIBLE'
-    AGOTADO = 'AGOTADO'
+    AGOTADO = 'AGOTADO'    # vendido: el comercio lo marcó así o se quedó sin stock
+    PAUSADO = 'PAUSADO'    # no disponible por ahora: no se muestra, pero se puede reactivar
     DONADO = 'DONADO'
     ESTADO_CHOICES = (
         (DISPONIBLE, 'Disponible'),
-        (AGOTADO, 'Agotado'),
+        (AGOTADO, 'Vendido'),
+        (PAUSADO, 'No disponible'),
         (DONADO, 'Donado'),
     )
+    # Estados que el comercio puede elegir a mano (web y app)
+    ESTADOS_MANUALES = (DISPONIBLE, AGOTADO, PAUSADO)
 
     CATEGORIAS = (
         ('panificados', 'Panificados'),
@@ -164,3 +177,31 @@ class SolicitudDonacion(models.Model):
 
     def __str__(self):
         return f'{self.organizacion} → {self.producto}'
+
+
+class Calificacion(models.Model):
+    """Opinión de un consumidor sobre un comercio, después de retirar su reserva (1 a 5 estrellas)."""
+
+    reserva = models.OneToOneField(Reserva, on_delete=models.CASCADE, related_name='calificacion')
+    tienda = models.ForeignKey(Tienda, on_delete=models.CASCADE, related_name='calificaciones')
+    consumidor = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='calificaciones'
+    )
+    puntaje = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    comentario = models.TextField(blank=True, max_length=500)
+    creada_en = models.DateTimeField(auto_now_add=True)
+    actualizada_en = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-creada_en']
+        verbose_name = 'calificación'
+        verbose_name_plural = 'calificaciones'
+
+    def __str__(self):
+        return f'{self.tienda} · {self.puntaje}★ de {self.consumidor}'
+
+
+def resumen_calificaciones(tienda):
+    """{'promedio': 4.5, 'cantidad': 12} del comercio (promedio None si todavía no tiene)."""
+    datos = tienda.calificaciones.aggregate(promedio=Avg('puntaje'), cantidad=Count('pk'))
+    return datos
