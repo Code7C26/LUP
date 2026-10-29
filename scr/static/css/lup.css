@@ -255,23 +255,43 @@ h1, h2, h3, h4, h5, .h1, .h2, .h3, .h4, .h5 { color: var(--lup-titulo); font-wei
     box-shadow: 0 10px 30px rgba(0, 0, 0, .18);
 }
 .hero-busqueda input { border: 0; outline: 0; flex: 1; min-width: 0; font-size: 1rem; color: var(--lup-texto); background: transparent; }
-.hero-tarjeta {
-    background: rgba(255, 255, 255, .08);
-    border: 1px solid rgba(255, 255, 255, .15);
-    border-radius: 24px;
-    padding: 1.4rem;
-    backdrop-filter: blur(6px);
+.hero-ofertas {
+    border-left: 1px solid rgba(255, 255, 255, .14);
+    padding: .2rem 0 .2rem 2.2rem;
 }
-.hero-tarjeta .item {
+.hero-ofertas-titulo {
+    font-size: .78rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+    color: rgba(255, 255, 255, .6); margin-bottom: .6rem;
+    display: flex; align-items: center; gap: .55rem;
+}
+.punto-vivo {
+    width: 8px; height: 8px; border-radius: 50%; background: #b8dd98;
+    box-shadow: 0 0 0 0 rgba(184, 221, 152, .6); animation: latido 2s ease-out infinite;
+}
+@keyframes latido { 0% { box-shadow: 0 0 0 0 rgba(184, 221, 152, .55); } 70%, 100% { box-shadow: 0 0 0 9px rgba(184, 221, 152, 0); } }
+.hero-oferta {
     display: flex; align-items: center; gap: .9rem;
-    background: var(--lup-superficie); color: var(--lup-texto);
-    border-radius: 16px; padding: .8rem 1rem;
-    margin-bottom: .7rem;
+    padding: .9rem .2rem; color: #fff; text-decoration: none;
+    border-bottom: 1px solid rgba(255, 255, 255, .1);
+    transition: padding-left .2s ease, color .2s ease;
     animation: entrar .6s ease both;
 }
-.hero-tarjeta .item:nth-child(3) { animation-delay: .15s; }
-.hero-tarjeta .item:last-child { animation-delay: .3s; margin-bottom: 0; }
-.hero-tarjeta .emoji { font-size: 1.7rem; }
+.hero-oferta:nth-of-type(2) { animation-delay: .12s; }
+.hero-oferta:nth-of-type(3) { animation-delay: .24s; }
+.hero-oferta:hover { color: #fff; padding-left: .5rem; }
+.hero-oferta:hover strong { color: #b8dd98; }
+.hero-oferta small { color: rgba(255, 255, 255, .62); }
+.hero-oferta .hero-descuento { color: #b8dd98; font-weight: 600; }
+.hero-oferta .emoji, .hero-oferta-vacia .emoji {
+    width: 46px; height: 46px; flex-shrink: 0; border-radius: 14px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 1.45rem; background: rgba(255, 255, 255, .08);
+}
+.hero-oferta-vacia { display: flex; gap: .9rem; align-items: center; color: rgba(255, 255, 255, .75); padding: .9rem 0; }
+.hero-ofertas-mas { display: inline-block; margin-top: 1rem; color: #b8dd98; font-weight: 600; font-size: .9rem; text-decoration: none; }
+.hero-ofertas-mas:hover { color: #fff; }
+.hero-ofertas-mas i { display: inline-block; transition: transform .2s ease; }
+.hero-ofertas-mas:hover i { transform: translateX(4px); }
 @keyframes entrar { from { transform: translateX(20px); } to { transform: none; } }
 
 /* ---------- Estadísticas ---------- */
@@ -810,7 +830,7 @@ h1, h2, h3, h4, h5, .h1, .h2, .h3, .h4, .h5 { color: var(--lup-titulo); font-wei
 .revelar.visible { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) {
     .revelar { opacity: 1; transform: none; transition: none; }
-    .hero .burbuja, .hero-tarjeta .item { animation: none; }
+    .hero .burbuja, .hero-oferta, .punto-vivo { animation: none; }
 }
 
 .cta-final {

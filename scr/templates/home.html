@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static lup_tags humanize %}
 
 {% block content %}
 <div class="container pt-4">
@@ -29,11 +29,28 @@
                 </div>
             </div>
             <div class="col-lg-5 d-none d-lg-block">
-                <div class="hero-tarjeta">
-                    <p class="small text-white-50 mb-3"><i class="bi bi-lightning-charge-fill text-warning"></i> Ofertas que se rescatan hoy</p>
-                    <div class="item"><span class="emoji">🥐</span><div class="flex-grow-1"><strong class="d-block">Docena de medialunas</strong><small class="text-muted">Panadería del barrio</small></div><span class="badge-lup descuento">-60%</span></div>
-                    <div class="item"><span class="emoji">🍲</span><div class="flex-grow-1"><strong class="d-block">Vianda del día</strong><small class="text-muted">Rotisería</small></div><span class="badge-lup descuento">-50%</span></div>
-                    <div class="item"><span class="emoji">🥕</span><div class="flex-grow-1"><strong class="d-block">Bolsa de verduras</strong><small class="text-muted">Verdulería</small></div><span class="badge-lup donacion">Donable</span></div>
+                {# Ofertas reales publicadas ahora (antes eran 3 ejemplos fijos en tarjetas blancas) #}
+                <div class="hero-ofertas">
+                    <p class="hero-ofertas-titulo"><span class="punto-vivo" aria-hidden="true"></span>Se están rescatando ahora</p>
+                    {% for producto in destacados|slice:":3" %}
+                        <a href="{% url 'detalle_producto' producto.pk %}" class="hero-oferta">
+                            <span class="emoji" aria-hidden="true">{{ producto.categoria|emoji_categoria }}</span>
+                            <span class="flex-grow-1 min-w-0">
+                                <strong class="d-block text-truncate">{{ producto.titulo }}</strong>
+                                <small class="d-block text-truncate">{{ producto.comercio.nombre_fantasia }}</small>
+                            </span>
+                            <span class="text-end text-nowrap">
+                                <strong class="d-block">${{ producto.precio_descuento|floatformat:"-2"|intcomma }}</strong>
+                                {% if producto.porcentaje_descuento %}<small class="hero-descuento">-{{ producto.porcentaje_descuento }}%</small>{% elif producto.es_donacion %}<small class="hero-descuento">Donable</small>{% endif %}
+                            </span>
+                        </a>
+                    {% empty %}
+                        <div class="hero-oferta-vacia">
+                            <span class="emoji" aria-hidden="true">🌱</span>
+                            <p class="mb-0">Los comercios publican sus excedentes durante el día. ¡Volvé pronto!</p>
+                        </div>
+                    {% endfor %}
+                    {% if destacados %}<a href="{% url 'catalogo' %}" class="hero-ofertas-mas">Ver las {{ stats.ofertas }} ofertas <i class="bi bi-arrow-right"></i></a>{% endif %}
                 </div>
             </div>
         </div>
