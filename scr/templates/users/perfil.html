@@ -1,37 +1,38 @@
 {% extends 'base.html' %}
+{% load i18n %}
 {% load lup_tags %}
 
-{% block title %}Mis datos · Lüp{% endblock %}
+{% block title %}{% translate "Mis datos" %} · Lüp{% endblock %}
 
 {% block content %}
 <div class="container pt-4" style="max-width: 820px;">
-    <a href="{% url 'panel' %}" class="small text-decoration-none"><i class="bi bi-arrow-left me-1"></i>Volver a mi panel</a>
-    <h1 class="h2 mt-2 mb-4">Mis datos</h1>
+    <a href="{% url 'panel' %}" class="small text-decoration-none"><i class="bi bi-arrow-left me-1"></i>{% translate "Volver a mi panel" %}</a>
+    <h1 class="h2 mt-2 mb-4">{% translate "Mis datos" %}</h1>
 
     <form method="post" enctype="multipart/form-data" class="tarjeta needs-validation" novalidate>
         {% csrf_token %}
 
-        <div class="form-seccion mt-0">{% if user.es_comercio %}Foto o logo del comercio{% elif user.es_organizacion %}Foto o logo de la organización{% else %}Foto de perfil{% endif %}</div>
+        <div class="form-seccion mt-0">{% if user.es_comercio %}{% translate "Foto o logo del comercio" %}{% elif user.es_organizacion %}{% translate "Foto o logo de la organización" %}{% else %}{% translate "Foto de perfil" %}{% endif %}</div>
         <div class="foto-perfil mb-2">
             {% include 'includes/_avatar.html' with usuario=user tam='xl' id='preview-avatar' %}
             <div>
                 <div class="d-flex flex-wrap gap-2">
                     <label for="{{ form_usuario.foto.id_for_label }}" class="btn btn-lup-outline btn-sm mb-0" role="button">
-                        <i class="bi bi-camera me-1"></i>{% if user.foto %}Cambiar foto{% else %}Subir foto{% endif %}
+                        <i class="bi bi-camera me-1"></i>{% if user.foto %}{% translate "Cambiar foto" %}{% else %}{% translate "Subir foto" %}{% endif %}
                     </label>
                     {{ form_usuario.foto }}
                     {% if user.foto %}
                         <input type="checkbox" class="btn-check btn-check-quitar" name="{{ form_usuario.quitar_foto.html_name }}" id="{{ form_usuario.quitar_foto.id_for_label }}" autocomplete="off">
-                        <label class="btn btn-light btn-sm mb-0" for="{{ form_usuario.quitar_foto.id_for_label }}"><i class="bi bi-trash me-1"></i>Quitar foto</label>
+                        <label class="btn btn-light btn-sm mb-0" for="{{ form_usuario.quitar_foto.id_for_label }}"><i class="bi bi-trash me-1"></i>{% translate "Quitar foto" %}</label>
                     {% endif %}
                 </div>
-                <p class="form-text mb-0 mt-2" id="ayuda-foto">JPG, PNG o WEBP, hasta 5 MB. Se recorta en forma cuadrada.</p>
+                <p class="form-text mb-0 mt-2" id="ayuda-foto">{% translate "JPG, PNG o WEBP, hasta 5 MB. Se recorta en forma cuadrada." %}</p>
                 {% for error in form_usuario.foto.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
             </div>
         </div>
 
         {% if form_perfil %}
-            <div class="form-seccion">{% if user.es_comercio %}Comercio{% else %}Organización{% endif %}</div>
+            <div class="form-seccion">{% if user.es_comercio %}{% translate "Comercio" %}{% else %}{% translate "Organización" %}{% endif %}</div>
             <div class="row">
                 {% for campo in form_perfil %}
                     {% if campo.name != 'latitud' and campo.name != 'longitud' and campo.name != 'notificaciones_email' %}
@@ -43,31 +44,30 @@
 
             {% if user.es_comercio %}
                 {# ---------- Ubicación del local (Google Maps) ---------- #}
-                <div class="form-seccion">Ubicación del local</div>
+                <div class="form-seccion">{% translate "Ubicación del local" %}</div>
                 {{ form_perfil.latitud }}{{ form_perfil.longitud }}
                 <div class="ubicacion-local" data-ubicacion-local data-maps-key="{{ GOOGLE_MAPS_API_KEY }}">
                     <p class="small text-muted-lup mb-2">
-                        Así los clientes ven cuán cerca están y pueden abrir el recorrido en Google Maps.
-                        Si estás en el local, usá la ubicación de este dispositivo.
+                        {% translate "Así los clientes ven cuán cerca están y pueden abrir el recorrido en Google Maps. Si estás en el local, usá la ubicación de este dispositivo." %}
                     </p>
                     <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
-                        <button type="button" class="btn btn-lup-outline btn-sm" data-usar-ubicacion><i class="bi bi-crosshair me-1"></i>Usar la ubicación de este dispositivo</button>
+                        <button type="button" class="btn btn-lup-outline btn-sm" data-usar-ubicacion><i class="bi bi-crosshair me-1"></i>{% translate "Usar la ubicación de este dispositivo" %}</button>
                         <span class="small" data-estado-ubicacion>
-                            {% if form_perfil.instance.tiene_ubicacion %}<i class="bi bi-check-circle-fill text-lup"></i> Ubicación guardada{% else %}<span class="text-muted-lup">Todavía sin ubicación</span>{% endif %}
+                            {% if form_perfil.instance.tiene_ubicacion %}<i class="bi bi-check-circle-fill text-lup"></i> {% translate "Ubicación guardada" %}{% else %}<span class="text-muted-lup">{% translate "Todavía sin ubicación" %}</span>{% endif %}
                         </span>
                     </div>
                     <div class="mapa-wrap" data-mapa {% if not form_perfil.instance.tiene_ubicacion %}hidden{% endif %}>
-                        {% if form_perfil.instance.tiene_ubicacion %}<iframe src="{{ form_perfil.instance|mapa_embebido }}" title="Ubicación del local en Google Maps" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>{% endif %}
+                        {% if form_perfil.instance.tiene_ubicacion %}<iframe src="{{ form_perfil.instance|mapa_embebido }}" title="{% translate 'Ubicación del local en Google Maps' %}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>{% endif %}
                     </div>
                 </div>
 
-                <div class="form-seccion">Avisos</div>
+                <div class="form-seccion">{% translate "Avisos" %}</div>
                 {% include 'includes/_campo.html' with campo=form_perfil.notificaciones_email clase='mb-1' %}
-                <p class="form-text mt-0 mb-2">Llegan a <strong>{{ user.email }}</strong>: nuevas reservas, cancelaciones y pedidos de donación.</p>
+                <p class="form-text mt-0 mb-2">{% translate "Llegan a" %} <strong>{{ user.email }}</strong>{% translate ": nuevas reservas, cancelaciones y pedidos de donación." %}</p>
             {% endif %}
         {% endif %}
 
-        <div class="form-seccion">Datos personales</div>
+        <div class="form-seccion">{% translate "Datos personales" %}</div>
         <div class="row">
             {% for campo in form_usuario %}
                 {% if campo.name != 'foto' and campo.name != 'quitar_foto' %}
@@ -75,9 +75,9 @@
                 {% endif %}
             {% endfor %}
         </div>
-        <p class="small text-muted-lup">Usuario: <strong>{{ user.username }}</strong> · Tipo de cuenta: <span class="chip-rol {{ user.rol }}">{{ user.get_rol_display }}</span></p>
+        <p class="small text-muted-lup">{% translate "Usuario:" %} <strong>{{ user.username }}</strong> {% translate "· Tipo de cuenta:" %} <span class="chip-rol {{ user.rol }}">{{ user.get_rol_display }}</span></p>
 
-        <div class="text-end border-top pt-3"><button type="submit" class="btn btn-lup">Guardar cambios</button></div>
+        <div class="text-end border-top pt-3"><button type="submit" class="btn btn-lup">{% translate "Guardar cambios" %}</button></div>
     </form>
 </div>
 {% endblock %}

@@ -61,6 +61,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'scr.lup.idioma.IdiomaMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -78,6 +79,7 @@ TEMPLATES = [
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
+                'django.template.context_processors.i18n',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'scr.bd_lup.products.context_processors.google_maps',
@@ -115,6 +117,13 @@ AUTHENTICATION_BACKENDS = [
 
 # Internacionalización
 LANGUAGE_CODE = 'es-ar'
+# Idiomas de la web. Se cambian con el botón ES/EN de la barra (se guarda en una cookie).
+LANGUAGES = [
+    ('es-ar', 'Español'),
+    ('en', 'English'),
+]
+LOCALE_PATHS = [BASE_DIR / 'locale']   # traducciones: scr/locale/en/LC_MESSAGES/django.po
+LANGUAGE_COOKIE_AGE = 60 * 60 * 24 * 365
 TIME_ZONE = 'America/Argentina/Cordoba'
 USE_I18N = True
 USE_TZ = True

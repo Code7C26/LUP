@@ -1,10 +1,11 @@
 {% extends 'base.html' %}
-{% block title %}Página no encontrada · Lüp{% endblock %}
+{% load i18n %}
+{% block title %}{% translate "Página no encontrada" %} · Lüp{% endblock %}
 {% block content %}
 <div class="container pt-5 text-center" style="max-width: 560px;">
     <div class="display-1">🥕</div>
-    <h1 class="h2">Esta página se nos escapó</h1>
-    <p class="text-muted-lup">No encontramos lo que buscabas. Quizás ya fue rescatado.</p>
-    <a href="{% url 'home' %}" class="btn btn-lup mt-2">Volver al inicio</a>
+    <h1 class="h2">{% translate "Esta página se nos escapó" %}</h1>
+    <p class="text-muted-lup">{% translate "No encontramos lo que buscabas. Quizás ya fue rescatado." %}</p>
+    <a href="{% url 'home' %}" class="btn btn-lup mt-2">{% translate "Volver al inicio" %}</a>
 </div>
 {% endblock %}

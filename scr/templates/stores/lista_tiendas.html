@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load lup_tags %}
+
+{% block title %}{% translate "Comercios" %} · Lüp{% endblock %}
+
+{% block content %}
+<div class="container pt-4">
+    <div class="mb-4">
+        <span class="eyebrow">{% translate "Comercios adheridos" %}</span>
+        <h1 class="h2 mb-1">{% if ubicacion %}{% translate "Comercios cerca tuyo" %}{% else %}{% translate "Comercios que rescatan comida" %}{% endif %}</h1>
+        <p class="text-muted-lup mb-0">{% with total=tiendas|length %}{% if ubicacion and radio %}{% blocktranslate count n=total %}<strong>{{ n }}</strong> comercio a menos de {{ radio }} km.{% plural %}<strong>{{ n }}</strong> comercios a menos de {{ radio }} km.{% endblocktranslate %}{% else %}{% blocktranslate count n=total %}<strong>{{ n }}</strong> comercio.{% plural %}<strong>{{ n }}</strong> comercios.{% endblocktranslate %}{% endif %}{% endwith %}</p>
+    </div>
+
+    <form id="form-comercios" class="filtros mb-4" method="get" action="{% url 'lista_tiendas' %}" data-form-ubicacion>
+        <div class="row g-2 align-items-center">
+            <div class="col-lg-5">
+                <div class="buscador">
+                    <i class="bi bi-search"></i>
+                    <input type="search" name="q" value="{{ filtros.q }}" class="form-control" placeholder="{% translate 'Buscar por nombre o dirección...' %}" aria-label="{% translate 'Buscar comercios' %}">
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <select name="rubro" class="form-select" aria-label="{% translate 'Tipo de comercio' %}" onchange="this.form.submit()">
+                    <option value="">{% translate "Todos los rubros" %}</option>
+                    {% for valor, nombre in rubros %}<option value="{{ valor }}" {% if filtros.rubro == valor %}selected{% endif %}>{{ nombre }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-auto d-flex gap-2">
+                <button type="button" class="btn btn-cerca {% if ubicacion %}activo{% endif %}" data-cerca-mio aria-pressed="{% if ubicacion %}true{% else %}false{% endif %}">
+                    <i class="bi bi-geo-alt-fill me-1"></i><span>{% if ubicacion %}{% translate "Cerca tuyo" %}{% else %}{% translate "Cerca mío" %}{% endif %}</span>
+                </button>
+                <select name="radio" class="form-select select-radio" aria-label="{% translate 'Distancia máxima' %}" onchange="this.form.submit()" {% if not ubicacion %}hidden{% endif %}>
+                    {% for km in radios %}<option value="{{ km }}" {% if radio == km %}selected{% endif %}>{% blocktranslate %}Hasta {{ km }} km{% endblocktranslate %}</option>{% endfor %}
+                    <option value="todos" {% if ubicacion and radio is None %}selected{% endif %}>{% translate "Cualquier distancia" %}</option>
+                </select>
+            </div>
+        </div>
+        <input type="hidden" name="lat" value="{{ ubicacion.lat|default_if_none:''|stringformat:'s' }}">
+        <input type="hidden" name="lng" value="{{ ubicacion.lng|default_if_none:''|stringformat:'s' }}">
+        <p class="small mt-2 mb-0" data-aviso-ubicacion hidden></p>
+        <noscript><button class="btn btn-lup btn-sm mt-3" type="submit">{% translate "Buscar" %}</button></noscript>
+    </form>
+
+    {% if ubicacion and radio and fuera_de_radio %}
+        <p class="aviso-radio"><i class="bi bi-geo-alt-fill"></i> {% blocktranslate count n=fuera_de_radio %}Hay {{ n }} comercio más lejos{% plural %}Hay {{ n }} comercios más lejos{% endblocktranslate %} · <button type="button" class="btn-link-lup" data-ampliar-radio>{% translate "Ver todos" %}</button></p>
+    {% endif %}
+
+    <div class="row g-3">
+        {% for tienda in tiendas %}
+            <div class="col-md-6 col-lg-4">{% include 'includes/_tienda_item.html' %}</div>
+        {% empty %}
+            <div class="col-12">
+                <div class="vacio">
+                    <div class="emoji mb-2">🏪</div>
+                    {% if ubicacion and radio %}
+                        <h5>{% blocktranslate %}No hay comercios a menos de {{ radio }} km{% endblocktranslate %}</h5>
+                        <p class="text-muted-lup mb-3">{% translate "Probá con una distancia mayor." %}</p>
+                        <button type="button" class="btn btn-lup btn-sm" data-ampliar-radio>{% translate "Ver todos los comercios" %}</button>
+                    {% else %}
+                        <h5>{% translate "Todavía no hay comercios con esos filtros" %}</h5>
+                        <p class="text-muted-lup mb-3">{% translate "¿Tenés un comercio? Sumalo a Lüp y empezá a rescatar comida." %}</p>
+                        <a href="{% url 'registro' 'comercio' %}" class="btn btn-lup btn-sm">{% translate "Sumar mi comercio" %}</a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

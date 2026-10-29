@@ -1,3 +1,9 @@
+{% load i18n %}{% if ubicacion and radio %}
+<p class="aviso-radio">
+    <i class="bi bi-geo-alt-fill"></i> {% blocktranslate %}Ofertas a menos de <strong>{{ radio }} km</strong> de vos.{% endblocktranslate %}
+    {% if fuera_de_radio %}{% blocktranslate count n=fuera_de_radio %}Hay {{ n }} más lejos{% plural %}Hay {{ n }} más lejos{% endblocktranslate %} · <button type="button" class="btn-link-lup" data-ampliar-radio>{% translate "Ver todas" %}</button>{% endif %}
+</p>
+{% endif %}
 <div class="row g-4" data-total="{{ productos|length }}">
     {% for producto in productos %}
         <div class="col-sm-6 col-lg-4 col-xl-3">{% include 'includes/_producto_card.html' %}</div>
@@ -5,9 +11,15 @@
         <div class="col-12">
             <div class="vacio">
                 <div class="emoji mb-2">🔍</div>
-                <h5>No encontramos ofertas con esos filtros</h5>
-                <p class="text-muted-lup mb-3">Probá con otra búsqueda o volvé más tarde: los comercios publican durante todo el día.</p>
-                <a href="{% url 'catalogo' %}" class="btn btn-lup-outline btn-sm">Limpiar filtros</a>
+                {% if ubicacion and radio %}
+                    <h5>{% blocktranslate %}No hay ofertas a menos de {{ radio }} km{% endblocktranslate %}</h5>
+                    <p class="text-muted-lup mb-3">{% translate "Probá con una distancia mayor o volvé más tarde: los comercios publican durante todo el día." %}</p>
+                    {% if fuera_de_radio %}<button type="button" class="btn btn-lup btn-sm me-2" data-ampliar-radio>{% blocktranslate with n=fuera_de_radio %}Ver las {{ n }} más lejanas{% endblocktranslate %}</button>{% endif %}
+                {% else %}
+                    <h5>{% translate "No encontramos ofertas con esos filtros" %}</h5>
+                    <p class="text-muted-lup mb-3">{% translate "Probá con otra búsqueda o volvé más tarde: los comercios publican durante todo el día." %}</p>
+                {% endif %}
+                <a href="{% url 'catalogo' %}" class="btn btn-lup-outline btn-sm">{% translate "Limpiar filtros" %}</a>
             </div>
         </div>
     {% endfor %}

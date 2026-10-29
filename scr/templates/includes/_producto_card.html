@@ -1,4 +1,4 @@
-{% load lup_tags humanize %}
+{% load i18n %}{% load lup_tags humanize %}
 <a href="{% url 'detalle_producto' producto.pk %}" class="producto-card">
     <div class="foto">
         {% if producto.imagen %}
@@ -8,21 +8,21 @@
         {% endif %}
         <div class="badges">
             {% if producto.porcentaje_descuento %}<span class="badge-lup descuento">-{{ producto.porcentaje_descuento }}%</span>{% endif %}
-            {% if producto.es_donacion %}<span class="badge-lup donacion"><i class="bi bi-heart-fill"></i> Donable</span>{% endif %}
-            {% if producto.vence_hoy %}<span class="badge-lup urgente"><i class="bi bi-clock"></i> Hoy</span>{% endif %}
+            {% if producto.es_donacion %}<span class="badge-lup donacion"><i class="bi bi-heart-fill"></i> {% translate "Donable" %}</span>{% endif %}
+            {% if producto.vence_hoy %}<span class="badge-lup urgente"><i class="bi bi-clock"></i> {% translate "Hoy" %}</span>{% endif %}
         </div>
     </div>
     <div class="cuerpo">
-        <span class="tienda d-flex align-items-center gap-2"><span class="text-truncate"><i class="bi bi-shop me-1"></i>{{ producto.comercio.nombre_fantasia }}</span>{% if producto.calif_cantidad %}<span class="calif-mini" title="{{ producto.calif_promedio|promedio }} de 5 · {{ producto.calif_cantidad }} opinion{{ producto.calif_cantidad|pluralize:'es' }}"><i class="bi bi-star-fill"></i> {{ producto.calif_promedio|promedio }}</span>{% endif %}</span>
+        <span class="tienda d-flex align-items-center gap-2"><span class="text-truncate"><i class="bi bi-shop me-1"></i>{{ producto.comercio.nombre_fantasia }}</span>{% if producto.calif_cantidad %}<span class="calif-mini" title="{% blocktranslate count n=producto.calif_cantidad with v=producto.calif_promedio|promedio %}{{ v }} de 5 · {{ n }} opinión{% plural %}{{ v }} de 5 · {{ n }} opiniones{% endblocktranslate %}"><i class="bi bi-star-fill"></i> {{ producto.calif_promedio|promedio }}</span>{% endif %}</span>
         <h5>{{ producto.titulo }}</h5>
-        <div class="meta"><i class="bi bi-geo-alt me-1"></i>{% if producto.distancia_km is not None %}<strong class="distancia">a {{ producto.distancia_km|distancia }}</strong> · {{ producto.comercio.direccion|truncatechars:26 }}{% else %}{{ producto.comercio.direccion|truncatechars:38 }}{% endif %}</div>
-        <div class="meta mt-1"><i class="bi bi-clock me-1"></i>Retirá hasta el {{ producto.fecha_vencimiento|date:"d/m" }}</div>
+        <div class="meta"><i class="bi bi-geo-alt me-1"></i>{% if producto.distancia_km is not None %}<strong class="distancia">{% blocktranslate with d=producto.distancia_km|distancia %}a {{ d }}{% endblocktranslate %}</strong> · {{ producto.comercio.direccion|truncatechars:26 }}{% else %}{{ producto.comercio.direccion|truncatechars:38 }}{% endif %}</div>
+        <div class="meta mt-1"><i class="bi bi-clock me-1"></i>{% blocktranslate with fecha=producto.fecha_vencimiento|date:"d/m" %}Retirá hasta el {{ fecha }}{% endblocktranslate %}</div>
         <div class="pie">
             <div>
                 {% if producto.porcentaje_descuento %}<div class="precio-antes">${{ producto.precio_original|floatformat:"-2"|intcomma }}</div>{% endif %}
                 <div class="precio">${{ producto.precio_descuento|floatformat:"-2"|intcomma }}</div>
             </div>
-            <span class="small text-muted-lup">{{ producto.stock }} disponible{{ producto.stock|pluralize }}</span>
+            <span class="small text-muted-lup">{% blocktranslate count n=producto.stock %}{{ n }} disponible{% plural %}{{ n }} disponibles{% endblocktranslate %}</span>
         </div>
     </div>
 </a>

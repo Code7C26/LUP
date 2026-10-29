@@ -1,0 +1,10 @@
+{% load i18n %}{% load lup_tags %}<a href="{% url 'detalle_tienda' tienda.pk %}" class="lista-item text-decoration-none text-reset h-100">
+    {% include 'includes/_avatar.html' with usuario=tienda.usuario tam='md' icono='bi-shop' %}
+    <div class="flex-grow-1 min-w-0">
+        <strong class="d-block text-lup-oscuro text-truncate">{{ tienda.nombre_fantasia }}</strong>
+        <small class="text-muted-lup d-block text-truncate"><i class="bi bi-geo-alt"></i> {% if tienda.distancia_km is not None %}<strong class="distancia">{% blocktranslate with d=tienda.distancia_km|distancia %}a {{ d }}{% endblocktranslate %}</strong> · {% endif %}{{ tienda.direccion }}</small>
+        <small class="text-muted-lup d-block text-truncate"><i class="bi bi-clock"></i> {{ tienda.horario_atencion }}</small>
+        {% if tienda.calif_cantidad %}<small class="calif-mini"><i class="bi bi-star-fill"></i> {{ tienda.calif_promedio|promedio }} <span class="text-muted-lup fw-normal">({{ tienda.calif_cantidad }})</span></small>{% endif %}
+    </div>
+    <span class="estado">{% blocktranslate count n=tienda.ofertas %}{{ n }} oferta{% plural %}{{ n }} ofertas{% endblocktranslate %}</span>
+</a>

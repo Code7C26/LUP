@@ -3,9 +3,10 @@ from functools import wraps
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
+from django.utils.translation import gettext_lazy
 
 
-def rol_requerido(*roles, mensaje='No tenés permiso para acceder a esta sección.'):
+def rol_requerido(*roles, mensaje=gettext_lazy('No tenés permiso para acceder a esta sección.')):
     """Restringe una vista a usuarios autenticados con alguno de los roles indicados."""
 
     def decorador(vista):

@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
+{% load i18n %}
 {% load static %}
 
-{% block title %}Iniciar sesión · Lüp{% endblock %}
+{% block title %}{% translate "Iniciar sesión" %} · Lüp{% endblock %}
 {% block footer %}{% endblock %}
 
 {% block content %}
@@ -13,22 +14,22 @@
                 <span class="burbuja" style="width:160px;height:160px;left:-50px;bottom:-40px;"></span>
                 <div class="position-relative">
                     <img src="{% static 'img/lup-isotipo.png' %}" alt="" style="height:56px;filter:brightness(0) invert(1);">
-                    <h2 class="display-6 fw-bold mt-4">¡Qué bueno verte de nuevo!</h2>
-                    <p class="lead">Cada vez que ingresás, ayudás a que más comida llegue a una mesa en lugar de a la basura.</p>
+                    <h2 class="display-6 fw-bold mt-4">{% translate "¡Qué bueno verte de nuevo!" %}</h2>
+                    <p class="lead">{% translate "Cada vez que ingresás, ayudás a que más comida llegue a una mesa en lugar de a la basura." %}</p>
                 </div>
                 <div class="cita position-relative">
-                    <p class="mb-2">"Con Lüp vendemos lo que antes tirábamos al cierre. Recuperamos ingresos y conocimos clientes nuevos."</p>
-                    <small class="text-white-50">— Panadería adherida, Alta Gracia</small>
+                    <p class="mb-1 fw-semibold"><i class="bi bi-shield-check me-1"></i>{% translate "Reservás, retirás y pagás en el local" %}</p>
+                    <small class="text-white-50">{% translate "No cargás datos de pago en Lüp: mostrás tu código de retiro y pagás directamente al comercio." %}</small>
                 </div>
             </div>
         </div>
 
         <div class="col-lg-6 d-flex align-items-center">
             <div class="w-100 mx-auto" style="max-width: 440px;">
-                <h1 class="h3 mb-1">Iniciar sesión</h1>
-                <p class="text-muted-lup mb-4">Elegí tu tipo de cuenta e ingresá tus datos.</p>
+                <h1 class="h3 mb-1">{% translate "Iniciar sesión" %}</h1>
+                <p class="text-muted-lup mb-4">{% translate "Elegí tu tipo de cuenta e ingresá tus datos." %}</p>
 
-                <div class="selector-rol mb-3" role="tablist" aria-label="Tipo de cuenta">
+                <div class="selector-rol mb-3" role="tablist" aria-label="{% translate 'Tipo de cuenta' %}">
                     {% for clave, info in roles.items %}
                         <button type="button" role="tab" data-rol="{{ clave }}" data-titulo="{{ info.titulo }}" class="{% if clave == rol_activo %}activo{% endif %}" aria-selected="{% if clave == rol_activo %}true{% else %}false{% endif %}">
                             <i class="bi {{ info.icono }}"></i>{{ info.titulo }}
@@ -50,13 +51,13 @@
                     {% include 'includes/_campo.html' with campo=form.username %}
                     {% include 'includes/_campo.html' with campo=form.password clase='mb-4' %}
                     <button type="submit" id="btn-ingresar" class="btn btn-lup btn-lg w-100">
-                        {% for clave, info in roles.items %}{% if clave == rol_activo %}Ingresar como {{ info.titulo|lower }}{% endif %}{% endfor %}
+                        {% for clave, info in roles.items %}{% if clave == rol_activo %}{% blocktranslate with rol=info.titulo|lower %}Ingresar como {{ rol }}{% endblocktranslate %}{% endif %}{% endfor %}
                     </button>
                 </form>
 
                 <p class="text-center text-muted-lup mt-4 mb-0">
-                    ¿No tenés cuenta?
-                    <a id="link-registro" class="fw-semibold" data-base="{% url 'registro' '__rol__' %}" href="{% url 'registro' rol_activo %}">Registrate gratis</a>
+                    {% translate "¿No tenés cuenta?" %}
+                    <a id="link-registro" class="fw-semibold" data-base="{% url 'registro' '__rol__' %}" href="{% url 'registro' rol_activo %}">{% translate "Registrate gratis" %}</a>
                 </p>
             </div>
         </div>

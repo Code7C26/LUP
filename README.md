@@ -154,12 +154,22 @@ python -m venv venv
 source venv/bin/activate          # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 python manage.py migrate
-python manage.py cargar_demo      # opcional: comercios, ofertas y usuarios de ejemplo
 python manage.py createsuperuser  # opcional: acceso a /admin
 python manage.py runserver
 ```
 
 Abrí http://127.0.0.1:8000.
+
+### Datos de muestra (solo para desarrollo)
+
+`python manage.py cargar_demo` crea comercios, ofertas, reservas y opiniones **inventadas** para probar
+(usuarios `panaderia_sol`, `consumidor_demo` y `comedor_demo`, clave `LupDemo2026!`). No funciona con `DEBUG=0`.
+
+**Antes de presentar o publicar la página**, borrá todo lo de muestra (solo toca las cuentas `@lup.demo`):
+
+```bash
+python manage.py limpiar_demo
+```
 
 ---
 
@@ -190,7 +200,10 @@ Sin esos datos los emails no se envían: se muestran en la consola donde corre `
 
 ### Ubicación del dispositivo y Google Maps
 
-- **Catálogo → "Cerca mío":** el navegador pide permiso para usar la ubicación y ordena las ofertas por distancia ("a 350 m").
+- **Al entrar** (inicio, ofertas y comercios) la página le pregunta al cliente si quiere usar su ubicación.
+  Si acepta, se muestran solo los comercios y ofertas **cercanos** (radio de 2, 5, 10 o 25 km, o cualquier distancia).
+  Si dice "Ahora no", no se le vuelve a preguntar por 7 días; siempre puede tocar **"Cerca mío"**.
+- **Comercios** (`/comercios/`): lista de comercios ordenados por cercanía, con distancia, ofertas y opiniones.
 - **Producto y página del comercio:** mapa de Google Maps, distancia ("A 1,2 km de vos") y botón **Cómo llegar**.
 - **Mis datos (comercio):** botón *"Usar la ubicación de este dispositivo"* para marcar dónde está el local.
 
@@ -202,7 +215,24 @@ GOOGLE_MAPS_API_KEY=tu_clave
 ```
 
 > Los navegadores solo comparten la ubicación en `localhost` o en sitios con **https**.
- Usuarios de demo (clave `LupDemo2026!`): `panaderia_sol` (comercio), `consumidor_demo` (consumidor) y `comedor_demo` (organización).
+
+Con la clave, además, quien no quiera compartir su ubicación puede **escribir su dirección o barrio**.
+
+---
+
+## <img src="jpg/doc_assets/icon_infinito.png" width="40"> Idiomas (español / inglés)
+
+Toda la página se puede ver en inglés con el botón **EN / ES** de la barra (al lado del modo oscuro).
+La elección se guarda en el navegador. La API de la app móvil responde siempre en español.
+
+Las traducciones están en `scr/locale/en/LC_MESSAGES/django.po`. Para cambiar un texto en inglés:
+
+1. Editá el `msgstr` en `django.po` (y los textos del JavaScript en `scr/static/js/lup-en.js`).
+2. Corré `python manage.py compilar_traducciones` (no hace falta instalar nada).
+3. Reiniciá el servidor.
+
+Si agregás textos nuevos en las plantillas, envolvelos con `{% translate "..." %}` y sumalos al `.po`.
+Lo que cargan los usuarios (nombres de productos, comercios, opiniones) no se traduce.
 
 > Si tenías una base `db.sqlite3` de una versión anterior, borrala antes de `migrate`: los modelos se unificaron y las migraciones se regeneraron desde cero.
 >

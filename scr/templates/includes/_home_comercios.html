@@ -1,0 +1,15 @@
+{% load i18n %}{% load lup_tags %}{% comment %}Comercios de la home (ordenados por cercanía si se conoce la ubicación).{% endcomment %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+    <div>
+        <span class="eyebrow">{% if cerca %}<i class="bi bi-geo-alt-fill"></i> {% translate "Cerca tuyo" %}{% else %}{% translate "Comercios adheridos" %}{% endif %}</span>
+        <h2 class="mb-0">{% translate "Locales que ya rescatan comida" %}</h2>
+    </div>
+    <a href="{% url 'lista_tiendas' %}" class="btn btn-lup-outline btn-sm">{% translate "Ver comercios" %} <i class="bi bi-arrow-right"></i></a>
+</div>
+<div class="row g-3">
+    {% for tienda in tiendas %}
+        <div class="col-md-6 col-lg-4">{% include 'includes/_tienda_item.html' %}</div>
+    {% empty %}
+        <div class="col-12"><p class="text-muted-lup">{% translate "Todavía no hay comercios adheridos cerca tuyo." %}</p></div>
+    {% endfor %}
+</div>

@@ -1,27 +1,28 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
-{% block title %}Crear cuenta · Lüp{% endblock %}
+{% block title %}{% translate "Crear cuenta" %} · Lüp{% endblock %}
 
 {% block content %}
 <div class="container pt-5">
     <div class="text-center mb-5">
-        <span class="eyebrow">Paso 1 de 2</span>
-        <h1 class="h2">¿Cómo querés usar Lüp?</h1>
-        <p class="text-muted-lup mx-auto" style="max-width: 520px;">Elegí el tipo de cuenta que mejor te representa. Cada una tiene herramientas pensadas para vos.</p>
+        <span class="eyebrow">{% translate "Paso 1 de 2" %}</span>
+        <h1 class="h2">{% translate "¿Cómo querés usar Lüp?" %}</h1>
+        <p class="text-muted-lup mx-auto" style="max-width: 520px;">{% translate "Elegí el tipo de cuenta que mejor te representa. Cada una tiene herramientas pensadas para vos." %}</p>
     </div>
     <div class="row g-4 justify-content-center">
         {% for clave, info in roles.items %}
         <div class="col-md-6 col-lg-4">
             <a href="{% url 'registro' clave %}" class="rol-card {{ clave }}">
                 <div class="icono"><i class="bi {{ info.icono }}"></i></div>
-                <h3 class="h4">Soy {{ info.titulo|lower }}</h3>
+                <h3 class="h4">{% blocktranslate with rol=info.titulo|lower %}Soy {{ rol }}{% endblocktranslate %}</h3>
                 <p class="text-muted-lup">{{ info.descripcion }}</p>
                 <ul>{% for b in info.beneficios %}<li><i class="bi bi-check-circle-fill"></i>{{ b }}</li>{% endfor %}</ul>
-                <span class="cta">Continuar <i class="bi bi-arrow-right"></i></span>
+                <span class="cta">{% translate "Continuar" %} <i class="bi bi-arrow-right"></i></span>
             </a>
         </div>
         {% endfor %}
     </div>
-    <p class="text-center text-muted-lup mt-5">¿Ya tenés cuenta? <a href="{% url 'login' %}" class="fw-semibold">Iniciá sesión</a></p>
+    <p class="text-center text-muted-lup mt-5">{% translate "¿Ya tenés cuenta?" %} <a href="{% url 'login' %}" class="fw-semibold">{% translate "Iniciá sesión" %}</a></p>
 </div>
 {% endblock %}

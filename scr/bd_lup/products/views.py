@@ -10,9 +10,12 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.timezone import localdate
 from django.views.decorators.http import require_POST
+from django.utils.translation import gettext as _, gettext_lazy
 
 from scr.bd_lup.stores.models import Tienda
-from scr.bd_lup.stores.ubicacion import distancia_km, leer_coordenadas
+from scr.bd_lup.stores.ubicacion import (
+    RADIOS_KM, geocodificar, leer_coordenadas, leer_radio, ordenar_por_cercania,
+)
 from scr.bd_lup.users.decorators import rol_requerido
 from scr.bd_lup.users.models import Usuario
 
@@ -25,10 +28,10 @@ ORDENES = {
     'vencimiento': 'fecha_vencimiento',
 }
 
-solo_comercios = rol_requerido(Usuario.COMERCIO, mensaje='Esta sección es exclusiva para comercios.')
-solo_consumidores = rol_requerido(Usuario.CONSUMIDOR, mensaje='Solo los consumidores pueden reservar ofertas.')
+solo_comercios = rol_requerido(Usuario.COMERCIO, mensaje=gettext_lazy('Esta sección es exclusiva para comercios.'))
+solo_consumidores = rol_requerido(Usuario.CONSUMIDOR, mensaje=gettext_lazy('Solo los consumidores pueden reservar ofertas.'))
 solo_organizaciones = rol_requerido(
-    Usuario.ORGANIZACION, mensaje='Solo las organizaciones registradas pueden solicitar donaciones.'
+    Usuario.ORGANIZACION, mensaje=gettext_lazy('Solo las organizaciones registradas pueden solicitar donaciones.')
 )
 
 
@@ -44,7 +47,7 @@ def home(request):
     visibles = Producto.objects.visibles().select_related('comercio')
     contexto = {
         'destacados': visibles.con_calificacion()[:6],
-        'tiendas': Tienda.objects.annotate(
+        'tiendas': Tienda.objects.select_related('usuario').annotate(
             ofertas=Count('productos', filter=Q(productos__in=Producto.objects.visibles()))
         ).order_by('-ofertas')[:6],
         'stats': {
@@ -81,18 +84,15 @@ def catalogo(request):
         productos = productos.filter(es_donacion=True)
     productos = productos.order_by(ORDENES.get(orden, '-creado_en'))
 
-    # Ubicación del dispositivo (la manda el navegador cuando la persona toca "Cerca mío")
+    # Ubicación del cliente (la manda el navegador cuando la persona permite usarla)
     lat, lng = leer_coordenadas(request.GET.get('lat'), request.GET.get('lng'))
+    radio = leer_radio(request.GET.get('radio'))
+    fuera_de_radio = 0
     if lat is not None:
-        productos = list(productos)
-        for producto in productos:
-            tienda = producto.comercio
-            producto.distancia_km = (
-                distancia_km(lat, lng, tienda.latitud, tienda.longitud) if tienda.tiene_ubicacion else None
-            )
-        if orden == 'cercania':
-            # Los comercios sin ubicación cargada quedan al final
-            productos.sort(key=lambda p: (p.distancia_km is None, p.distancia_km or 0))
+        # Filtra por el radio elegido; ordena por distancia solo si eligió "Más cerca"
+        productos, fuera_de_radio = ordenar_por_cercania(
+            productos, lat, lng, radio, lambda p: p.comercio, ordenar=(orden == 'cercania'),
+        )
 
     contexto = {
         'productos': productos,
@@ -100,6 +100,9 @@ def catalogo(request):
         'rubros': Tienda.RUBROS,
         'filtros': {'q': q, 'categoria': categoria, 'rubro': rubro, 'donacion': solo_donacion, 'orden': orden},
         'ubicacion': {'lat': lat, 'lng': lng} if lat is not None else None,
+        'radio': radio,
+        'radios': RADIOS_KM,
+        'fuera_de_radio': fuera_de_radio,
     }
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         return render(request, 'products/_grilla.html', contexto)
@@ -134,7 +137,7 @@ def reservar(request, pk):
     with transaction.atomic():
         producto = get_object_or_404(Producto.objects.select_for_update(), pk=pk)
         if not producto.esta_disponible:
-            messages.error(request, 'Esta oferta ya no está disponible.')
+            messages.error(request, _('Esta oferta ya no está disponible.'))
             return redirect('catalogo')
         form = ReservaForm(request.POST, producto=producto)
         if not form.is_valid():
@@ -150,7 +153,8 @@ def reservar(request, pk):
 
     messages.success(
         request,
-        f'¡Reserva confirmada! Mostrá el código {reserva.codigo_retiro} en {producto.comercio} para retirarla.',
+        _('¡Reserva confirmada! Mostrá el código %(codigo)s en %(comercio)s para retirarla.')
+        % {'codigo': reserva.codigo_retiro, 'comercio': producto.comercio},
     )
     return redirect('panel')
 
@@ -169,7 +173,7 @@ def cancelar_reserva(request, pk):
         if producto.estado == Producto.AGOTADO:
             producto.estado = Producto.DISPONIBLE
         producto.save(update_fields=['stock', 'estado', 'actualizado_en'])
-    messages.info(request, 'Reserva cancelada. Las unidades volvieron a estar disponibles.')
+    messages.info(request, _('Reserva cancelada. Las unidades volvieron a estar disponibles.'))
     return redirect('panel')
 
 
@@ -189,9 +193,9 @@ def calificar_reserva(request, pk):
         calificacion.tienda = reserva.producto.comercio
         calificacion.consumidor = request.user
         calificacion.save()
-        messages.success(request, f'¡Gracias! Tu opinión sobre {reserva.producto.comercio} ya está publicada.')
+        messages.success(request, _('¡Gracias! Tu opinión sobre %(comercio)s ya está publicada.') % {'comercio': reserva.producto.comercio})
     else:
-        messages.error(request, 'Elegí de 1 a 5 estrellas para calificar.')
+        messages.error(request, _('Elegí de 1 a 5 estrellas para calificar.'))
     return redirect('panel')
 
 
@@ -204,10 +208,10 @@ def calificar_reserva(request, pk):
 def solicitar_donacion(request, pk):
     producto = get_object_or_404(Producto, pk=pk, es_donacion=True)
     if not producto.esta_disponible:
-        messages.error(request, 'Esta donación ya no está disponible.')
+        messages.error(request, _('Esta donación ya no está disponible.'))
         return redirect('catalogo')
     if producto.solicitudes_donacion.filter(organizacion=request.user).exists():
-        messages.info(request, 'Ya enviaste una solicitud por este producto.')
+        messages.info(request, _('Ya enviaste una solicitud por este producto.'))
         return redirect('panel')
 
     form = SolicitudDonacionForm(request.POST)
@@ -216,9 +220,9 @@ def solicitar_donacion(request, pk):
         solicitud.organizacion = request.user
         solicitud.producto = producto
         solicitud.save()
-        messages.success(request, f'Tu solicitud por "{producto.titulo}" fue enviada a {producto.comercio}.')
+        messages.success(request, _('Tu solicitud por "%(titulo)s" fue enviada a %(comercio)s.') % {'titulo': producto.titulo, 'comercio': producto.comercio})
         return redirect('panel')
-    messages.error(request, 'Escribí un mensaje para el comercio.')
+    messages.error(request, _('Escribí un mensaje para el comercio.'))
     return redirect('detalle_producto', pk=pk)
 
 
@@ -230,7 +234,7 @@ def solicitar_donacion(request, pk):
 def publicar_excedente(request):
     tienda = _tienda_de(request.user)
     if tienda is None:
-        messages.error(request, 'Completá los datos de tu comercio antes de publicar.')
+        messages.error(request, _('Completá los datos de tu comercio antes de publicar.'))
         return redirect('perfil')
 
     form = ProductoForm(request.POST or None, request.FILES or None)
@@ -238,7 +242,7 @@ def publicar_excedente(request):
         producto = form.save(commit=False)
         producto.comercio = tienda
         producto.save()
-        messages.success(request, '¡Excedente publicado! Ya aparece en el catálogo.')
+        messages.success(request, _('¡Excedente publicado! Ya aparece en el catálogo.'))
         return redirect('panel')
     return render(request, 'products/form_producto.html', {'form': form, 'editando': False})
 
@@ -252,7 +256,7 @@ def editar_excedente(request, pk):
         if producto.stock > 0 and producto.estado == Producto.AGOTADO:
             producto.estado = Producto.DISPONIBLE
         producto.save()
-        messages.success(request, 'Publicación actualizada.')
+        messages.success(request, _('Publicación actualizada.'))
         return redirect('panel')
     return render(request, 'products/form_producto.html', {'form': form, 'editando': True, 'producto': producto})
 
@@ -262,15 +266,15 @@ def eliminar_excedente(request, pk):
     producto = get_object_or_404(Producto, pk=pk, comercio__usuario=request.user)
     if request.method == 'POST':
         producto.delete()
-        messages.success(request, 'Publicación eliminada.')
+        messages.success(request, _('Publicación eliminada.'))
         return redirect('panel')
     return render(request, 'products/confirmar_eliminacion.html', {'producto': producto})
 
 
 MENSAJES_ESTADO = {
-    Producto.AGOTADO: '"{}" quedó marcado como vendido y ya no aparece en el catálogo.',
-    Producto.PAUSADO: '"{}" quedó como no disponible. Podés volver a publicarlo cuando quieras.',
-    Producto.DISPONIBLE: '"{}" volvió a estar publicado en el catálogo.',
+    Producto.AGOTADO: gettext_lazy('"%(titulo)s" quedó marcado como vendido y ya no aparece en el catálogo.'),
+    Producto.PAUSADO: gettext_lazy('"%(titulo)s" quedó como no disponible. Podés volver a publicarlo cuando quieras.'),
+    Producto.DISPONIBLE: gettext_lazy('"%(titulo)s" volvió a estar publicado en el catálogo.'),
 }
 
 
@@ -281,17 +285,17 @@ def cambiar_estado_producto(request, pk):
     producto = get_object_or_404(Producto, pk=pk, comercio__usuario=request.user)
     nuevo = request.POST.get('estado')
     if nuevo not in Producto.ESTADOS_MANUALES or producto.estado == Producto.DONADO:
-        messages.error(request, 'No se puede cambiar el estado de esta publicación.')
+        messages.error(request, _('No se puede cambiar el estado de esta publicación.'))
     elif nuevo == Producto.DISPONIBLE and producto.stock <= 0:
-        messages.warning(request, 'No le queda stock. Editá la publicación para cargar unidades y volver a publicarla.')
+        messages.warning(request, _('No le queda stock. Editá la publicación para cargar unidades y volver a publicarla.'))
         return redirect('editar_excedente', pk=pk)
     elif nuevo == Producto.DISPONIBLE and producto.fecha_vencimiento < localdate():
-        messages.warning(request, 'La fecha límite de retiro ya pasó. Actualizala para volver a publicarla.')
+        messages.warning(request, _('La fecha límite de retiro ya pasó. Actualizala para volver a publicarla.'))
         return redirect('editar_excedente', pk=pk)
     else:
         producto.estado = nuevo
         producto.save(update_fields=['estado', 'actualizado_en'])
-        messages.success(request, MENSAJES_ESTADO[nuevo].format(producto.titulo))
+        messages.success(request, MENSAJES_ESTADO[nuevo] % {'titulo': producto.titulo})
     return redirect('panel')
 
 
@@ -303,14 +307,15 @@ def confirmar_retiro(request):
         codigo_retiro=codigo, producto__comercio__usuario=request.user
     ).first()
     if reserva is None:
-        messages.error(request, f'No encontramos una reserva con el código "{codigo}".')
+        messages.error(request, _('No encontramos una reserva con el código "%(codigo)s".') % {'codigo': codigo})
     elif reserva.estado != Reserva.PENDIENTE:
-        messages.warning(request, f'La reserva {codigo} ya está {reserva.get_estado_display().lower()}.')
+        messages.warning(request, _('La reserva %(codigo)s ya está %(estado)s.') % {'codigo': codigo, 'estado': reserva.get_estado_display().lower()})
     else:
         reserva.estado = Reserva.RETIRADA
         reserva.save(update_fields=['estado'])
         messages.success(
-            request, f'Retiro confirmado: {reserva.cantidad} × {reserva.producto} para {reserva.consumidor.nombre_visible}.'
+            request, _('Retiro confirmado: %(cantidad)s × %(producto)s para %(cliente)s.')
+            % {'cantidad': reserva.cantidad, 'producto': reserva.producto, 'cliente': reserva.consumidor.nombre_visible}
         )
     return redirect('panel')
 
@@ -330,7 +335,7 @@ def responder_donacion(request, pk, accion):
         with transaction.atomic():
             producto = Producto.objects.select_for_update().get(pk=solicitud.producto_id)
             if not producto.esta_disponible:
-                messages.error(request, 'Este producto ya no está disponible para donar (sin stock, vencido o ya donado).')
+                messages.error(request, _('Este producto ya no está disponible para donar (sin stock, vencido o ya donado).'))
                 return redirect('panel')
             solicitud.estado = SolicitudDonacion.APROBADA
             solicitud.save(update_fields=['estado'])
@@ -339,11 +344,11 @@ def responder_donacion(request, pk, accion):
             producto.solicitudes_donacion.filter(estado=SolicitudDonacion.PENDIENTE).update(
                 estado=SolicitudDonacion.RECHAZADA
             )
-        messages.success(request, f'Donación aprobada para {solicitud.organizacion.nombre_visible}. ¡Gracias!')
+        messages.success(request, _('Donación aprobada para %(org)s. ¡Gracias!') % {'org': solicitud.organizacion.nombre_visible})
     else:
         solicitud.estado = SolicitudDonacion.RECHAZADA
         solicitud.save(update_fields=['estado'])
-        messages.info(request, 'Solicitud rechazada.')
+        messages.info(request, _('Solicitud rechazada.'))
     return redirect('panel')
 
 
@@ -422,7 +427,7 @@ PERIODOS = {'7': 7, '30': 30, '90': 90}
 def estadisticas_comercio(request):
     tienda = _tienda_de(request.user)
     if tienda is None:
-        messages.error(request, 'Completá los datos de tu comercio para ver tus estadísticas.')
+        messages.error(request, _('Completá los datos de tu comercio para ver tus estadísticas.'))
         return redirect('perfil')
 
     clave = request.GET.get('dias', '30')
@@ -476,7 +481,7 @@ def estadisticas_comercio(request):
     contexto = {
         'tienda': tienda,
         'periodo': clave,
-        'periodos': [('7', '7 días'), ('30', '30 días'), ('90', '90 días')],
+        'periodos': [('7', _('7 días')), ('30', _('30 días')), ('90', _('90 días'))],
         'desde': desde,
         'hoy': hoy,
         'kpis': {
@@ -500,3 +505,47 @@ def estadisticas_comercio(request):
         },
     }
     return render(request, 'panel/estadisticas.html', contexto)
+
+
+# ==========================================
+# UBICACIÓN DEL CLIENTE
+# ==========================================
+
+def home_cerca(request):
+    """Partes de la home con lo que está cerca del cliente (las pide lup.js cuando conoce la ubicación)."""
+    from django.http import JsonResponse
+    from django.template.loader import render_to_string
+
+    lat, lng = leer_coordenadas(request.GET.get('lat'), request.GET.get('lng'))
+    if lat is None:
+        return JsonResponse({'error': _('Ubicación inválida.')}, status=400)
+    radio = leer_radio(request.GET.get('radio'))
+    productos, _fuera = ordenar_por_cercania(
+        Producto.objects.visibles().select_related('comercio').con_calificacion(), lat, lng, radio,
+        lambda p: p.comercio,
+    )
+    tiendas, _fuera = ordenar_por_cercania(
+        Tienda.objects.select_related('usuario').annotate(
+            ofertas=Count('productos', filter=Q(productos__in=Producto.objects.visibles()))
+        ), lat, lng, radio,
+    )
+    contexto = {'destacados': productos[:6], 'tiendas': tiendas[:6], 'radio': radio, 'cerca': True}
+    return JsonResponse({
+        'radio': radio,
+        'ofertas': len(productos),
+        'ofertas_html': render_to_string('includes/_home_ofertas.html', contexto, request=request),
+        'comercios_html': render_to_string('includes/_home_comercios.html', contexto, request=request),
+    })
+
+
+def buscar_direccion(request):
+    """Convierte una dirección escrita por el cliente en coordenadas (necesita GOOGLE_MAPS_API_KEY)."""
+    from django.http import JsonResponse
+
+    texto = request.GET.get('q', '').strip()[:200]
+    if len(texto) < 3:
+        return JsonResponse({'error': _('Escribí una dirección.')}, status=400)
+    lat, lng = geocodificar(texto)
+    if lat is None:
+        return JsonResponse({'error': _('No encontramos esa dirección. Probá agregando la ciudad.')}, status=404)
+    return JsonResponse({'lat': round(lat, 6), 'lng': round(lng, 6)})

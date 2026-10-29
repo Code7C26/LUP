@@ -86,11 +86,12 @@ def distancia(km):
     """Formatea una distancia: 350 m, 1,2 km, 12 km."""
     if km is None or km == '':
         return ''
+    from django.utils.formats import number_format
     km = float(km)
     if km < 1:
         return f'{max(round(km * 1000 / 10) * 10, 10):.0f} m'
     if km < 10:
-        return f'{km:.1f} km'.replace('.', ',')
+        return f'{number_format(km, 1)} km'
     return f'{km:.0f} km'
 
 
@@ -117,6 +118,21 @@ def estrellas(valor):
 @register.filter
 def promedio(valor):
     """4.666 → '4,7'."""
+    from django.utils.formats import number_format
     if valor is None or valor == '':
         return ''
-    return f'{float(valor):.1f}'.replace('.', ',')
+    return number_format(float(valor), 1)
+
+
+# ---------- Idioma (ES / EN) ----------
+
+@register.filter
+def fecha_larga(fecha):
+    """'jueves 29 de octubre' en español · 'Thursday, October 29' en inglés."""
+    from django.utils import translation
+    from django.utils.dateformat import format as formatear
+    if not fecha:
+        return ''
+    if translation.get_language().startswith('en'):
+        return formatear(fecha, 'l, F j')
+    return formatear(fecha, r'l j \d\e F')

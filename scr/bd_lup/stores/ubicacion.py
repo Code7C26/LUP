@@ -11,6 +11,44 @@ logger = logging.getLogger(__name__)
 
 RADIO_TIERRA_KM = 6371.0
 
+# Radios de búsqueda que puede elegir el cliente (km). 'todos' = sin límite.
+RADIOS_KM = (2, 5, 10, 25)
+RADIO_POR_DEFECTO = 10
+
+
+def leer_radio(valor):
+    """'5' -> 5 · 'todos' -> None · cualquier otra cosa -> radio por defecto."""
+    if valor == 'todos':
+        return None
+    try:
+        radio = int(valor)
+    except (TypeError, ValueError):
+        return RADIO_POR_DEFECTO
+    return radio if radio in RADIOS_KM else RADIO_POR_DEFECTO
+
+
+def ordenar_por_cercania(items, lat, lng, radio, tienda_de=lambda x: x, ordenar=True):
+    """Calcula `distancia_km` de cada item y devuelve (cercanos ordenados, cantidad que quedó afuera).
+
+    Con radio=None no se filtra: los que no tienen ubicación van al final.
+    Con un radio, solo quedan los comercios con ubicación a esa distancia o menos.
+    """
+    items = list(items)
+    for item in items:
+        tienda = tienda_de(item)
+        item.distancia_km = (
+            distancia_km(lat, lng, tienda.latitud, tienda.longitud) if tienda.tiene_ubicacion else None
+        )
+    if radio is not None:
+        dentro = [i for i in items if i.distancia_km is not None and i.distancia_km <= radio]
+        afuera = len(items) - len(dentro)
+        items = dentro
+    else:
+        afuera = 0
+    if ordenar:
+        items.sort(key=lambda i: (i.distancia_km is None, i.distancia_km or 0))
+    return items, afuera
+
 
 def distancia_km(lat1, lng1, lat2, lng2):
     """Distancia en línea recta entre dos puntos (fórmula de haversine)."""
@@ -42,13 +80,18 @@ def url_como_llegar(tienda):
     return 'https://www.google.com/maps/dir/?' + urlencode({'api': 1, 'destination': _destino(tienda)})
 
 
+def _idioma_mapa():
+    from django.utils import translation
+    return 'en' if (translation.get_language() or '').startswith('en') else 'es'
+
+
 def url_mapa_embebido(tienda):
     """URL para el <iframe> del mapa. Con clave usa la Maps Embed API oficial."""
     if settings.GOOGLE_MAPS_API_KEY:
         return 'https://www.google.com/maps/embed/v1/place?' + urlencode(
-            {'key': settings.GOOGLE_MAPS_API_KEY, 'q': _destino(tienda), 'zoom': 16, 'language': 'es'}
+            {'key': settings.GOOGLE_MAPS_API_KEY, 'q': _destino(tienda), 'zoom': 16, 'language': _idioma_mapa()}
         )
-    return f'https://maps.google.com/maps?q={quote(_destino(tienda))}&z=16&hl=es&output=embed'
+    return f'https://maps.google.com/maps?q={quote(_destino(tienda))}&z=16&hl={_idioma_mapa()}&output=embed'
 
 
 def geocodificar(direccion):

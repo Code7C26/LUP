@@ -333,18 +333,18 @@ class UbicacionTests(FlujoLupTests.__bases__[0]):
         self.tienda.save()
         self.crear_tienda_lejana()
         # Persona parada en Córdoba capital: primero lo de Córdoba
-        r = self.client.get(reverse('catalogo'), {'orden': 'cercania', 'lat': '-31.4201', 'lng': '-64.1888'})
+        r = self.client.get(reverse('catalogo'), {'orden': 'cercania', 'lat': '-31.4201', 'lng': '-64.1888', 'radio': 'todos'})
         html = r.content.decode()
         self.assertLess(html.index('Bananas'), html.index('Medialunas'))
         self.assertContains(r, 'class="distancia"')
         # Persona en Alta Gracia: al revés
-        r = self.client.get(reverse('catalogo'), {'orden': 'cercania', 'lat': '-31.6587', 'lng': '-64.4300'})
+        r = self.client.get(reverse('catalogo'), {'orden': 'cercania', 'lat': '-31.6587', 'lng': '-64.4300', 'radio': 'todos'})
         html = r.content.decode()
         self.assertLess(html.index('Medialunas'), html.index('Bananas'))
 
     def test_comercio_sin_ubicacion_queda_al_final(self):
         self.crear_tienda_lejana()
-        r = self.client.get(reverse('catalogo'), {'orden': 'cercania', 'lat': '-31.6587', 'lng': '-64.4300'})
+        r = self.client.get(reverse('catalogo'), {'orden': 'cercania', 'lat': '-31.6587', 'lng': '-64.4300', 'radio': 'todos'})
         html = r.content.decode()
         self.assertLess(html.index('Bananas'), html.index('Medialunas'))
 
@@ -607,7 +607,109 @@ class EstadisticasTests(FlujoLupTests.__bases__[0]):
         from django.core import mail
         from django.core.management import call_command
         from io import StringIO
-        call_command('cargar_demo', stdout=StringIO())
-        call_command('cargar_demo', stdout=StringIO())  # se puede correr dos veces
+        call_command('cargar_demo', '--forzar', stdout=StringIO())
+        call_command('cargar_demo', '--forzar', stdout=StringIO())  # se puede correr dos veces
         self.assertEqual(len(mail.outbox), 0)
         self.assertTrue(Reserva.objects.filter(estado=Reserva.RETIRADA, consumidor__username='consumidor_demo').exists())
+
+
+# ==========================================================
+# Datos de muestra: limpiar_demo / cargar_demo
+# ==========================================================
+
+class DatosDeMuestraTests(FlujoLupTests.__bases__[0]):
+    setUp = FlujoLupTests.setUp
+
+    def test_limpiar_demo_borra_solo_lo_de_muestra(self):
+        from io import StringIO
+
+        from django.core.management import call_command
+        call_command('cargar_demo', '--forzar', stdout=StringIO())
+        self.assertTrue(Usuario.objects.filter(email__endswith='@lup.demo').exists())
+        call_command('limpiar_demo', '--si', stdout=StringIO())
+        self.assertFalse(Usuario.objects.filter(email__endswith='@lup.demo').exists())
+        self.assertFalse(Tienda.objects.filter(nombre_fantasia='Panadería El Sol').exists())
+        # Lo real (creado en setUp) sigue
+        self.assertTrue(Tienda.objects.filter(pk=self.tienda.pk).exists())
+        self.assertTrue(Producto.objects.filter(pk=self.producto.pk).exists())
+        out = StringIO()
+        call_command('limpiar_demo', '--si', stdout=out)
+        self.assertIn('ya está limpia', out.getvalue())
+
+    def test_cargar_demo_no_corre_en_produccion(self):
+        from django.core.management import CommandError, call_command
+        from django.test import override_settings
+        with override_settings(DEBUG=False), self.assertRaises(CommandError):
+            call_command('cargar_demo')
+
+
+
+# ==========================================================
+# Búsqueda de comercios según la ubicación del cliente
+# ==========================================================
+
+class BusquedaCercanaTests(FlujoLupTests.__bases__[0]):
+    """Alta Gracia (Medialunas, Panadería Sol) y Córdoba capital (Bananas, Verdulería Lejos): ~35 km."""
+
+    AG = {'lat': '-31.6587', 'lng': '-64.4300'}
+    crear_tienda_lejana = UbicacionTests.crear_tienda_lejana
+
+    def setUp(self):
+        FlujoLupTests.setUp(self)
+        self.tienda.latitud, self.tienda.longitud = -31.6553, -64.4293
+        self.tienda.save()
+        self.crear_tienda_lejana()
+
+    def test_catalogo_filtra_por_radio(self):
+        r = self.client.get(reverse('catalogo'), self.AG)  # radio por defecto: 10 km
+        self.assertContains(r, 'Medialunas')
+        self.assertNotContains(r, 'Bananas')
+        self.assertContains(r, 'Hay 1 más lejos')
+        r = self.client.get(reverse('catalogo'), {**self.AG, 'radio': '25'})
+        self.assertNotContains(r, 'Bananas')
+        r = self.client.get(reverse('catalogo'), {**self.AG, 'radio': 'todos'})
+        self.assertContains(r, 'Bananas')
+
+    def test_sin_ubicacion_no_se_filtra(self):
+        r = self.client.get(reverse('catalogo'))
+        self.assertContains(r, 'Medialunas')
+        self.assertContains(r, 'Bananas')
+
+    def test_radio_sin_ofertas_cerca(self):
+        r = self.client.get(reverse('catalogo'), {'lat': '-34.60', 'lng': '-58.38', 'radio': '5'})  # Buenos Aires
+        self.assertContains(r, 'No hay ofertas a menos de 5 km')
+
+    def test_pagina_de_comercios(self):
+        r = self.client.get(reverse('lista_tiendas'))
+        self.assertContains(r, 'Panadería Sol')
+        self.assertContains(r, 'Verdulería Lejos')
+        r = self.client.get(reverse('lista_tiendas'), self.AG)
+        self.assertContains(r, 'Comercios cerca tuyo')
+        self.assertContains(r, 'Panadería Sol')
+        self.assertNotContains(r, 'Verdulería Lejos')
+        r = self.client.get(reverse('lista_tiendas'), {**self.AG, 'radio': 'todos'})
+        html = r.content.decode()
+        self.assertLess(html.index('Panadería Sol'), html.index('Verdulería Lejos'))
+
+    def test_home_cerca_devuelve_lo_cercano(self):
+        datos = self.client.get(reverse('home_cerca'), self.AG).json()
+        self.assertIn('Medialunas', datos['ofertas_html'])
+        self.assertNotIn('Bananas', datos['ofertas_html'])
+        self.assertIn('Panadería Sol', datos['comercios_html'])
+        self.assertEqual(self.client.get(reverse('home_cerca')).status_code, 400)
+
+    def test_home_pide_la_ubicacion(self):
+        r = self.client.get(reverse('home'))
+        self.assertContains(r, 'data-pedir-ubicacion')
+        self.assertContains(r, 'data-home-cerca')
+
+    def test_buscar_direccion_sin_clave(self):
+        r = self.client.get(reverse('buscar_direccion'), {'q': 'Belgrano 120, Alta Gracia'})
+        self.assertEqual(r.status_code, 404)
+
+    @override_settings(GOOGLE_MAPS_API_KEY='CLAVE-TEST')
+    def test_buscar_direccion_con_clave(self):
+        with mock.patch('scr.bd_lup.products.views.geocodificar', return_value=(-31.65, -64.42)):
+            r = self.client.get(reverse('buscar_direccion'), {'q': 'Belgrano 120, Alta Gracia'})
+        self.assertEqual(r.json(), {'lat': -31.65, 'lng': -64.42})
+        self.assertContains(self.client.get(reverse('home')), 'data-direccion-manual')

@@ -6,6 +6,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Avg, Count, OuterRef, Subquery
 from django.utils.timezone import localdate
+from django.utils.translation import gettext_lazy as _
 
 from scr.bd_lup.stores.models import Tienda
 
@@ -34,39 +35,39 @@ class Producto(models.Model):
     PAUSADO = 'PAUSADO'    # no disponible por ahora: no se muestra, pero se puede reactivar
     DONADO = 'DONADO'
     ESTADO_CHOICES = (
-        (DISPONIBLE, 'Disponible'),
-        (AGOTADO, 'Vendido'),
-        (PAUSADO, 'No disponible'),
-        (DONADO, 'Donado'),
+        (DISPONIBLE, _('Disponible')),
+        (AGOTADO, _('Vendido')),
+        (PAUSADO, _('No disponible')),
+        (DONADO, _('Donado')),
     )
     # Estados que el comercio puede elegir a mano (web y app)
     ESTADOS_MANUALES = (DISPONIBLE, AGOTADO, PAUSADO)
 
     CATEGORIAS = (
-        ('panificados', 'Panificados'),
-        ('comidas', 'Comidas preparadas'),
-        ('frutas_verduras', 'Frutas y verduras'),
-        ('lacteos', 'Lácteos'),
-        ('carnes', 'Carnes'),
-        ('almacen', 'Almacén'),
-        ('bolsa_sorpresa', 'Bolsa sorpresa'),
-        ('otros', 'Otros'),
+        ('panificados', _('Panificados')),
+        ('comidas', _('Comidas preparadas')),
+        ('frutas_verduras', _('Frutas y verduras')),
+        ('lacteos', _('Lácteos')),
+        ('carnes', _('Carnes')),
+        ('almacen', _('Almacén')),
+        ('bolsa_sorpresa', _('Bolsa sorpresa')),
+        ('otros', _('Otros')),
     )
 
     comercio = models.ForeignKey(Tienda, on_delete=models.CASCADE, related_name='productos')
-    titulo = models.CharField('título', max_length=100)
-    descripcion = models.TextField('descripción')
-    categoria = models.CharField('categoría', max_length=20, choices=CATEGORIAS, default='otros')
-    imagen = models.ImageField('foto del producto', upload_to='productos/', null=True, blank=True)
+    titulo = models.CharField(_('título'), max_length=100)
+    descripcion = models.TextField(_('descripción'))
+    categoria = models.CharField(_('categoría'), max_length=20, choices=CATEGORIAS, default='otros')
+    imagen = models.ImageField(_('foto del producto'), upload_to='productos/', null=True, blank=True)
     precio_original = models.DecimalField(
         max_digits=10, decimal_places=2, validators=[MinValueValidator(0)]
     )
     precio_descuento = models.DecimalField(
-        'precio Lüp', max_digits=10, decimal_places=2, validators=[MinValueValidator(0)]
+        _('precio Lüp'), max_digits=10, decimal_places=2, validators=[MinValueValidator(0)]
     )
-    es_donacion = models.BooleanField('apto para donación', default=False)
+    es_donacion = models.BooleanField(_('apto para donación'), default=False)
     stock = models.PositiveIntegerField(default=1)
-    fecha_vencimiento = models.DateField('fecha límite de retiro')
+    fecha_vencimiento = models.DateField(_('fecha límite de retiro'))
     estado = models.CharField(max_length=15, choices=ESTADO_CHOICES, default=DISPONIBLE)
     creado_en = models.DateTimeField(auto_now_add=True)
     actualizado_en = models.DateTimeField(auto_now=True)
@@ -83,7 +84,7 @@ class Producto(models.Model):
             and self.precio_descuento > self.precio_original
         ):
             raise ValidationError(
-                {'precio_descuento': 'El precio Lüp no puede ser mayor al precio original.'}
+                {'precio_descuento': _('El precio Lüp no puede ser mayor al precio original.')}
             )
 
     @property
@@ -126,9 +127,9 @@ class Reserva(models.Model):
     RETIRADA = 'retirada'
     CANCELADA = 'cancelada'
     ESTADOS = (
-        (PENDIENTE, 'Pendiente de retiro'),
-        (RETIRADA, 'Retirada'),
-        (CANCELADA, 'Cancelada'),
+        (PENDIENTE, _('Pendiente de retiro')),
+        (RETIRADA, _('Retirada')),
+        (CANCELADA, _('Cancelada')),
     )
 
     consumidor = models.ForeignKey(
@@ -155,9 +156,9 @@ class SolicitudDonacion(models.Model):
     APROBADA = 'aprobada'
     RECHAZADA = 'rechazada'
     ESTADOS = (
-        (PENDIENTE, 'Pendiente'),
-        (APROBADA, 'Aprobada'),
-        (RECHAZADA, 'Rechazada'),
+        (PENDIENTE, _('Pendiente')),
+        (APROBADA, _('Aprobada')),
+        (RECHAZADA, _('Rechazada')),
     )
 
     organizacion = models.ForeignKey(
@@ -172,8 +173,8 @@ class SolicitudDonacion(models.Model):
 
     class Meta:
         ordering = ['-creada_en']
-        verbose_name = 'solicitud de donación'
-        verbose_name_plural = 'solicitudes de donación'
+        verbose_name = _('solicitud de donación')
+        verbose_name_plural = _('solicitudes de donación')
 
     def __str__(self):
         return f'{self.organizacion} → {self.producto}'
@@ -194,8 +195,8 @@ class Calificacion(models.Model):
 
     class Meta:
         ordering = ['-creada_en']
-        verbose_name = 'calificación'
-        verbose_name_plural = 'calificaciones'
+        verbose_name = _('calificación')
+        verbose_name_plural = _('calificaciones')
 
     def __str__(self):
         return f'{self.tienda} · {self.puntaje}★ de {self.consumidor}'

@@ -1,0 +1,2250 @@
+# Traducción al inglés de Lüp.
+# Para cambiar un texto: editá el msgstr y corré  python manage.py compilar_traducciones
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: en\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: scr/templates/404.html:3
+msgid "Página no encontrada"
+msgstr "Page not found"
+
+#: scr/templates/404.html:7
+msgid "Esta página se nos escapó"
+msgstr "This page got away from us"
+
+#: scr/templates/404.html:8
+msgid "No encontramos lo que buscabas. Quizás ya fue rescatado."
+msgstr "We couldn't find what you were looking for. Maybe it was already rescued."
+
+#: scr/templates/404.html:9
+msgid "Volver al inicio"
+msgstr "Back to home"
+
+#: scr/templates/base.html:20
+msgid "Una segunda oportunidad para cada alimento"
+msgstr "A second chance for every food"
+
+#: scr/templates/base.html:36
+msgid "Lüp, inicio"
+msgstr "Lüp, home"
+
+#: scr/templates/base.html:37
+#: scr/templates/base.html:148
+msgid "Lüp"
+msgstr "Lüp"
+
+#: scr/templates/base.html:39
+msgid "Abrir menú"
+msgstr "Open menu"
+
+#: scr/templates/base.html:45
+msgid "Inicio"
+msgstr "Home"
+
+#: scr/templates/base.html:46
+#: scr/templates/base.html:157
+#: scr/templates/products/catalogo.html:5
+msgid "Ofertas"
+msgstr "Offers"
+
+#: scr/templates/base.html:47
+#: scr/templates/home.html:106
+#: scr/templates/stores/lista_tiendas.html:5
+msgid "Comercios"
+msgstr "Stores"
+
+#: scr/templates/base.html:48
+#: scr/templates/base.html:159
+msgid "Cómo funciona"
+msgstr "How it works"
+
+#: scr/templates/base.html:53
+msgid "Cambiar a modo oscuro"
+msgstr "Switch to dark mode"
+
+#: scr/templates/base.html:53
+msgid "Modo oscuro / claro"
+msgstr "Dark / light mode"
+
+#: scr/templates/base.html:71
+#: scr/templates/panel/comercio.html:27
+#: scr/templates/products/catalogo.html:16
+msgid "Publicar excedente"
+msgstr "Post surplus"
+
+#: scr/templates/base.html:83
+#: scr/templates/panel/consumidor.html:5
+msgid "Mi panel"
+msgstr "My dashboard"
+
+#: scr/templates/base.html:84
+#: scr/templates/users/perfil.html:5
+#: scr/templates/users/perfil.html:10
+msgid "Mis datos"
+msgstr "My details"
+
+#: scr/templates/base.html:85
+msgid "Administración"
+msgstr "Administration"
+
+#: scr/templates/base.html:89
+msgid "Cerrar sesión"
+msgstr "Log out"
+
+#: scr/templates/base.html:95
+#: scr/templates/products/detalle.html:99
+#: scr/templates/users/login.html:5
+msgid "Iniciar sesión"
+msgstr "Log in"
+
+#: scr/templates/base.html:96
+#: scr/templates/home.html:100
+#: scr/templates/products/detalle.html:100
+msgid "Crear cuenta"
+msgstr "Sign up"
+
+#: scr/templates/base.html:111
+#: scr/templates/base.html:140
+msgid "Cerrar"
+msgstr "Close"
+
+#: scr/templates/base.html:126
+msgid "¿Te mostramos lo que está cerca tuyo?"
+msgstr "Want to see what's near you?"
+
+#: scr/templates/base.html:127
+msgid "Usamos tu ubicación solo para buscar comercios y ofertas cercanas. No la guardamos ni la compartimos."
+msgstr "We only use your location to find nearby stores and offers. We don't store it or share it."
+
+#: scr/templates/base.html:129
+msgid "Usar mi ubicación"
+msgstr "Use my location"
+
+#: scr/templates/base.html:130
+msgid "Ahora no"
+msgstr "Not now"
+
+#: scr/templates/base.html:134
+msgid "O escribí tu dirección o barrio"
+msgstr "Or type your address or neighborhood"
+
+#: scr/templates/base.html:134
+msgid "Tu dirección"
+msgstr "Your address"
+
+#: scr/templates/base.html:135
+#: scr/templates/home.html:22
+#: scr/templates/products/catalogo.html:25
+msgid "Buscar"
+msgstr "Search"
+
+#: scr/templates/base.html:149
+msgid "Una segunda oportunidad para cada alimento. Conectamos comercios, consumidores y organizaciones para reducir el desperdicio de comida."
+msgstr "A second chance for every food. We connect stores, consumers and organizations to reduce food waste."
+
+#: scr/templates/base.html:151
+msgid "Lüp en Instagram"
+msgstr "Lüp on Instagram"
+
+#: scr/templates/base.html:151
+msgid "@lupcomidas en Instagram"
+msgstr "@lupcomidas on Instagram"
+
+#: scr/templates/base.html:155
+msgid "Explorar"
+msgstr "Explore"
+
+#: scr/templates/base.html:158
+msgid "Donaciones"
+msgstr "Donations"
+
+#: scr/templates/base.html:163
+msgid "Sumate"
+msgstr "Join us"
+
+#: scr/templates/base.html:165
+msgid "Soy consumidor"
+msgstr "I'm a consumer"
+
+#: scr/templates/base.html:166
+msgid "Tengo un comercio"
+msgstr "I have a store"
+
+#: scr/templates/base.html:167
+msgid "Soy una organización"
+msgstr "I'm an organization"
+
+#: scr/templates/base.html:171
+msgid "Impacto"
+msgstr "Impact"
+
+#: scr/templates/base.html:172
+msgid "🌿 Ambiental"
+msgstr "🌿 Environmental"
+
+#: scr/templates/base.html:172
+msgid "🤝 Social"
+msgstr "🤝 Social"
+
+#: scr/templates/base.html:172
+msgid "💰 Económico"
+msgstr "💰 Economic"
+
+#: scr/templates/base.html:175
+msgid "Soporte al usuario"
+msgstr "User support"
+
+#: scr/templates/base.html:176
+msgid "¿Tenés alguna duda o problema? Escribinos o llamanos."
+msgstr "Got a question or a problem? Message or call us."
+
+#: scr/templates/base.html:178
+msgid "WhatsApp"
+msgstr "WhatsApp"
+
+#: scr/templates/base.html:185
+msgid "Más valor. Menos desperdicio."
+msgstr "More value. Less waste."
+
+#: scr/templates/base.html:186
+msgid "Hecho con 💚 en Córdoba, Argentina"
+msgstr "Made with 💚 in Córdoba, Argentina"
+
+#: scr/templates/home.html:14
+msgid "🌱 Rescatá comida rica · Ahorrá · Ayudá al planeta"
+msgstr "🌱 Rescue great food · Save money · Help the planet"
+
+#: scr/templates/home.html:16
+msgid "Comida deliciosa que"
+msgstr "Delicious food that"
+
+#: scr/templates/home.html:16
+msgid "no merece"
+msgstr "doesn't deserve"
+
+#: scr/templates/home.html:16
+msgid "terminar en la basura"
+msgstr "to end up in the trash"
+
+#: scr/templates/home.html:17
+msgid "Locales y restaurantes publican sus excedentes del día con grandes descuentos. Vos reservás, retirás y ayudás a reducir el desperdicio."
+msgstr "Shops and restaurants post their surplus of the day at big discounts. You reserve, pick up and help reduce food waste."
+
+#: scr/templates/home.html:21
+msgid "Buscá medialunas, viandas, verduras..."
+msgstr "Search for croissants, meals, vegetables..."
+
+#: scr/templates/home.html:21
+#: scr/templates/panel/consumidor.html:15
+msgid "Buscar ofertas"
+msgstr "Search offers"
+
+#: scr/templates/home.html:27
+msgid "Crear cuenta gratis"
+msgstr "Sign up for free"
+
+#: scr/templates/home.html:29
+msgid "Ver ofertas"
+msgstr "See offers"
+
+#: scr/templates/home.html:35
+msgid "Se están rescatando ahora"
+msgstr "Being rescued right now"
+
+#: scr/templates/home.html:45
+#: scr/templates/includes/_producto_card.html:11
+#: scr/templates/panel/comercio.html:99
+msgid "Donable"
+msgstr "Donatable"
+
+#: scr/templates/home.html:51
+msgid "Los comercios publican sus excedentes durante el día. ¡Volvé pronto!"
+msgstr "Stores post their surplus throughout the day. Check back soon!"
+
+#: scr/templates/home.html:54
+#, python-format
+msgid "Ver las %(n)s ofertas"
+msgstr "See all %(n)s offers"
+
+#: scr/templates/home.html:62
+#: scr/templates/panel/comercio.html:32
+msgid "Ofertas activas"
+msgstr "Active offers"
+
+#: scr/templates/home.html:63
+#: scr/templates/includes/_home_comercios.html:5
+#: scr/templates/stores/lista_tiendas.html:10
+msgid "Comercios adheridos"
+msgstr "Partner stores"
+
+#: scr/templates/home.html:64
+#: scr/templates/panel/consumidor.html:20
+msgid "Productos rescatados"
+msgstr "Products rescued"
+
+#: scr/templates/home.html:65
+msgid "Organizaciones sociales"
+msgstr "Social organizations"
+
+#: scr/templates/home.html:76
+msgid "Simple y rápido"
+msgstr "Simple and fast"
+
+#: scr/templates/home.html:77
+msgid "¿Cómo funciona Lüp?"
+msgstr "How does Lüp work?"
+
+#: scr/templates/home.html:78
+msgid "En tres pasos rescatás comida de calidad y le das una segunda oportunidad."
+msgstr "In three steps you rescue quality food and give it a second chance."
+
+#: scr/templates/home.html:81
+msgid "Descubrí"
+msgstr "Discover"
+
+#: scr/templates/home.html:81
+msgid "Explorá las ofertas del día de panaderías, restaurantes y verdulerías de tu zona."
+msgstr "Browse today's offers from bakeries, restaurants and greengrocers in your area."
+
+#: scr/templates/home.html:82
+msgid "Reservá"
+msgstr "Reserve"
+
+#: scr/templates/home.html:82
+msgid "Elegí la cantidad y confirmá tu reserva. Recibís un código único de retiro."
+msgstr "Choose the quantity and confirm your reservation. You get a unique pickup code."
+
+#: scr/templates/home.html:83
+msgid "Retirá y disfrutá"
+msgstr "Pick up and enjoy"
+
+#: scr/templates/home.html:83
+msgid "Pasá por el local en el horario indicado, mostrá tu código y pagá menos."
+msgstr "Go to the store at the indicated time, show your code and pay less."
+
+#: scr/templates/home.html:90
+msgid "Una comunidad, tres roles"
+msgstr "One community, three roles"
+
+#: scr/templates/home.html:91
+msgid "Elegí cómo querés sumarte"
+msgstr "Choose how you want to join"
+
+#: scr/templates/home.html:97
+msgid "Consumidores"
+msgstr "Consumers"
+
+#: scr/templates/home.html:98
+#, python-format
+msgid "Comprá comida de calidad con descuentos de hasta 70%%."
+msgstr "Buy quality food with discounts of up to 70%%."
+
+#: scr/templates/home.html:99
+#: scr/templates/includes/_home_ofertas.html:6
+msgid "Ofertas cerca tuyo"
+msgstr "Offers near you"
+
+#: scr/templates/home.html:99
+msgid "Reserva en un clic"
+msgstr "Reserve in one click"
+
+#: scr/templates/home.html:99
+msgid "Seguí cuánto ahorrás"
+msgstr "Track how much you save"
+
+#: scr/templates/home.html:107
+msgid "Convertí tus excedentes en ingresos en lugar de pérdidas."
+msgstr "Turn your surplus into income instead of losses."
+
+#: scr/templates/home.html:108
+#: scr/bd_lup/users/views.py:30
+msgid "Publicá en segundos"
+msgstr "Post in seconds"
+
+#: scr/templates/home.html:108
+#: scr/bd_lup/users/views.py:30
+msgid "Gestioná reservas y retiros"
+msgstr "Manage reservations and pickups"
+
+#: scr/templates/home.html:108
+#: scr/bd_lup/users/views.py:30
+msgid "Medí tu impacto"
+msgstr "Measure your impact"
+
+#: scr/templates/home.html:109
+#: scr/templates/includes/_home_ofertas.html:24
+#: scr/templates/stores/lista_tiendas.html:63
+msgid "Sumar mi comercio"
+msgstr "Add my store"
+
+#: scr/templates/home.html:115
+msgid "Organizaciones"
+msgstr "Organizations"
+
+#: scr/templates/home.html:116
+msgid "Comedores, merenderos y fundaciones reciben donaciones."
+msgstr "Soup kitchens, community kitchens and foundations receive donations."
+
+#: scr/templates/home.html:117
+msgid "Accedé a donaciones"
+msgstr "Access donations"
+
+#: scr/templates/home.html:117
+#: scr/bd_lup/users/views.py:36
+msgid "Coordiná con comercios"
+msgstr "Coordinate with stores"
+
+#: scr/templates/home.html:117
+#: scr/bd_lup/users/views.py:36
+msgid "Seguimiento de pedidos"
+msgstr "Request tracking"
+
+#: scr/templates/home.html:118
+msgid "Registrar organización"
+msgstr "Register organization"
+
+#: scr/templates/home.html:134
+msgid "Cada alimento rescatado cuenta 💚"
+msgstr "Every rescued food counts 💚"
+
+#: scr/templates/home.html:135
+msgid "Sumate a la comunidad que transforma excedentes en oportunidades: menos desperdicio, más acceso a alimentos y comercios más sustentables."
+msgstr "Join the community that turns surplus into opportunities: less waste, more access to food and more sustainable businesses."
+
+#: scr/templates/home.html:139
+msgid "Ir a mi panel"
+msgstr "Go to my dashboard"
+
+#: scr/templates/home.html:141
+msgid "Empezar ahora"
+msgstr "Get started"
+
+#: scr/templates/includes/_avatar.html:6
+#, python-format
+msgid "Foto de %(nombre)s"
+msgstr "Photo of %(nombre)s"
+
+#: scr/templates/includes/_estrellas.html:3
+#, python-format
+msgid "%(v)s de 5 estrellas"
+msgstr "%(v)s out of 5 stars"
+
+#: scr/templates/includes/_form_calificacion.html:8
+#, python-format
+msgid "¿Cuántas estrellas le das a %(comercio)s?"
+msgstr "How many stars do you give %(comercio)s?"
+
+#: scr/templates/includes/_form_calificacion.html:12
+#: scr/templates/includes/_form_calificacion.html:12
+#, python-format
+msgid "%(c)s estrella"
+msgid_plural "%(c)s estrellas"
+msgstr[0] "%(c)s star"
+msgstr[1] "%(c)s stars"
+
+#: scr/templates/includes/_form_calificacion.html:17
+msgid "Contá cómo te fue (opcional)"
+msgstr "Tell us how it went (optional)"
+
+#: scr/templates/includes/_form_calificacion.html:17
+msgid "Comentario"
+msgstr "Comment"
+
+#: scr/templates/includes/_form_calificacion.html:18
+msgid "Actualizar"
+msgstr "Update"
+
+#: scr/templates/includes/_form_calificacion.html:18
+msgid "Enviar"
+msgstr "Send"
+
+#: scr/templates/includes/_home_comercios.html:5
+#: scr/templates/products/catalogo.html:44
+#: scr/templates/stores/lista_tiendas.html:31
+msgid "Cerca tuyo"
+msgstr "Near you"
+
+#: scr/templates/includes/_home_comercios.html:6
+msgid "Locales que ya rescatan comida"
+msgstr "Stores already rescuing food"
+
+#: scr/templates/includes/_home_comercios.html:8
+msgid "Ver comercios"
+msgstr "See stores"
+
+#: scr/templates/includes/_home_comercios.html:14
+msgid "Todavía no hay comercios adheridos cerca tuyo."
+msgstr "There are no partner stores near you yet."
+
+#: scr/templates/includes/_home_ofertas.html:5
+#, python-format
+msgid "A menos de %(radio)s km"
+msgstr "Within %(radio)s km"
+
+#: scr/templates/includes/_home_ofertas.html:5
+msgid "Según tu ubicación"
+msgstr "Based on your location"
+
+#: scr/templates/includes/_home_ofertas.html:5
+msgid "Recién publicadas"
+msgstr "Just posted"
+
+#: scr/templates/includes/_home_ofertas.html:8
+#: scr/templates/products/_grilla.html:4
+msgid "Ver todas"
+msgstr "See all"
+
+#: scr/templates/includes/_home_ofertas.html:18
+msgid "Todavía no hay ofertas cerca tuyo"
+msgstr "There are no offers near you yet"
+
+#: scr/templates/includes/_home_ofertas.html:19
+msgid "Los comercios publican durante todo el día. Mientras tanto, podés ver las de otras zonas."
+msgstr "Stores post throughout the day. In the meantime, you can see offers from other areas."
+
+#: scr/templates/includes/_home_ofertas.html:20
+msgid "Ver todas las ofertas"
+msgstr "See all offers"
+
+#: scr/templates/includes/_home_ofertas.html:22
+msgid "Todavía no hay ofertas publicadas"
+msgstr "No offers have been posted yet"
+
+#: scr/templates/includes/_home_ofertas.html:23
+msgid "¿Tenés un comercio? Sé el primero en publicar tus excedentes."
+msgstr "Do you have a store? Be the first to post your surplus."
+
+#: scr/templates/includes/_mapa_comercio.html:8
+#, python-format
+msgid "Mapa de %(nombre)s en Google Maps"
+msgstr "Map of %(nombre)s on Google Maps"
+
+#: scr/templates/includes/_mapa_comercio.html:12
+#: scr/templates/panel/consumidor.html:34
+msgid "Cómo llegar"
+msgstr "Get directions"
+
+#: scr/templates/includes/_producto_card.html:12
+#: scr/templates/panel/estadisticas.html:53
+msgid "Hoy"
+msgstr "Today"
+
+#: scr/templates/includes/_producto_card.html:16
+#, python-format
+msgid "%(v)s de 5 · %(n)s opinión"
+msgid_plural "%(v)s de 5 · %(n)s opiniones"
+msgstr[0] "%(v)s out of 5 · %(n)s review"
+msgstr[1] "%(v)s out of 5 · %(n)s reviews"
+
+#: scr/templates/includes/_producto_card.html:18
+#: scr/templates/includes/_tienda_item.html:5
+#, python-format
+msgid "a %(d)s"
+msgstr "%(d)s away"
+
+#: scr/templates/includes/_producto_card.html:19
+#, python-format
+msgid "Retirá hasta el %(fecha)s"
+msgstr "Pick up by %(fecha)s"
+
+#: scr/templates/includes/_producto_card.html:25
+#, python-format
+msgid "%(n)s disponible"
+msgid_plural "%(n)s disponibles"
+msgstr[0] "%(n)s available"
+msgstr[1] "%(n)s available"
+
+#: scr/templates/includes/_tienda_item.html:9
+#, python-format
+msgid "%(n)s oferta"
+msgid_plural "%(n)s ofertas"
+msgstr[0] "%(n)s offer"
+msgstr[1] "%(n)s offers"
+
+#: scr/templates/panel/comercio.html:5
+msgid "Panel de comercio"
+msgstr "Store dashboard"
+
+#: scr/templates/panel/comercio.html:12
+msgid "Cambiar foto o logo"
+msgstr "Change photo or logo"
+
+#: scr/templates/panel/comercio.html:18
+msgid "Ver página pública"
+msgstr "View public page"
+
+#: scr/templates/panel/comercio.html:21
+msgid "Completá los datos de tu comercio"
+msgstr "Complete your store details"
+
+#: scr/templates/panel/comercio.html:25
+#: scr/templates/panel/estadisticas.html:5
+#: scr/templates/panel/estadisticas.html:14
+msgid "Estadísticas"
+msgstr "Statistics"
+
+#: scr/templates/panel/comercio.html:31
+msgid "Resumen"
+msgstr "Summary"
+
+#: scr/templates/panel/comercio.html:33
+msgid "Retiros pendientes"
+msgstr "Pending pickups"
+
+#: scr/templates/panel/comercio.html:34
+#: scr/templates/panel/estadisticas.html:26
+msgid "Unidades rescatadas"
+msgstr "Units rescued"
+
+#: scr/templates/panel/comercio.html:35
+#: scr/templates/panel/estadisticas.html:27
+msgid "Ingresos recuperados"
+msgstr "Income recovered"
+
+#: scr/templates/panel/comercio.html:46
+msgid "Confirmar retiro"
+msgstr "Confirm pickup"
+
+#: scr/templates/panel/comercio.html:48
+msgid "Código del cliente"
+msgstr "Customer code"
+
+#: scr/templates/panel/comercio.html:49
+msgid "Confirmar"
+msgstr "Confirm"
+
+#: scr/templates/panel/comercio.html:53
+msgid "Para entregar"
+msgstr "To hand over"
+
+#: scr/templates/panel/comercio.html:64
+msgid "No hay reservas pendientes de retiro."
+msgstr "There are no reservations pending pickup."
+
+#: scr/templates/panel/comercio.html:69
+msgid "Pedidos de donación"
+msgstr "Donation requests"
+
+#: scr/templates/panel/comercio.html:74
+#, python-format
+msgid "<strong>%(org)s</strong> pidió %(titulo)s"
+msgstr "<strong>%(org)s</strong> requested %(titulo)s"
+
+#: scr/templates/panel/comercio.html:78
+msgid "Rechazar"
+msgstr "Reject"
+
+#: scr/templates/panel/comercio.html:79
+msgid "Aprobar"
+msgstr "Approve"
+
+#: scr/templates/panel/comercio.html:89
+msgid "Mis publicaciones"
+msgstr "My listings"
+
+#: scr/templates/panel/comercio.html:96
+msgid "Activa"
+msgstr "Active"
+
+#: scr/templates/panel/comercio.html:97
+msgid "Vencida"
+msgstr "Expired"
+
+#: scr/templates/panel/comercio.html:99
+#, python-format
+msgid "Hasta %(fecha)s"
+msgstr "Until %(fecha)s"
+
+#: scr/templates/panel/comercio.html:99
+#, python-format
+msgid "Stock %(n)s"
+msgstr "Stock %(n)s"
+
+#: scr/templates/panel/comercio.html:107
+#: scr/templates/products/detalle.html:91
+msgid "Editar"
+msgstr "Edit"
+
+#: scr/templates/panel/comercio.html:107
+#, python-format
+msgid "Editar %(titulo)s"
+msgstr "Edit %(titulo)s"
+
+#: scr/templates/panel/comercio.html:110
+msgid "Cambiar estado"
+msgstr "Change status"
+
+#: scr/templates/panel/comercio.html:110
+#, python-format
+msgid "Cambiar estado de %(titulo)s"
+msgstr "Change status of %(titulo)s"
+
+#: scr/templates/panel/comercio.html:113
+#: scr/templates/panel/comercio.html:117
+msgid "Marcar como vendido"
+msgstr "Mark as sold"
+
+#: scr/templates/panel/comercio.html:114
+msgid "Marcar como no disponible"
+msgstr "Mark as unavailable"
+
+#: scr/templates/panel/comercio.html:116
+msgid "Volver a publicar"
+msgstr "Publish again"
+
+#: scr/templates/panel/comercio.html:120
+#: scr/templates/panel/comercio.html:124
+#: scr/templates/products/detalle.html:92
+msgid "Eliminar"
+msgstr "Delete"
+
+#: scr/templates/panel/comercio.html:124
+#, python-format
+msgid "Eliminar %(titulo)s"
+msgstr "Delete %(titulo)s"
+
+#: scr/templates/panel/comercio.html:130
+msgid "Todavía no publicaste excedentes."
+msgstr "You haven't posted any surplus yet."
+
+#: scr/templates/panel/comercio.html:131
+msgid "Publicar mi primera oferta"
+msgstr "Post my first offer"
+
+#: scr/templates/panel/consumidor.html:10
+#: scr/templates/panel/organizacion.html:10
+msgid "Cambiar foto de perfil"
+msgstr "Change profile photo"
+
+#: scr/templates/panel/consumidor.html:12
+#, python-format
+msgid "¡Hola, %(nombre)s!"
+msgstr "Hi, %(nombre)s!"
+
+#: scr/templates/panel/consumidor.html:13
+msgid "Gracias por rescatar comida. Este es tu resumen."
+msgstr "Thanks for rescuing food. Here's your summary."
+
+#: scr/templates/panel/consumidor.html:19
+msgid "Reservas realizadas"
+msgstr "Reservations made"
+
+#: scr/templates/panel/consumidor.html:21
+msgid "Ahorrado con Lüp"
+msgstr "Saved with Lüp"
+
+#: scr/templates/panel/consumidor.html:26
+msgid "Para retirar"
+msgstr "To pick up"
+
+#: scr/templates/panel/consumidor.html:33
+#, python-format
+msgid "hasta el %(fecha)s"
+msgstr "until %(fecha)s"
+
+#: scr/templates/panel/consumidor.html:37
+msgid "Código de retiro"
+msgstr "Pickup code"
+
+#: scr/templates/panel/consumidor.html:39
+msgid "Copiar"
+msgstr "Copy"
+
+#: scr/templates/panel/consumidor.html:42
+msgid "¿Cancelar esta reserva?"
+msgstr "Cancel this reservation?"
+
+#: scr/templates/panel/consumidor.html:43
+#: scr/templates/products/confirmar_eliminacion.html:15
+#: scr/templates/products/form_producto.html:51
+msgid "Cancelar"
+msgstr "Cancel"
+
+#: scr/templates/panel/consumidor.html:49
+msgid "No tenés reservas pendientes."
+msgstr "You have no pending reservations."
+
+#: scr/templates/panel/consumidor.html:49
+msgid "Explorar ofertas"
+msgstr "Browse offers"
+
+#: scr/templates/panel/consumidor.html:53
+msgid "¿Qué tal te fue?"
+msgstr "How did it go?"
+
+#: scr/templates/panel/consumidor.html:63
+msgid "Historial"
+msgstr "History"
+
+#: scr/templates/panel/consumidor.html:66
+msgid "Producto"
+msgstr "Product"
+
+#: scr/templates/panel/consumidor.html:66
+#: scr/templates/users/perfil.html:35
+#: scr/bd_lup/users/models.py:22
+msgid "Comercio"
+msgstr "Store"
+
+#: scr/templates/panel/consumidor.html:66
+msgid "Fecha"
+msgstr "Date"
+
+#: scr/templates/panel/consumidor.html:66
+msgid "Total"
+msgstr "Total"
+
+#: scr/templates/panel/consumidor.html:66
+msgid "Estado"
+msgstr "Status"
+
+#: scr/templates/panel/consumidor.html:66
+msgid "Tu opinión"
+msgstr "Your review"
+
+#: scr/templates/panel/consumidor.html:69
+msgid "Sin calificar"
+msgstr "Not rated"
+
+#: scr/templates/panel/consumidor.html:78
+msgid "Te puede interesar"
+msgstr "You might like"
+
+#: scr/templates/panel/consumidor.html:80
+msgid "Pronto habrá nuevas ofertas."
+msgstr "New offers coming soon."
+
+#: scr/templates/panel/estadisticas.html:10
+#: scr/templates/products/form_producto.html:9
+#: scr/templates/users/perfil.html:9
+msgid "Volver a mi panel"
+msgstr "Back to my dashboard"
+
+#: scr/templates/panel/estadisticas.html:15
+#, python-format
+msgid "del %(desde)s al %(hasta)s"
+msgstr "from %(desde)s to %(hasta)s"
+
+#: scr/templates/panel/estadisticas.html:17
+msgid "Período"
+msgstr "Period"
+
+#: scr/templates/panel/estadisticas.html:25
+msgid "Resumen del período"
+msgstr "Period summary"
+
+#: scr/templates/panel/estadisticas.html:28
+msgid "Reservas recibidas"
+msgstr "Reservations received"
+
+#: scr/templates/panel/estadisticas.html:29
+msgid "Se retiraron"
+msgstr "Picked up"
+
+#: scr/templates/panel/estadisticas.html:30
+msgid "Ahorro de tus clientes"
+msgstr "Your customers' savings"
+
+#: scr/templates/panel/estadisticas.html:31
+msgid "Donaciones entregadas"
+msgstr "Donations delivered"
+
+#: scr/templates/panel/estadisticas.html:37
+msgid "Unidades rescatadas por día"
+msgstr "Units rescued per day"
+
+#: scr/templates/panel/estadisticas.html:44
+#, python-format
+msgid "Unidades rescatadas por día. Máximo: %(maximo)s en un día. La tabla de abajo tiene todos los valores."
+msgstr "Units rescued per day. Maximum: %(maximo)s in one day. The table below has all the values."
+
+#: scr/templates/panel/estadisticas.html:46
+#, python-format
+msgid "%(fecha)s: %(n)s unidades"
+msgstr "%(fecha)s: %(n)s units"
+
+#: scr/templates/panel/estadisticas.html:57
+msgid "Todavía no hay retiros en este período."
+msgstr "There are no pickups in this period yet."
+
+#: scr/templates/panel/estadisticas.html:62
+msgid "Ver como tabla"
+msgstr "View as table"
+
+#: scr/templates/panel/estadisticas.html:65
+msgid "Día"
+msgstr "Day"
+
+#: scr/templates/panel/estadisticas.html:65
+msgid "Unidades"
+msgstr "Units"
+
+#: scr/templates/panel/estadisticas.html:72
+msgid "Productos más rescatados"
+msgstr "Most rescued products"
+
+#: scr/templates/panel/estadisticas.html:83
+msgid "Cuando tus clientes retiren reservas, vas a ver acá lo que más se rescata."
+msgstr "When your customers pick up reservations, you'll see here what gets rescued the most."
+
+#: scr/templates/panel/estadisticas.html:90
+msgid "Reservas del período"
+msgstr "Reservations in this period"
+
+#: scr/templates/panel/estadisticas.html:92
+msgid "Retiradas"
+msgstr "Picked up"
+
+#: scr/templates/panel/estadisticas.html:93
+msgid "Pendientes de retiro"
+msgstr "Pending pickup"
+
+#: scr/templates/panel/estadisticas.html:94
+msgid "Canceladas"
+msgstr "Cancelled"
+
+#: scr/templates/panel/estadisticas.html:97
+msgid "Opiniones"
+msgstr "Reviews"
+
+#: scr/templates/panel/estadisticas.html:104
+#, python-format
+msgid "%(n)s en total"
+msgstr "%(n)s in total"
+
+#: scr/templates/panel/estadisticas.html:104
+#, python-format
+msgid "%(n)s en este período (%(v)s ★)"
+msgstr "%(n)s in this period (%(v)s ★)"
+
+#: scr/templates/panel/estadisticas.html:105
+msgid "Leer opiniones"
+msgstr "Read reviews"
+
+#: scr/templates/panel/estadisticas.html:107
+msgid "Todavía no tenés opiniones. Las dejan los clientes después de retirar."
+msgstr "You don't have any reviews yet. Customers leave them after picking up."
+
+#: scr/templates/panel/estadisticas.html:111
+msgid "Publicaciones"
+msgstr "Listings"
+
+#: scr/templates/panel/estadisticas.html:113
+msgid "Activas ahora"
+msgstr "Active now"
+
+#: scr/templates/panel/estadisticas.html:114
+msgid "Publicadas en total"
+msgstr "Posted in total"
+
+#: scr/templates/panel/organizacion.html:5
+msgid "Panel de organización"
+msgstr "Organization dashboard"
+
+#: scr/templates/panel/organizacion.html:15
+msgid "Ver donaciones disponibles"
+msgstr "See available donations"
+
+#: scr/templates/panel/organizacion.html:19
+msgid "Solicitudes enviadas"
+msgstr "Requests sent"
+
+#: scr/templates/panel/organizacion.html:20
+msgid "Donaciones aprobadas"
+msgstr "Approved donations"
+
+#: scr/templates/panel/organizacion.html:21
+msgid "En espera"
+msgstr "Waiting"
+
+#: scr/templates/panel/organizacion.html:26
+msgid "Mis solicitudes"
+msgstr "My requests"
+
+#: scr/templates/panel/organizacion.html:33
+#, python-format
+msgid "Retirar: %(horario)s"
+msgstr "Pick up: %(horario)s"
+
+#: scr/templates/panel/organizacion.html:38
+msgid "Todavía no solicitaste donaciones."
+msgstr "You haven't requested any donations yet."
+
+#: scr/templates/panel/organizacion.html:38
+msgid "Buscar donaciones"
+msgstr "Find donations"
+
+#: scr/templates/panel/organizacion.html:42
+msgid "Donaciones disponibles ahora"
+msgstr "Donations available now"
+
+#: scr/templates/panel/organizacion.html:47
+msgid "No hay donaciones publicadas en este momento. ¡Volvé pronto!"
+msgstr "There are no donations posted right now. Check back soon!"
+
+#: scr/templates/products/_grilla.html:3
+#, python-format
+msgid "Ofertas a menos de <strong>%(radio)s km</strong> de vos."
+msgstr "Offers within <strong>%(radio)s km</strong> of you."
+
+#: scr/templates/products/_grilla.html:4
+#, python-format
+msgid "Hay %(n)s más lejos"
+msgid_plural "Hay %(n)s más lejos"
+msgstr[0] "There is %(n)s more further away"
+msgstr[1] "There are %(n)s more further away"
+
+#: scr/templates/products/_grilla.html:15
+#, python-format
+msgid "No hay ofertas a menos de %(radio)s km"
+msgstr "There are no offers within %(radio)s km"
+
+#: scr/templates/products/_grilla.html:16
+msgid "Probá con una distancia mayor o volvé más tarde: los comercios publican durante todo el día."
+msgstr "Try a larger distance or come back later: stores post throughout the day."
+
+#: scr/templates/products/_grilla.html:17
+#, python-format
+msgid "Ver las %(n)s más lejanas"
+msgstr "See the %(n)s further away"
+
+#: scr/templates/products/_grilla.html:19
+msgid "No encontramos ofertas con esos filtros"
+msgstr "We couldn't find offers with those filters"
+
+#: scr/templates/products/_grilla.html:20
+msgid "Probá con otra búsqueda o volvé más tarde: los comercios publican durante todo el día."
+msgstr "Try another search or come back later: stores post throughout the day."
+
+#: scr/templates/products/_grilla.html:22
+msgid "Limpiar filtros"
+msgstr "Clear filters"
+
+#: scr/templates/products/catalogo.html:11
+msgid "Catálogo"
+msgstr "Catalog"
+
+#: scr/templates/products/catalogo.html:12
+msgid "Ofertas para rescatar hoy"
+msgstr "Offers to rescue today"
+
+#: scr/templates/products/catalogo.html:13
+msgid "ofertas disponibles con descuento."
+msgstr "offers available at a discount."
+
+#: scr/templates/products/catalogo.html:25
+msgid "Buscar por producto, comercio o zona..."
+msgstr "Search by product, store or area..."
+
+#: scr/templates/products/catalogo.html:29
+#: scr/templates/stores/lista_tiendas.html:24
+msgid "Tipo de comercio"
+msgstr "Store type"
+
+#: scr/templates/products/catalogo.html:30
+msgid "Todos los comercios"
+msgstr "All stores"
+
+#: scr/templates/products/catalogo.html:35
+msgid "Ordenar"
+msgstr "Sort"
+
+#: scr/templates/products/catalogo.html:36
+msgid "Más cerca"
+msgstr "Nearest"
+
+#: scr/templates/products/catalogo.html:37
+msgid "Más recientes"
+msgstr "Newest"
+
+#: scr/templates/products/catalogo.html:38
+msgid "Menor precio"
+msgstr "Lowest price"
+
+#: scr/templates/products/catalogo.html:39
+msgid "Retiro más próximo"
+msgstr "Earliest pickup"
+
+#: scr/templates/products/catalogo.html:44
+#: scr/templates/stores/lista_tiendas.html:31
+msgid "Cerca mío"
+msgstr "Near me"
+
+#: scr/templates/products/catalogo.html:46
+#: scr/templates/stores/lista_tiendas.html:33
+msgid "Distancia máxima"
+msgstr "Maximum distance"
+
+#: scr/templates/products/catalogo.html:47
+#: scr/templates/stores/lista_tiendas.html:34
+#, python-format
+msgid "Hasta %(km)s km"
+msgstr "Up to %(km)s km"
+
+#: scr/templates/products/catalogo.html:48
+#: scr/templates/stores/lista_tiendas.html:35
+msgid "Cualquier distancia"
+msgstr "Any distance"
+
+#: scr/templates/products/catalogo.html:54
+msgid "Solo donables"
+msgstr "Donatable only"
+
+#: scr/templates/products/catalogo.html:63
+msgid "Todo"
+msgstr "All"
+
+#: scr/templates/products/catalogo.html:68
+msgid "Filtrar"
+msgstr "Filter"
+
+#: scr/templates/products/confirmar_eliminacion.html:5
+msgid "Eliminar publicación"
+msgstr "Delete listing"
+
+#: scr/templates/products/confirmar_eliminacion.html:11
+#, python-format
+msgid "¿Eliminar \"%(titulo)s\"?"
+msgstr "Delete \"%(titulo)s\"?"
+
+#: scr/templates/products/confirmar_eliminacion.html:12
+msgid "Se borrará la publicación y sus reservas asociadas. Esta acción no se puede deshacer."
+msgstr "The listing and its reservations will be deleted. This action cannot be undone."
+
+#: scr/templates/products/confirmar_eliminacion.html:16
+msgid "Sí, eliminar"
+msgstr "Yes, delete"
+
+#: scr/templates/products/detalle.html:9
+msgid "breadcrumb"
+msgstr "breadcrumb"
+
+#: scr/templates/products/detalle.html:33
+#: scr/bd_lup/products/models.py:40
+msgid "No disponible"
+msgstr "Unavailable"
+
+#: scr/templates/products/detalle.html:44
+msgid "Dónde:"
+msgstr "Where:"
+
+#: scr/templates/products/detalle.html:45
+msgid "Horario:"
+msgstr "Hours:"
+
+#: scr/templates/products/detalle.html:46
+msgid "Retirá hasta:"
+msgstr "Pick up by:"
+
+#: scr/templates/products/detalle.html:47
+msgid "Disponibles:"
+msgstr "Available:"
+
+#: scr/templates/products/detalle.html:47
+#, python-format
+msgid "%(n)s unidad"
+msgid_plural "%(n)s unidades"
+msgstr[0] "%(n)s unit"
+msgstr[1] "%(n)s units"
+
+#: scr/templates/products/detalle.html:53
+#: scr/bd_lup/products/views.py:140
+msgid "Esta oferta ya no está disponible."
+msgstr "This offer is no longer available."
+
+#: scr/templates/products/detalle.html:53
+msgid "Ver otras ofertas"
+msgstr "See other offers"
+
+#: scr/templates/products/detalle.html:60
+msgid "Cantidad"
+msgstr "Quantity"
+
+#: scr/templates/products/detalle.html:62
+msgid "Restar"
+msgstr "Decrease"
+
+#: scr/templates/products/detalle.html:64
+msgid "Sumar"
+msgstr "Increase"
+
+#: scr/templates/products/detalle.html:68
+msgid "Total a pagar en el local"
+msgstr "Total to pay at the store"
+
+#: scr/templates/products/detalle.html:72
+msgid "Reservar ahora"
+msgstr "Reserve now"
+
+#: scr/templates/products/detalle.html:73
+msgid "Recibirás un código para mostrar al retirar."
+msgstr "You'll get a code to show when you pick up."
+
+#: scr/templates/products/detalle.html:78
+msgid "Ya enviaste una solicitud por esta donación. Podés seguirla desde"
+msgstr "You already sent a request for this donation. You can follow it from"
+
+#: scr/templates/products/detalle.html:78
+msgid "tu panel"
+msgstr "your dashboard"
+
+#: scr/templates/products/detalle.html:82
+msgid "Solicitar como donación"
+msgstr "Request as a donation"
+
+#: scr/templates/products/detalle.html:84
+msgid "Enviar solicitud al comercio"
+msgstr "Send request to the store"
+
+#: scr/templates/products/detalle.html:90
+msgid "Esta es tu publicación"
+msgstr "This is your listing"
+
+#: scr/templates/products/detalle.html:97
+msgid "Iniciá sesión como consumidor para reservar esta oferta."
+msgstr "Log in as a consumer to reserve this offer."
+
+#: scr/templates/products/detalle.html:106
+msgid "Esta oferta no está marcada para donación."
+msgstr "This offer is not marked for donation."
+
+#: scr/templates/products/detalle.html:106
+msgid "Las reservas están disponibles para cuentas de consumidor."
+msgstr "Reservations are available for consumer accounts."
+
+#: scr/templates/products/detalle.html:114
+#, python-format
+msgid "Más de %(comercio)s"
+msgstr "More from %(comercio)s"
+
+#: scr/templates/products/form_producto.html:5
+#: scr/templates/products/form_producto.html:10
+msgid "Editar publicación"
+msgstr "Edit listing"
+
+#: scr/templates/products/form_producto.html:10
+msgid "Publicá tu excedente"
+msgstr "Post your surplus"
+
+#: scr/templates/products/form_producto.html:11
+msgid "Completá los datos y mirá en vivo cómo se verá tu oferta en el catálogo."
+msgstr "Fill in the details and see live how your offer will look in the catalog."
+
+#: scr/templates/products/form_producto.html:19
+msgid "¿Qué ofrecés?"
+msgstr "What are you offering?"
+
+#: scr/templates/products/form_producto.html:26
+msgid "Precio"
+msgstr "Price"
+
+#: scr/templates/products/form_producto.html:32
+msgid "Descuento rápido:"
+msgstr "Quick discount:"
+
+#: scr/templates/products/form_producto.html:37
+msgid "El precio Lüp debe ser menor al original."
+msgstr "The Lüp price must be lower than the original."
+
+#: scr/templates/products/form_producto.html:39
+msgid "Disponibilidad"
+msgstr "Availability"
+
+#: scr/templates/products/form_producto.html:47
+msgid "Las organizaciones sociales podrán solicitarla sin costo."
+msgstr "Social organizations will be able to request it for free."
+
+#: scr/templates/products/form_producto.html:52
+#: scr/templates/users/perfil.html:80
+msgid "Guardar cambios"
+msgstr "Save changes"
+
+#: scr/templates/products/form_producto.html:52
+msgid "Publicar oferta"
+msgstr "Post offer"
+
+#: scr/templates/products/form_producto.html:59
+msgid "VISTA PREVIA"
+msgstr "PREVIEW"
+
+#: scr/templates/products/form_producto.html:71
+msgid "Título de tu oferta"
+msgstr "Your offer's title"
+
+#: scr/templates/products/form_producto.html:80
+msgid "Tip:"
+msgstr "Tip:"
+
+#: scr/templates/products/form_producto.html:80
+#, python-format
+msgid "las ofertas con foto y un descuento de al menos 50%% se reservan mucho más rápido."
+msgstr "offers with a photo and a discount of at least 50%% get reserved much faster."
+
+#: scr/templates/stores/detalle_tienda.html:16
+#, python-format
+msgid "%(n)s opinión"
+msgid_plural "%(n)s opiniones"
+msgstr[0] "%(n)s review"
+msgstr[1] "%(n)s reviews"
+
+#: scr/templates/stores/detalle_tienda.html:23
+#, python-format
+msgid "Ofertas disponibles (%(n)s)"
+msgstr "Available offers (%(n)s)"
+
+#: scr/templates/stores/detalle_tienda.html:28
+msgid "Este comercio no tiene ofertas activas ahora. ¡Volvé más tarde!"
+msgstr "This store has no active offers right now. Check back later!"
+
+#: scr/templates/stores/detalle_tienda.html:34
+msgid "Opiniones de clientes"
+msgstr "Customer reviews"
+
+#: scr/templates/stores/detalle_tienda.html:40
+msgid "de 5"
+msgstr "out of 5"
+
+#: scr/templates/stores/detalle_tienda.html:43
+#, python-format
+msgid "%(n)s opinión de personas que retiraron"
+msgid_plural "%(n)s opiniones de personas que retiraron"
+msgstr[0] "%(n)s review from people who picked up"
+msgstr[1] "%(n)s reviews from people who picked up"
+
+#: scr/templates/stores/detalle_tienda.html:47
+#, python-format
+msgid "%(n)s opiniones de %(p)s estrellas"
+msgstr "%(n)s reviews of %(p)s stars"
+
+#: scr/templates/stores/detalle_tienda.html:64
+#, python-format
+msgid "Retiró: %(titulo)s"
+msgstr "Picked up: %(titulo)s"
+
+#: scr/templates/stores/detalle_tienda.html:70
+msgid "← Más nuevas"
+msgstr "← Newer"
+
+#: scr/templates/stores/detalle_tienda.html:71
+msgid "Más viejas →"
+msgstr "Older →"
+
+#: scr/templates/stores/detalle_tienda.html:77
+msgid "Todavía no tiene opiniones. Las pueden dejar quienes retiran una reserva en este comercio."
+msgstr "No reviews yet. People who pick up a reservation at this store can leave one."
+
+#: scr/templates/stores/lista_tiendas.html:11
+msgid "Comercios cerca tuyo"
+msgstr "Stores near you"
+
+#: scr/templates/stores/lista_tiendas.html:11
+msgid "Comercios que rescatan comida"
+msgstr "Stores rescuing food"
+
+#: scr/templates/stores/lista_tiendas.html:12
+#, python-format
+msgid "<strong>%(n)s</strong> comercio a menos de %(radio)s km."
+msgid_plural "<strong>%(n)s</strong> comercios a menos de %(radio)s km."
+msgstr[0] "<strong>%(n)s</strong> store within %(radio)s km."
+msgstr[1] "<strong>%(n)s</strong> stores within %(radio)s km."
+
+#: scr/templates/stores/lista_tiendas.html:12
+#, python-format
+msgid "<strong>%(n)s</strong> comercio."
+msgid_plural "<strong>%(n)s</strong> comercios."
+msgstr[0] "<strong>%(n)s</strong> store."
+msgstr[1] "<strong>%(n)s</strong> stores."
+
+#: scr/templates/stores/lista_tiendas.html:20
+msgid "Buscar por nombre o dirección..."
+msgstr "Search by name or address..."
+
+#: scr/templates/stores/lista_tiendas.html:20
+msgid "Buscar comercios"
+msgstr "Search stores"
+
+#: scr/templates/stores/lista_tiendas.html:25
+msgid "Todos los rubros"
+msgstr "All categories"
+
+#: scr/templates/stores/lista_tiendas.html:46
+#, python-format
+msgid "Hay %(n)s comercio más lejos"
+msgid_plural "Hay %(n)s comercios más lejos"
+msgstr[0] "There is %(n)s more store further away"
+msgstr[1] "There are %(n)s more stores further away"
+
+#: scr/templates/stores/lista_tiendas.html:46
+msgid "Ver todos"
+msgstr "See all"
+
+#: scr/templates/stores/lista_tiendas.html:57
+#, python-format
+msgid "No hay comercios a menos de %(radio)s km"
+msgstr "There are no stores within %(radio)s km"
+
+#: scr/templates/stores/lista_tiendas.html:58
+msgid "Probá con una distancia mayor."
+msgstr "Try a larger distance."
+
+#: scr/templates/stores/lista_tiendas.html:59
+msgid "Ver todos los comercios"
+msgstr "See all stores"
+
+#: scr/templates/stores/lista_tiendas.html:61
+msgid "Todavía no hay comercios con esos filtros"
+msgstr "There are no stores with those filters yet"
+
+#: scr/templates/stores/lista_tiendas.html:62
+msgid "¿Tenés un comercio? Sumalo a Lüp y empezá a rescatar comida."
+msgstr "Do you have a store? Join Lüp and start rescuing food."
+
+#: scr/templates/users/login.html:17
+msgid "¡Qué bueno verte de nuevo!"
+msgstr "Great to see you again!"
+
+#: scr/templates/users/login.html:18
+msgid "Cada vez que ingresás, ayudás a que más comida llegue a una mesa en lugar de a la basura."
+msgstr "Every time you log in, you help more food reach a table instead of the trash."
+
+#: scr/templates/users/login.html:21
+msgid "Reservás, retirás y pagás en el local"
+msgstr "Reserve, pick up and pay at the store"
+
+#: scr/templates/users/login.html:22
+msgid "No cargás datos de pago en Lüp: mostrás tu código de retiro y pagás directamente al comercio."
+msgstr "You don't enter payment details on Lüp: you show your pickup code and pay the store directly."
+
+#: scr/templates/users/login.html:30
+msgid "Elegí tu tipo de cuenta e ingresá tus datos."
+msgstr "Choose your account type and enter your details."
+
+#: scr/templates/users/login.html:32
+msgid "Tipo de cuenta"
+msgstr "Account type"
+
+#: scr/templates/users/login.html:54
+#, python-format
+msgid "Ingresar como %(rol)s"
+msgstr "Log in as %(rol)s"
+
+#: scr/templates/users/login.html:59
+msgid "¿No tenés cuenta?"
+msgstr "Don't have an account?"
+
+#: scr/templates/users/login.html:60
+msgid "Registrate gratis"
+msgstr "Sign up for free"
+
+#: scr/templates/users/perfil.html:15
+msgid "Foto o logo del comercio"
+msgstr "Store photo or logo"
+
+#: scr/templates/users/perfil.html:15
+msgid "Foto o logo de la organización"
+msgstr "Organization photo or logo"
+
+#: scr/templates/users/perfil.html:15
+msgid "Foto de perfil"
+msgstr "Profile photo"
+
+#: scr/templates/users/perfil.html:21
+msgid "Cambiar foto"
+msgstr "Change photo"
+
+#: scr/templates/users/perfil.html:21
+msgid "Subir foto"
+msgstr "Upload photo"
+
+#: scr/templates/users/perfil.html:26
+msgid "Quitar foto"
+msgstr "Remove photo"
+
+#: scr/templates/users/perfil.html:29
+msgid "JPG, PNG o WEBP, hasta 5 MB. Se recorta en forma cuadrada."
+msgstr "JPG, PNG or WEBP, up to 5 MB. It's cropped into a square."
+
+#: scr/templates/users/perfil.html:35
+#: scr/bd_lup/users/models.py:23
+#: scr/bd_lup/users/views.py:33
+msgid "Organización"
+msgstr "Organization"
+
+#: scr/templates/users/perfil.html:47
+msgid "Ubicación del local"
+msgstr "Store location"
+
+#: scr/templates/users/perfil.html:51
+msgid "Así los clientes ven cuán cerca están y pueden abrir el recorrido en Google Maps. Si estás en el local, usá la ubicación de este dispositivo."
+msgstr "This lets customers see how close they are and open directions in Google Maps. If you're at the store, use this device's location."
+
+#: scr/templates/users/perfil.html:54
+msgid "Usar la ubicación de este dispositivo"
+msgstr "Use this device's location"
+
+#: scr/templates/users/perfil.html:56
+msgid "Ubicación guardada"
+msgstr "Location saved"
+
+#: scr/templates/users/perfil.html:56
+msgid "Todavía sin ubicación"
+msgstr "No location yet"
+
+#: scr/templates/users/perfil.html:60
+msgid "Ubicación del local en Google Maps"
+msgstr "Store location on Google Maps"
+
+#: scr/templates/users/perfil.html:64
+msgid "Avisos"
+msgstr "Notifications"
+
+#: scr/templates/users/perfil.html:66
+msgid "Llegan a"
+msgstr "Sent to"
+
+#: scr/templates/users/perfil.html:66
+msgid ": nuevas reservas, cancelaciones y pedidos de donación."
+msgstr ": new reservations, cancellations and donation requests."
+
+#: scr/templates/users/perfil.html:70
+msgid "Datos personales"
+msgstr "Personal details"
+
+#: scr/templates/users/perfil.html:78
+msgid "Usuario:"
+msgstr "Username:"
+
+#: scr/templates/users/perfil.html:78
+msgid "· Tipo de cuenta:"
+msgstr "· Account type:"
+
+#: scr/templates/users/registro.html:4
+#, python-format
+msgid "Registro de %(rol)s"
+msgstr "Sign-up: %(rol)s"
+
+#: scr/templates/users/registro.html:8
+msgid "Cambiar tipo de cuenta"
+msgstr "Change account type"
+
+#: scr/templates/users/registro.html:15
+msgid "Paso 2 de 2"
+msgstr "Step 2 of 2"
+
+#: scr/templates/users/registro.html:16
+#, python-format
+msgid "Creá tu cuenta de %(rol)s"
+msgstr "Create your %(rol)s account"
+
+#: scr/templates/users/registro.html:22
+msgid "Revisá los campos marcados en rojo."
+msgstr "Check the fields marked in red."
+
+#: scr/templates/users/registro.html:29
+msgid "Datos del comercio"
+msgstr "Store details"
+
+#: scr/templates/users/registro.html:38
+msgid "Datos de la organización"
+msgstr "Organization details"
+
+#: scr/templates/users/registro.html:48
+msgid "Tus datos"
+msgstr "Your details"
+
+#: scr/templates/users/registro.html:48
+msgid "Datos del responsable"
+msgstr "Contact person details"
+
+#: scr/templates/users/registro.html:57
+msgid "Acceso"
+msgstr "Access"
+
+#: scr/templates/users/registro.html:66
+msgid "Crear mi cuenta"
+msgstr "Create my account"
+
+#: scr/templates/users/registro.html:68
+#: scr/templates/users/registro_seleccion.html:26
+msgid "¿Ya tenés cuenta?"
+msgstr "Already have an account?"
+
+#: scr/templates/users/registro.html:68
+#: scr/templates/users/registro_seleccion.html:26
+msgid "Iniciá sesión"
+msgstr "Log in"
+
+#: scr/templates/users/registro_seleccion.html:9
+msgid "Paso 1 de 2"
+msgstr "Step 1 of 2"
+
+#: scr/templates/users/registro_seleccion.html:10
+msgid "¿Cómo querés usar Lüp?"
+msgstr "How do you want to use Lüp?"
+
+#: scr/templates/users/registro_seleccion.html:11
+msgid "Elegí el tipo de cuenta que mejor te representa. Cada una tiene herramientas pensadas para vos."
+msgstr "Choose the account type that best fits you. Each one has tools designed for you."
+
+#: scr/templates/users/registro_seleccion.html:18
+#, python-format
+msgid "Soy %(rol)s"
+msgstr "Join as %(rol)s"
+
+#: scr/templates/users/registro_seleccion.html:21
+msgid "Continuar"
+msgstr "Continue"
+
+#: scr/bd_lup/products/forms.py:25
+msgid "Ej: Docena de medialunas del día"
+msgstr "E.g.: A dozen of today's croissants"
+
+#: scr/bd_lup/products/forms.py:27
+msgid "Contá qué incluye la oferta y cómo conservarla..."
+msgstr "Tell us what the offer includes and how to store it..."
+
+#: scr/bd_lup/products/forms.py:36
+msgid "Título de la oferta"
+msgstr "Offer title"
+
+#: scr/bd_lup/products/forms.py:37
+msgid "Precio original ($)"
+msgstr "Original price ($)"
+
+#: scr/bd_lup/products/forms.py:38
+msgid "Precio Lüp ($)"
+msgstr "Lüp price ($)"
+
+#: scr/bd_lup/products/forms.py:39
+msgid "Unidades disponibles"
+msgstr "Units available"
+
+#: scr/bd_lup/products/forms.py:40
+msgid "También disponible para donación a organizaciones"
+msgstr "Also available for donation to organizations"
+
+#: scr/bd_lup/products/forms.py:50
+msgid "La fecha límite no puede estar en el pasado."
+msgstr "The pickup deadline can't be in the past."
+
+#: scr/bd_lup/products/forms.py:56
+msgid "Publicá al menos una unidad."
+msgstr "Post at least one unit."
+
+#: scr/bd_lup/products/forms.py:74
+#, python-format
+msgid "Solo quedan %(n)s unidades."
+msgstr "Only %(n)s units left."
+
+#: scr/bd_lup/products/forms.py:86
+msgid "Contale al comercio a cuántas personas ayudaría y cuándo podés retirarlo..."
+msgstr "Tell the store how many people it would help and when you can pick it up..."
+
+#: scr/bd_lup/products/forms.py:90
+msgid "Mensaje para el comercio"
+msgstr "Message for the store"
+
+#: scr/bd_lup/products/forms.py:96
+msgid "Elegí de 1 a 5 estrellas."
+msgstr "Choose from 1 to 5 stars."
+
+#: scr/bd_lup/products/models.py:38
+msgid "Disponible"
+msgstr "Available"
+
+#: scr/bd_lup/products/models.py:39
+msgid "Vendido"
+msgstr "Sold"
+
+#: scr/bd_lup/products/models.py:41
+msgid "Donado"
+msgstr "Donated"
+
+#: scr/bd_lup/products/models.py:47
+msgid "Panificados"
+msgstr "Baked goods"
+
+#: scr/bd_lup/products/models.py:48
+msgid "Comidas preparadas"
+msgstr "Prepared meals"
+
+#: scr/bd_lup/products/models.py:49
+msgid "Frutas y verduras"
+msgstr "Fruits and vegetables"
+
+#: scr/bd_lup/products/models.py:50
+msgid "Lácteos"
+msgstr "Dairy"
+
+#: scr/bd_lup/products/models.py:51
+msgid "Carnes"
+msgstr "Meat"
+
+#: scr/bd_lup/products/models.py:52
+msgid "Almacén"
+msgstr "Groceries"
+
+#: scr/bd_lup/products/models.py:53
+msgid "Bolsa sorpresa"
+msgstr "Surprise bag"
+
+#: scr/bd_lup/products/models.py:54
+msgid "Otros"
+msgstr "Other"
+
+#: scr/bd_lup/products/models.py:58
+msgid "título"
+msgstr "title"
+
+#: scr/bd_lup/products/models.py:59
+#: scr/bd_lup/stores/models.py:27
+msgid "descripción"
+msgstr "description"
+
+#: scr/bd_lup/products/models.py:60
+msgid "categoría"
+msgstr "category"
+
+#: scr/bd_lup/products/models.py:61
+msgid "foto del producto"
+msgstr "product photo"
+
+#: scr/bd_lup/products/models.py:66
+msgid "precio Lüp"
+msgstr "Lüp price"
+
+#: scr/bd_lup/products/models.py:68
+msgid "apto para donación"
+msgstr "suitable for donation"
+
+#: scr/bd_lup/products/models.py:70
+msgid "fecha límite de retiro"
+msgstr "pickup deadline"
+
+#: scr/bd_lup/products/models.py:87
+msgid "El precio Lüp no puede ser mayor al precio original."
+msgstr "The Lüp price can't be higher than the original price."
+
+#: scr/bd_lup/products/models.py:130
+msgid "Pendiente de retiro"
+msgstr "Pending pickup"
+
+#: scr/bd_lup/products/models.py:131
+msgid "Retirada"
+msgstr "Picked up"
+
+#: scr/bd_lup/products/models.py:132
+msgid "Cancelada"
+msgstr "Cancelled"
+
+#: scr/bd_lup/products/models.py:159
+msgid "Pendiente"
+msgstr "Pending"
+
+#: scr/bd_lup/products/models.py:160
+msgid "Aprobada"
+msgstr "Approved"
+
+#: scr/bd_lup/products/models.py:161
+msgid "Rechazada"
+msgstr "Rejected"
+
+#: scr/bd_lup/products/models.py:176
+msgid "solicitud de donación"
+msgstr "donation request"
+
+#: scr/bd_lup/products/models.py:177
+msgid "solicitudes de donación"
+msgstr "donation requests"
+
+#: scr/bd_lup/products/models.py:198
+msgid "calificación"
+msgstr "rating"
+
+#: scr/bd_lup/products/models.py:199
+msgid "calificaciones"
+msgstr "ratings"
+
+#: scr/bd_lup/products/views.py:31
+msgid "Esta sección es exclusiva para comercios."
+msgstr "This section is only for stores."
+
+#: scr/bd_lup/products/views.py:32
+msgid "Solo los consumidores pueden reservar ofertas."
+msgstr "Only consumers can reserve offers."
+
+#: scr/bd_lup/products/views.py:34
+msgid "Solo las organizaciones registradas pueden solicitar donaciones."
+msgstr "Only registered organizations can request donations."
+
+#: scr/bd_lup/products/views.py:156
+#, python-format
+msgid "¡Reserva confirmada! Mostrá el código %(codigo)s en %(comercio)s para retirarla."
+msgstr "Reservation confirmed! Show the code %(codigo)s at %(comercio)s to pick it up."
+
+#: scr/bd_lup/products/views.py:176
+msgid "Reserva cancelada. Las unidades volvieron a estar disponibles."
+msgstr "Reservation cancelled. The units are available again."
+
+#: scr/bd_lup/products/views.py:196
+#, python-format
+msgid "¡Gracias! Tu opinión sobre %(comercio)s ya está publicada."
+msgstr "Thank you! Your review of %(comercio)s is now published."
+
+#: scr/bd_lup/products/views.py:198
+msgid "Elegí de 1 a 5 estrellas para calificar."
+msgstr "Choose from 1 to 5 stars to rate."
+
+#: scr/bd_lup/products/views.py:211
+msgid "Esta donación ya no está disponible."
+msgstr "This donation is no longer available."
+
+#: scr/bd_lup/products/views.py:214
+msgid "Ya enviaste una solicitud por este producto."
+msgstr "You already sent a request for this product."
+
+#: scr/bd_lup/products/views.py:223
+#, python-format
+msgid "Tu solicitud por \"%(titulo)s\" fue enviada a %(comercio)s."
+msgstr "Your request for \"%(titulo)s\" was sent to %(comercio)s."
+
+#: scr/bd_lup/products/views.py:225
+msgid "Escribí un mensaje para el comercio."
+msgstr "Write a message for the store."
+
+#: scr/bd_lup/products/views.py:237
+msgid "Completá los datos de tu comercio antes de publicar."
+msgstr "Complete your store details before posting."
+
+#: scr/bd_lup/products/views.py:245
+msgid "¡Excedente publicado! Ya aparece en el catálogo."
+msgstr "Surplus posted! It now appears in the catalog."
+
+#: scr/bd_lup/products/views.py:259
+msgid "Publicación actualizada."
+msgstr "Listing updated."
+
+#: scr/bd_lup/products/views.py:269
+msgid "Publicación eliminada."
+msgstr "Listing deleted."
+
+#: scr/bd_lup/products/views.py:275
+#, python-format
+msgid "\"%(titulo)s\" quedó marcado como vendido y ya no aparece en el catálogo."
+msgstr "\"%(titulo)s\" was marked as sold and no longer appears in the catalog."
+
+#: scr/bd_lup/products/views.py:276
+#, python-format
+msgid "\"%(titulo)s\" quedó como no disponible. Podés volver a publicarlo cuando quieras."
+msgstr "\"%(titulo)s\" is now unavailable. You can publish it again whenever you want."
+
+#: scr/bd_lup/products/views.py:277
+#, python-format
+msgid "\"%(titulo)s\" volvió a estar publicado en el catálogo."
+msgstr "\"%(titulo)s\" is back in the catalog."
+
+#: scr/bd_lup/products/views.py:288
+msgid "No se puede cambiar el estado de esta publicación."
+msgstr "The status of this listing can't be changed."
+
+#: scr/bd_lup/products/views.py:290
+msgid "No le queda stock. Editá la publicación para cargar unidades y volver a publicarla."
+msgstr "It's out of stock. Edit the listing to add units and publish it again."
+
+#: scr/bd_lup/products/views.py:293
+msgid "La fecha límite de retiro ya pasó. Actualizala para volver a publicarla."
+msgstr "The pickup deadline has passed. Update it to publish the listing again."
+
+#: scr/bd_lup/products/views.py:310
+#, python-format
+msgid "No encontramos una reserva con el código \"%(codigo)s\"."
+msgstr "We couldn't find a reservation with the code \"%(codigo)s\"."
+
+#: scr/bd_lup/products/views.py:312
+#, python-format
+msgid "La reserva %(codigo)s ya está %(estado)s."
+msgstr "Reservation %(codigo)s is already %(estado)s."
+
+#: scr/bd_lup/products/views.py:317
+#, python-format
+msgid "Retiro confirmado: %(cantidad)s × %(producto)s para %(cliente)s."
+msgstr "Pickup confirmed: %(cantidad)s × %(producto)s for %(cliente)s."
+
+#: scr/bd_lup/products/views.py:338
+msgid "Este producto ya no está disponible para donar (sin stock, vencido o ya donado)."
+msgstr "This product is no longer available to donate (out of stock, expired or already donated)."
+
+#: scr/bd_lup/products/views.py:347
+#, python-format
+msgid "Donación aprobada para %(org)s. ¡Gracias!"
+msgstr "Donation approved for %(org)s. Thank you!"
+
+#: scr/bd_lup/products/views.py:351
+msgid "Solicitud rechazada."
+msgstr "Request rejected."
+
+#: scr/bd_lup/products/views.py:430
+msgid "Completá los datos de tu comercio para ver tus estadísticas."
+msgstr "Complete your store details to see your statistics."
+
+#: scr/bd_lup/products/views.py:484
+msgid "7 días"
+msgstr "7 days"
+
+#: scr/bd_lup/products/views.py:484
+msgid "30 días"
+msgstr "30 days"
+
+#: scr/bd_lup/products/views.py:484
+msgid "90 días"
+msgstr "90 days"
+
+#: scr/bd_lup/products/views.py:521
+msgid "Ubicación inválida."
+msgstr "Invalid location."
+
+#: scr/bd_lup/products/views.py:547
+msgid "Escribí una dirección."
+msgstr "Type an address."
+
+#: scr/bd_lup/products/views.py:550
+msgid "No encontramos esa dirección. Probá agregando la ciudad."
+msgstr "We couldn't find that address. Try adding the city."
+
+#: scr/bd_lup/stores/models.py:10
+msgid "Panadería / Confitería"
+msgstr "Bakery / Pastry shop"
+
+#: scr/bd_lup/stores/models.py:11
+msgid "Restaurante / Rotisería"
+msgstr "Restaurant / Takeaway"
+
+#: scr/bd_lup/stores/models.py:12
+msgid "Verdulería"
+msgstr "Greengrocer"
+
+#: scr/bd_lup/stores/models.py:13
+msgid "Supermercado / Almacén"
+msgstr "Supermarket / Grocery store"
+
+#: scr/bd_lup/stores/models.py:14
+msgid "Cafetería"
+msgstr "Café"
+
+#: scr/bd_lup/stores/models.py:15
+msgid "Carnicería"
+msgstr "Butcher shop"
+
+#: scr/bd_lup/stores/models.py:16
+msgid "Otro"
+msgstr "Other"
+
+#: scr/bd_lup/stores/models.py:25
+msgid "nombre del comercio"
+msgstr "store name"
+
+#: scr/bd_lup/stores/models.py:28
+#: scr/bd_lup/users/models.py:78
+msgid "dirección"
+msgstr "address"
+
+#: scr/bd_lup/stores/models.py:29
+#: scr/bd_lup/users/forms.py:89
+msgid "CUIT / CUIL"
+msgstr "CUIT / CUIL (tax ID)"
+
+#: scr/bd_lup/stores/models.py:31
+msgid "horario de retiro"
+msgstr "pickup hours"
+
+#: scr/bd_lup/stores/models.py:31
+msgid "Ej: Lunes a sábados de 18 a 20 hs"
+msgstr "E.g.: Monday to Saturday from 6 to 8 pm"
+
+#: scr/bd_lup/stores/models.py:36
+msgid "recibir avisos por email"
+msgstr "receive email notifications"
+
+#: scr/bd_lup/stores/models.py:37
+msgid "Te avisamos cuando alguien reserva, cancela o pide una donación."
+msgstr "We'll let you know when someone reserves, cancels or requests a donation."
+
+#: scr/bd_lup/stores/models.py:42
+msgid "comercio"
+msgstr "store"
+
+#: scr/bd_lup/stores/models.py:43
+msgid "comercios"
+msgstr "stores"
+
+#: scr/bd_lup/users/decorators.py:9
+msgid "No tenés permiso para acceder a esta sección."
+msgstr "You don't have permission to access this section."
+
+#: scr/bd_lup/users/forms.py:35
+msgid "El CUIT/CUIL debe tener 11 dígitos."
+msgstr "The CUIT/CUIL must have 11 digits."
+
+#: scr/bd_lup/users/forms.py:42
+msgid "Acepto los términos y condiciones de Lüp"
+msgstr "I accept Lüp's terms and conditions"
+
+#: scr/bd_lup/users/forms.py:43
+msgid "Tenés que aceptar los términos para continuar."
+msgstr "You must accept the terms to continue."
+
+#: scr/bd_lup/users/forms.py:49
+#: scr/bd_lup/users/forms.py:213
+msgid "Nombre"
+msgstr "First name"
+
+#: scr/bd_lup/users/forms.py:49
+#: scr/bd_lup/users/forms.py:213
+msgid "Apellido"
+msgstr "Last name"
+
+#: scr/bd_lup/users/forms.py:55
+msgid "ej: juan_perez"
+msgstr "e.g.: juan_perez"
+
+#: scr/bd_lup/users/forms.py:56
+msgid "tu@email.com"
+msgstr "you@email.com"
+
+#: scr/bd_lup/users/forms.py:58
+msgid "Ej: Alta Gracia"
+msgstr "E.g.: Alta Gracia"
+
+#: scr/bd_lup/users/forms.py:59
+msgid "Mínimo 8 caracteres, no solo números."
+msgstr "At least 8 characters, not only numbers."
+
+#: scr/bd_lup/users/forms.py:65
+#: scr/bd_lup/users/forms.py:223
+msgid "Ya existe una cuenta con este email."
+msgstr "An account with this email already exists."
+
+#: scr/bd_lup/users/forms.py:87
+msgid "Nombre del comercio"
+msgstr "Store name"
+
+#: scr/bd_lup/users/forms.py:89
+msgid "20-12345678-9"
+msgstr "20-12345678-9"
+
+#: scr/bd_lup/users/forms.py:90
+msgid "Dirección del local"
+msgstr "Store address"
+
+#: scr/bd_lup/users/forms.py:90
+#: scr/bd_lup/users/forms.py:121
+msgid "Calle, número y ciudad"
+msgstr "Street, number and city"
+
+#: scr/bd_lup/users/forms.py:92
+msgid "Horario de retiro"
+msgstr "Pickup hours"
+
+#: scr/bd_lup/users/forms.py:92
+msgid "Ej: Lun a Sáb de 18 a 20 hs"
+msgstr "E.g.: Mon to Sat from 6 to 8 pm"
+
+#: scr/bd_lup/users/forms.py:96
+msgid "Nombre del responsable"
+msgstr "Manager's first name"
+
+#: scr/bd_lup/users/forms.py:96
+msgid "Apellido del responsable"
+msgstr "Manager's last name"
+
+#: scr/bd_lup/users/forms.py:101
+msgid "Ya hay un comercio registrado con este CUIT."
+msgstr "A store with this CUIT is already registered."
+
+#: scr/bd_lup/users/forms.py:118
+msgid "Nombre de la organización"
+msgstr "Organization name"
+
+#: scr/bd_lup/users/forms.py:119
+msgid "Tipo de organización"
+msgstr "Organization type"
+
+#: scr/bd_lup/users/forms.py:120
+#: scr/bd_lup/users/models.py:77
+msgid "CUIT / matrícula"
+msgstr "CUIT / registration number"
+
+#: scr/bd_lup/users/forms.py:120
+msgid "30-12345678-9"
+msgstr "30-12345678-9"
+
+#: scr/bd_lup/users/forms.py:121
+msgid "Dirección"
+msgstr "Address"
+
+#: scr/bd_lup/users/forms.py:122
+msgid "Personas asistidas por semana"
+msgstr "People assisted per week"
+
+#: scr/bd_lup/users/forms.py:125
+msgid "Nombre del referente"
+msgstr "Contact person's first name"
+
+#: scr/bd_lup/users/forms.py:125
+msgid "Apellido del referente"
+msgstr "Contact person's last name"
+
+#: scr/bd_lup/users/forms.py:130
+msgid "Ya hay una organización registrada con este CUIT."
+msgstr "An organization with this CUIT is already registered."
+
+#: scr/bd_lup/users/forms.py:158
+msgid "Usuario/email o contraseña incorrectos."
+msgstr "Incorrect username/email or password."
+
+#: scr/bd_lup/users/forms.py:159
+#, python-format
+msgid "Esta cuenta está registrada como %(rol)s. Elegí esa pestaña para ingresar."
+msgstr "This account is registered as %(rol)s. Choose that tab to log in."
+
+#: scr/bd_lup/users/forms.py:164
+msgid "Usuario o email"
+msgstr "Username or email"
+
+#: scr/bd_lup/users/forms.py:165
+msgid "tu_usuario o tu@email.com"
+msgstr "your_username or you@email.com"
+
+#: scr/bd_lup/users/forms.py:208
+msgid "Quitar foto actual"
+msgstr "Remove current photo"
+
+#: scr/bd_lup/users/forms.py:230
+#, python-format
+msgid "La foto no puede pesar más de %(mb)s MB."
+msgstr "The photo can't be larger than %(mb)s MB."
+
+#: scr/bd_lup/users/forms.py:272
+msgid "La ubicación quedó incompleta. Volvé a marcarla."
+msgstr "The location is incomplete. Mark it again."
+
+#: scr/bd_lup/users/forms.py:274
+msgid "La ubicación no es válida."
+msgstr "The location isn't valid."
+
+#: scr/bd_lup/users/models.py:21
+#: scr/bd_lup/users/views.py:21
+msgid "Consumidor"
+msgstr "Consumer"
+
+#: scr/bd_lup/users/models.py:26
+msgid "email"
+msgstr "email"
+
+#: scr/bd_lup/users/models.py:28
+msgid "teléfono"
+msgstr "phone"
+
+#: scr/bd_lup/users/models.py:32
+msgid "Para comercios y organizaciones puede ser el logo."
+msgstr "For stores and organizations it can be the logo."
+
+#: scr/bd_lup/users/models.py:36
+msgid "usuario"
+msgstr "user"
+
+#: scr/bd_lup/users/models.py:37
+msgid "usuarios"
+msgstr "users"
+
+#: scr/bd_lup/users/models.py:67
+msgid "Comedor / Merendero"
+msgstr "Soup kitchen / Community kitchen"
+
+#: scr/bd_lup/users/models.py:68
+msgid "Fundación"
+msgstr "Foundation"
+
+#: scr/bd_lup/users/models.py:69
+msgid "ONG / Asociación civil"
+msgstr "NGO / Non-profit"
+
+#: scr/bd_lup/users/models.py:70
+msgid "Institución religiosa"
+msgstr "Religious institution"
+
+#: scr/bd_lup/users/models.py:71
+msgid "Otra"
+msgstr "Other"
+
+#: scr/bd_lup/users/models.py:75
+msgid "nombre de la organización"
+msgstr "organization name"
+
+#: scr/bd_lup/users/models.py:79
+msgid "N° personería jurídica"
+msgstr "Legal entity registration No."
+
+#: scr/bd_lup/users/models.py:80
+msgid "personas asistidas por semana"
+msgstr "people assisted per week"
+
+#: scr/bd_lup/users/models.py:84
+msgid "organización"
+msgstr "organization"
+
+#: scr/bd_lup/users/models.py:85
+msgid "organizaciones"
+msgstr "organizations"
+
+#: scr/bd_lup/users/views.py:23
+msgid "Rescatá comida rica a precios reducidos en comercios cerca tuyo."
+msgstr "Rescue great food at reduced prices from stores near you."
+
+#: scr/bd_lup/users/views.py:24
+msgid "Hasta 70% de descuento"
+msgstr "Up to 70% off"
+
+#: scr/bd_lup/users/views.py:24
+msgid "Reservá y retirá en el local"
+msgstr "Reserve and pick up at the store"
+
+#: scr/bd_lup/users/views.py:24
+msgid "Historial de compras"
+msgstr "Purchase history"
+
+#: scr/bd_lup/users/views.py:29
+msgid "Vendé tus excedentes del día y recuperá ingresos en lugar de tirarlos."
+msgstr "Sell your surplus of the day and recover income instead of throwing it away."
+
+#: scr/bd_lup/users/views.py:35
+msgid "Recibí donaciones de alimentos para comedores, merenderos y fundaciones."
+msgstr "Receive food donations for soup kitchens, community kitchens and foundations."
+
+#: scr/bd_lup/users/views.py:36
+msgid "Solicitá donaciones"
+msgstr "Request donations"
+
+#: scr/bd_lup/users/views.py:62
+#, python-format
+msgid "¡Hola de nuevo, %(nombre)s!"
+msgstr "Welcome back, %(nombre)s!"
+
+#: scr/bd_lup/users/views.py:75
+msgid "Cerraste sesión. ¡Te esperamos pronto!"
+msgstr "You logged out. See you soon!"
+
+#: scr/bd_lup/users/views.py:87
+msgid "Tipo de cuenta inexistente"
+msgstr "Account type doesn't exist"
+
+#: scr/bd_lup/users/views.py:96
+#, python-format
+msgid "¡Bienvenido/a a Lüp, %(nombre)s! Tu cuenta fue creada."
+msgstr "Welcome to Lüp, %(nombre)s! Your account was created."
+
+#: scr/bd_lup/users/views.py:127
+msgid "Tus datos se actualizaron correctamente."
+msgstr "Your details were updated successfully."

@@ -249,3 +249,56 @@ class ModoOscuroTests(TestCase):
         r = self.client.get(reverse('home'))
         self.assertRegex(r.content.decode(), r'css/lup\.css\?v=\d+')
         self.assertRegex(r.content.decode(), r'js/lup\.js\?v=\d+')
+
+
+class IdiomaTests(TestCase):
+    """Botón ES/EN: la web cambia de idioma, la API de la app sigue en español."""
+
+    def cambiar(self, idioma, siguiente='/productos/'):
+        return self.client.post(reverse('set_language'), {'language': idioma, 'next': siguiente})
+
+    def test_por_defecto_en_espanol_aunque_el_navegador_este_en_ingles(self):
+        r = self.client.get(reverse('home'), HTTP_ACCEPT_LANGUAGE='en-US,en;q=0.9')
+        self.assertContains(r, 'Ofertas cerca tuyo')
+        self.assertContains(r, '<html lang="es"')
+        self.assertContains(r, 'View in English')
+
+    def test_cambiar_a_ingles_y_volver(self):
+        r = self.cambiar('en')
+        self.assertRedirects(r, '/productos/', fetch_redirect_response=False)
+        r = self.client.get(reverse('catalogo'))
+        self.assertContains(r, 'Offers to rescue today')
+        self.assertContains(r, '<html lang="en"')
+        self.assertContains(r, 'Ver en español')
+        self.assertContains(r, 'js/lup-en.js')
+        self.cambiar('es-ar')
+        self.assertContains(self.client.get(reverse('catalogo')), 'Ofertas para rescatar hoy')
+
+    def test_mensajes_formularios_y_opciones_en_ingles(self):
+        self.cambiar('en')
+        r = self.client.get(reverse('registro', args=['comercio']))
+        self.assertContains(r, 'Store name')
+        self.assertContains(r, 'Bakery / Pastry shop')
+        r = self.client.post(reverse('login'), {'username': 'nadie', 'password': 'x', 'rol': 'consumidor'})
+        self.assertContains(r, 'Incorrect username/email or password.')
+
+    def test_la_api_siempre_responde_en_espanol(self):
+        self.cambiar('en')
+        r = self.client.post(reverse('api_login'), {'username': 'nadie', 'password': 'x'})
+        self.assertEqual(r.json()['error'], 'Usuario/email o contraseña incorrectos.')
+        self.assertEqual(r['Content-Language'], 'es-ar')
+
+    def test_traducciones_compiladas_al_dia(self):
+        """El .mo tiene que estar compilado desde el .po (python manage.py compilar_traducciones)."""
+        import gettext
+        from pathlib import Path
+
+        from django.conf import settings
+
+        from scr.bd_lup.products.management.commands.compilar_traducciones import leer_po
+        carpeta = Path(settings.LOCALE_PATHS[0]) / 'en' / 'LC_MESSAGES'
+        po = leer_po(carpeta / 'django.po')
+        mo = gettext.GNUTranslations(open(carpeta / 'django.mo', 'rb'))
+        for clave, valor in po.items():
+            if clave and '\0' not in clave:
+                self.assertEqual(mo.gettext(clave), valor, clave)

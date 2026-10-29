@@ -5,6 +5,7 @@ from django import forms
 from django.core.files.base import ContentFile
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.db import transaction
+from django.utils.translation import gettext_lazy as _
 
 from scr.bd_lup.stores.models import Tienda
 
@@ -31,37 +32,37 @@ class EstiloBootstrapMixin:
 def validar_cuit(valor):
     digitos = re.sub(r'\D', '', valor or '')
     if len(digitos) != 11:
-        raise forms.ValidationError('El CUIT/CUIL debe tener 11 dígitos.')
+        raise forms.ValidationError(_('El CUIT/CUIL debe tener 11 dígitos.'))
     return f'{digitos[:2]}-{digitos[2:10]}-{digitos[10]}'
 
 
 class RegistroBaseForm(EstiloBootstrapMixin, UserCreationForm):
     rol = None
     acepta_terminos = forms.BooleanField(
-        label='Acepto los términos y condiciones de Lüp',
-        error_messages={'required': 'Tenés que aceptar los términos para continuar.'},
+        label=_('Acepto los términos y condiciones de Lüp'),
+        error_messages={'required': _('Tenés que aceptar los términos para continuar.')},
     )
 
     class Meta(UserCreationForm.Meta):
         model = Usuario
         fields = ('username', 'first_name', 'last_name', 'email', 'telefono', 'ciudad')
-        labels = {'first_name': 'Nombre', 'last_name': 'Apellido'}
+        labels = {'first_name': _('Nombre'), 'last_name': _('Apellido')}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['email'].required = True
         self.fields['username'].help_text = ''
-        self.fields['username'].widget.attrs['placeholder'] = 'ej: juan_perez'
-        self.fields['email'].widget.attrs['placeholder'] = 'tu@email.com'
+        self.fields['username'].widget.attrs['placeholder'] = _('ej: juan_perez')
+        self.fields['email'].widget.attrs['placeholder'] = _('tu@email.com')
         self.fields['telefono'].widget.attrs['placeholder'] = '351 555 1234'
-        self.fields['ciudad'].widget.attrs['placeholder'] = 'Ej: Alta Gracia'
-        self.fields['password1'].help_text = 'Mínimo 8 caracteres, no solo números.'
+        self.fields['ciudad'].widget.attrs['placeholder'] = _('Ej: Alta Gracia')
+        self.fields['password1'].help_text = _('Mínimo 8 caracteres, no solo números.')
         self.fields['password2'].help_text = ''
 
     def clean_email(self):
         email = self.cleaned_data['email'].lower().strip()
         if Usuario.objects.filter(email__iexact=email).exists():
-            raise forms.ValidationError('Ya existe una cuenta con este email.')
+            raise forms.ValidationError(_('Ya existe una cuenta con este email.'))
         return email
 
     def guardar_perfil(self, usuario):
@@ -83,21 +84,21 @@ class ConsumidorRegistroForm(RegistroBaseForm):
 class ComercioRegistroForm(RegistroBaseForm):
     rol = Usuario.COMERCIO
 
-    nombre_fantasia = forms.CharField(label='Nombre del comercio', max_length=100)
+    nombre_fantasia = forms.CharField(label=_('Nombre del comercio'), max_length=100)
     rubro = forms.ChoiceField(choices=Tienda.RUBROS)
-    cuit = forms.CharField(label='CUIT / CUIL', max_length=13, help_text='20-12345678-9')
-    direccion = forms.CharField(label='Dirección del local', max_length=200, help_text='Calle, número y ciudad')
+    cuit = forms.CharField(label=_('CUIT / CUIL'), max_length=13, help_text=_('20-12345678-9'))
+    direccion = forms.CharField(label=_('Dirección del local'), max_length=200, help_text=_('Calle, número y ciudad'))
     horario_atencion = forms.CharField(
-        label='Horario de retiro', max_length=100, help_text='Ej: Lun a Sáb de 18 a 20 hs'
+        label=_('Horario de retiro'), max_length=100, help_text=_('Ej: Lun a Sáb de 18 a 20 hs')
     )
 
     class Meta(RegistroBaseForm.Meta):
-        labels = {'first_name': 'Nombre del responsable', 'last_name': 'Apellido del responsable'}
+        labels = {'first_name': _('Nombre del responsable'), 'last_name': _('Apellido del responsable')}
 
     def clean_cuit(self):
         cuit = validar_cuit(self.cleaned_data['cuit'])
         if Tienda.objects.filter(cuit=cuit).exists():
-            raise forms.ValidationError('Ya hay un comercio registrado con este CUIT.')
+            raise forms.ValidationError(_('Ya hay un comercio registrado con este CUIT.'))
         return cuit
 
     def guardar_perfil(self, usuario):
@@ -114,19 +115,19 @@ class ComercioRegistroForm(RegistroBaseForm):
 class OrganizacionRegistroForm(RegistroBaseForm):
     rol = Usuario.ORGANIZACION
 
-    nombre_organizacion = forms.CharField(label='Nombre de la organización', max_length=150)
-    tipo = forms.ChoiceField(label='Tipo de organización', choices=Organizacion.TIPOS)
-    cuit = forms.CharField(label='CUIT / matrícula', max_length=13, help_text='30-12345678-9')
-    direccion = forms.CharField(label='Dirección', max_length=255, help_text='Calle, número y ciudad')
-    personas_asistidas = forms.IntegerField(label='Personas asistidas por semana', min_value=0, initial=0)
+    nombre_organizacion = forms.CharField(label=_('Nombre de la organización'), max_length=150)
+    tipo = forms.ChoiceField(label=_('Tipo de organización'), choices=Organizacion.TIPOS)
+    cuit = forms.CharField(label=_('CUIT / matrícula'), max_length=13, help_text=_('30-12345678-9'))
+    direccion = forms.CharField(label=_('Dirección'), max_length=255, help_text=_('Calle, número y ciudad'))
+    personas_asistidas = forms.IntegerField(label=_('Personas asistidas por semana'), min_value=0, initial=0)
 
     class Meta(RegistroBaseForm.Meta):
-        labels = {'first_name': 'Nombre del referente', 'last_name': 'Apellido del referente'}
+        labels = {'first_name': _('Nombre del referente'), 'last_name': _('Apellido del referente')}
 
     def clean_cuit(self):
         cuit = validar_cuit(self.cleaned_data['cuit'])
         if Organizacion.objects.filter(cuit=cuit).exists():
-            raise forms.ValidationError('Ya hay una organización registrada con este CUIT.')
+            raise forms.ValidationError(_('Ya hay una organización registrada con este CUIT.'))
         return cuit
 
     def guardar_perfil(self, usuario):
@@ -154,14 +155,14 @@ class LoginForm(EstiloBootstrapMixin, AuthenticationForm):
 
     error_messages = {
         **AuthenticationForm.error_messages,
-        'invalid_login': 'Usuario/email o contraseña incorrectos.',
-        'rol_incorrecto': 'Esta cuenta está registrada como %(rol)s. Elegí esa pestaña para ingresar.',
+        'invalid_login': _('Usuario/email o contraseña incorrectos.'),
+        'rol_incorrecto': _('Esta cuenta está registrada como %(rol)s. Elegí esa pestaña para ingresar.'),
     }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['username'].label = 'Usuario o email'
-        self.fields['username'].widget.attrs['placeholder'] = 'tu_usuario o tu@email.com'
+        self.fields['username'].label = _('Usuario o email')
+        self.fields['username'].widget.attrs['placeholder'] = _('tu_usuario o tu@email.com')
         self.fields['password'].widget.attrs['placeholder'] = '••••••••'
 
     def confirm_login_allowed(self, user):
@@ -204,12 +205,12 @@ def procesar_foto_perfil(archivo):
 
 
 class PerfilUsuarioForm(EstiloBootstrapMixin, forms.ModelForm):
-    quitar_foto = forms.BooleanField(required=False, label='Quitar foto actual')
+    quitar_foto = forms.BooleanField(required=False, label=_('Quitar foto actual'))
 
     class Meta:
         model = Usuario
         fields = ('foto', 'first_name', 'last_name', 'email', 'telefono', 'ciudad')
-        labels = {'first_name': 'Nombre', 'last_name': 'Apellido'}
+        labels = {'first_name': _('Nombre'), 'last_name': _('Apellido')}
         widgets = {'foto': forms.FileInput(attrs={'accept': 'image/jpeg,image/png,image/webp'})}
 
     def __init__(self, *args, **kwargs):
@@ -219,14 +220,14 @@ class PerfilUsuarioForm(EstiloBootstrapMixin, forms.ModelForm):
     def clean_email(self):
         email = self.cleaned_data['email'].lower().strip()
         if Usuario.objects.filter(email__iexact=email).exclude(pk=self.instance.pk).exists():
-            raise forms.ValidationError('Ya existe una cuenta con este email.')
+            raise forms.ValidationError(_('Ya existe una cuenta con este email.'))
         return email
 
     def clean_foto(self):
         foto = self.cleaned_data.get('foto')
         es_nueva = foto and hasattr(foto, 'content_type')
         if es_nueva and foto.size > FOTO_TAMANO_MAX_MB * 1024 * 1024:
-            raise forms.ValidationError(f'La foto no puede pesar más de {FOTO_TAMANO_MAX_MB} MB.')
+            raise forms.ValidationError(_('La foto no puede pesar más de %(mb)s MB.') % {'mb': FOTO_TAMANO_MAX_MB})
         return foto
 
     def save(self, commit=True):
@@ -268,9 +269,9 @@ class TiendaForm(EstiloBootstrapMixin, forms.ModelForm):
         datos = super().clean()
         lat, lng = datos.get('latitud'), datos.get('longitud')
         if (lat is None) != (lng is None):
-            raise forms.ValidationError('La ubicación quedó incompleta. Volvé a marcarla.')
+            raise forms.ValidationError(_('La ubicación quedó incompleta. Volvé a marcarla.'))
         if lat is not None and not (-90 <= lat <= 90 and -180 <= lng <= 180):
-            raise forms.ValidationError('La ubicación no es válida.')
+            raise forms.ValidationError(_('La ubicación no es válida.'))
         return datos
 
     def save(self, commit=True):

@@ -16,6 +16,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.db import transaction
 from django.template.loader import render_to_string
 from django.urls import reverse
+from django.utils import translation
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +29,12 @@ def _destinatario(tienda):
 
 
 def _enviar(asunto, plantilla, contexto, destinatario):
+    # Los avisos a los comercios se mandan siempre en español
+    with translation.override(settings.LANGUAGE_CODE):
+        _enviar_en_idioma(asunto, plantilla, contexto, destinatario)
+
+
+def _enviar_en_idioma(asunto, plantilla, contexto, destinatario):
     contexto = {**contexto, 'sitio_url': settings.SITIO_URL, 'url_panel': settings.SITIO_URL + reverse('panel')}
     texto = render_to_string(f'emails/{plantilla}.txt', contexto)
     html = render_to_string(f'emails/{plantilla}.html', contexto)

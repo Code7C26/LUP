@@ -21,7 +21,10 @@ urlpatterns = [
     path('panel/', product_views.panel, name='panel'),
     path('panel/estadisticas/', product_views.estadisticas_comercio, name='estadisticas_comercio'),
     path('productos/', include('scr.bd_lup.products.urls')),
+    path('comercios/', store_views.lista_tiendas, name='lista_tiendas'),
     path('comercios/<int:pk>/', store_views.detalle_tienda, name='detalle_tienda'),
+    path('cerca/', product_views.home_cerca, name='home_cerca'),
+    path('ubicacion/buscar/', product_views.buscar_direccion, name='buscar_direccion'),
     path('usuarios/', include('scr.bd_lup.users.urls')),
     
     # API: comercios 
@@ -53,6 +56,9 @@ urlpatterns = [
 
     # API: lista de productos y "mis productos" (router)
     path('api/', include(router.urls)),
+
+    # Cambio de idioma ES/EN (botón de la barra superior)
+    path('idioma/', include('django.conf.urls.i18n')),
 
     path('admin/', admin.site.urls),
 ]

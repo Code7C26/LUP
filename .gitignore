@@ -53,6 +53,8 @@ cover/
 
 # Translations
 *.mo
+# Las traducciones compiladas de Lüp SÍ se suben (así nadie necesita instalar gettext)
+!scr/locale/**/*.mo
 *.pot
 
 # Django stuff:

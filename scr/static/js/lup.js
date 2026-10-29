@@ -4,6 +4,11 @@
 (function () {
     'use strict';
 
+    // Textos del JavaScript en el idioma de la página (base.html carga el diccionario si está en inglés)
+    const I18N = window.LUP_I18N || {};
+    const T = (texto) => I18N[texto] || texto;
+    const LOCALE = (document.documentElement.lang || 'es').startsWith('en') ? 'en-US' : 'es-AR';
+
     const $ = (sel, ctx = document) => ctx.querySelector(sel);
     const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
 
@@ -14,7 +19,7 @@
     const etiquetarBotones = () => {
         const oscuro = raiz.getAttribute('data-bs-theme') === 'dark';
         botonesTema.forEach((b) => {
-            b.setAttribute('aria-label', oscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+            b.setAttribute('aria-label', oscuro ? T('Cambiar a modo claro') : T('Cambiar a modo oscuro'));
             b.setAttribute('aria-pressed', oscuro ? 'true' : 'false');
         });
     };
@@ -95,13 +100,13 @@
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'toggle-password';
-        btn.setAttribute('aria-label', 'Mostrar contraseña');
+        btn.setAttribute('aria-label', T('Mostrar contraseña'));
         btn.innerHTML = '<i class="bi bi-eye"></i>';
         btn.addEventListener('click', () => {
             const visible = input.type === 'text';
             input.type = visible ? 'password' : 'text';
             btn.innerHTML = visible ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>';
-            btn.setAttribute('aria-label', visible ? 'Mostrar contraseña' : 'Ocultar contraseña');
+            btn.setAttribute('aria-label', visible ? T('Mostrar contraseña') : T('Ocultar contraseña'));
         });
         wrap.appendChild(btn);
     });
@@ -118,10 +123,10 @@
         const span = barra.firstChild;
         const niveles = [
             ['0%', '#d64545', ''],
-            ['25%', '#d64545', 'Muy débil'],
-            ['50%', '#E39B2D', 'Débil'],
-            ['75%', '#9bbf3b', 'Buena'],
-            ['100%', '#4f8a35', '¡Excelente!'],
+            ['25%', '#d64545', T('Muy débil')],
+            ['50%', '#E39B2D', T('Débil')],
+            ['75%', '#9bbf3b', T('Buena')],
+            ['100%', '#4f8a35', T('¡Excelente!')],
         ];
         pass1.addEventListener('input', () => {
             const v = pass1.value;
@@ -172,7 +177,7 @@
                 if (btn) {
                     btn.disabled = true;
                     btn.dataset.textoOriginal = btn.innerHTML;
-                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Procesando...';
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>' + T('Procesando...');
                 }
             }
             form.classList.add('was-validated');
@@ -244,7 +249,7 @@
             let v = parseInt(input.value, 10) || 1;
             v = Math.max(1, Math.min(max, v));
             input.value = v;
-            if (total) total.textContent = '$' + (precio * v).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            if (total) total.textContent = '$' + (precio * v).toLocaleString(LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         };
         caja.addEventListener('click', (ev) => {
             const b = ev.target.closest('button[data-delta]');
@@ -261,13 +266,13 @@
     if (formProducto) {
         const campo = (n) => $('#id_' + n);
         const pv = (n) => $('[data-preview="' + n + '"]');
-        const formato = (n) => '$' + (n || 0).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+        const formato = (n) => '$' + (n || 0).toLocaleString(LOCALE, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
         const refrescar = () => {
             const titulo = campo('titulo').value.trim();
-            pv('titulo').textContent = titulo || 'Título de tu oferta';
+            pv('titulo').textContent = titulo || T('Título de tu oferta');
             const desc = campo('descripcion').value.trim();
-            pv('descripcion').textContent = desc ? desc.slice(0, 90) + (desc.length > 90 ? '…' : '') : 'Así verán los consumidores tu publicación.';
+            pv('descripcion').textContent = desc ? desc.slice(0, 90) + (desc.length > 90 ? '…' : '') : T('Así verán los consumidores tu publicación.');
             const orig = parseFloat(campo('precio_original').value);
             const desc2 = parseFloat(campo('precio_descuento').value);
             pv('precio').textContent = formato(desc2);
@@ -282,7 +287,7 @@
             }
             if (aviso) aviso.hidden = !(orig > 0 && desc2 > orig);
             pv('donacion').hidden = !campo('es_donacion').checked;
-            pv('stock').textContent = (campo('stock').value || 1) + ' disp.';
+            pv('stock').textContent = (campo('stock').value || 1) + ' ' + T('disp.');
             const cat = campo('categoria');
             pv('categoria').textContent = cat.options[cat.selectedIndex].text;
         };
@@ -301,7 +306,7 @@
                     foto.innerHTML = '';
                     const el = document.createElement('img');
                     el.src = e.target.result;
-                    el.alt = 'Vista previa';
+                    el.alt = T('Vista previa');
                     foto.appendChild(el);
                 };
                 lector.readAsDataURL(archivo);
@@ -331,7 +336,7 @@
             if (!archivo) return;
             if (archivo.size > 5 * 1024 * 1024) {
                 inputFoto.value = '';
-                if (ayuda) { ayuda.textContent = 'Esa imagen pesa más de 5 MB. Probá con una más liviana.'; ayuda.classList.add('text-danger'); }
+                if (ayuda) { ayuda.textContent = T('Esa imagen pesa más de 5 MB. Probá con una más liviana.'); ayuda.classList.add('text-danger'); }
                 return;
             }
             if (ayuda) { ayuda.textContent = textoAyuda; ayuda.classList.remove('text-danger'); }
@@ -340,7 +345,7 @@
                 previewAvatar.innerHTML = '';
                 const img = document.createElement('img');
                 img.src = e.target.result;
-                img.alt = 'Vista previa de tu foto';
+                img.alt = T('Vista previa de tu foto');
                 previewAvatar.appendChild(img);
                 previewAvatar.classList.add('con-foto');
                 previewAvatar.style.opacity = '';
@@ -360,7 +365,7 @@
        Ubicación del dispositivo (Geolocation API del navegador)
        ========================================================== */
     const CLAVE_UBICACION = 'lup-ubicacion';
-    const UBICACION_VALIDA_MS = 30 * 60 * 1000; // se reutiliza durante 30 minutos
+    const UBICACION_VALIDA_MS = 6 * 60 * 60 * 1000; // se reutiliza durante 6 horas
 
     const ubicacionGuardada = () => {
         try {
@@ -371,11 +376,11 @@
     };
 
     const mensajeErrorUbicacion = (err) => {
-        if (!window.isSecureContext) return 'El navegador solo comparte la ubicación en sitios seguros (https o localhost).';
-        if (!err) return 'Tu navegador no permite obtener la ubicación.';
-        if (err.code === 1) return 'No diste permiso para usar tu ubicación. Podés activarlo desde el candado de la barra de direcciones.';
-        if (err.code === 3) return 'Tardó demasiado en encontrar tu ubicación. Probá de nuevo.';
-        return 'No pudimos obtener tu ubicación. Probá de nuevo en unos segundos.';
+        if (!window.isSecureContext) return T('El navegador solo comparte la ubicación en sitios seguros (https o localhost).');
+        if (!err) return T('Tu navegador no permite obtener la ubicación.');
+        if (err.code === 1) return T('No diste permiso para usar tu ubicación. Podés activarlo desde el candado de la barra de direcciones.');
+        if (err.code === 3) return T('Tardó demasiado en encontrar tu ubicación. Probá de nuevo.');
+        return T('No pudimos obtener tu ubicación. Probá de nuevo en unos segundos.');
     };
 
     // Pide la ubicación al dispositivo. Devuelve una promesa con {lat, lng, precision}.
@@ -406,49 +411,188 @@
     };
     const formatoDistancia = (km) => (km < 1
         ? Math.max(Math.round(km * 100) * 10, 10) + ' m'
-        : (km < 10 ? km.toFixed(1).replace('.', ',') : Math.round(km)) + ' km');
+        : (km < 10 ? km.toLocaleString(LOCALE, { maximumFractionDigits: 1, minimumFractionDigits: 1 }) : Math.round(km)) + ' km');
 
-    /* ---------- Catálogo: "Cerca mío" ---------- */
-    const botonCerca = $('[data-cerca-mio]');
-    if (botonCerca && formFiltros) {
+    /* ==========================================================
+       Ubicación del cliente: se pide al entrar y se usa para buscar
+       comercios y ofertas cercanas (inicio, ofertas y comercios).
+       ========================================================== */
+    const CLAVE_RECHAZO = 'lup-ubicacion-rechazo';
+    const RECHAZO_MS = 7 * 24 * 60 * 60 * 1000; // si dice "Ahora no", no se vuelve a preguntar por 7 días
+    const rol = document.body.dataset.rol || 'visitante';
+    const esCliente = rol === 'visitante' || rol === 'consumidor';
+    const homeCerca = $('[data-home-cerca]');
+    const formComercios = $('[data-form-ubicacion]');
+    const paginaUsaUbicacion = !!(homeCerca || formFiltros || formComercios);
+    const banner = $('[data-pedir-ubicacion]');
+
+    const leerStorage = (clave) => { try { return localStorage.getItem(clave); } catch (e) { return null; } };
+    const guardarStorage = (clave, valor) => { try { localStorage.setItem(clave, valor); } catch (e) { /* sin storage */ } };
+
+    const mostrarBanner = () => { if (banner) banner.hidden = false; };
+    const ocultarBanner = () => { if (banner) banner.hidden = true; };
+    const errorBanner = (texto) => {
+        const el = banner && $('[data-error-ubicacion]', banner);
+        if (el) { el.textContent = texto || ''; el.hidden = !texto; }
+    };
+
+    // Avisa a la página que ya se conoce la ubicación (cada sección decide qué hacer)
+    const usarUbicacion = (u) => {
+        ocultarBanner();
+        document.dispatchEvent(new CustomEvent('lup:ubicacion', { detail: u }));
+    };
+
+    const estadoPermiso = () => (navigator.permissions && navigator.permissions.query
+        ? navigator.permissions.query({ name: 'geolocation' }).then((r) => r.state).catch(() => 'prompt')
+        : Promise.resolve('prompt'));
+
+    if (banner) {
+        $$('[data-permitir-ubicacion]', banner).forEach((b) => b.addEventListener('click', () => {
+            const original = b.innerHTML;
+            b.disabled = true;
+            b.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>' + T('Buscando…');
+            errorBanner('');
+            pedirUbicacion({ forzar: true })
+                .then(usarUbicacion)
+                .catch((err) => errorBanner(mensajeErrorUbicacion(err)))
+                .finally(() => { b.disabled = false; b.innerHTML = original; });
+        }));
+        $$('[data-rechazar-ubicacion]', banner).forEach((b) => b.addEventListener('click', () => {
+            guardarStorage(CLAVE_RECHAZO, String(Date.now()));
+            ocultarBanner();
+        }));
+        const formDireccion = $('[data-direccion-manual]', banner);
+        if (formDireccion) {
+            formDireccion.addEventListener('submit', (ev) => {
+                ev.preventDefault();
+                const q = formDireccion.q.value.trim();
+                if (q.length < 3) return;
+                errorBanner('');
+                fetch(formDireccion.action + '?q=' + encodeURIComponent(q))
+                    .then((r) => r.json().then((datos) => ({ ok: r.ok, datos })))
+                    .then(({ ok, datos }) => {
+                        if (!ok) { errorBanner(datos.error || T('No encontramos esa dirección.')); return; }
+                        const u = { lat: datos.lat, lng: datos.lng, t: Date.now(), manual: true };
+                        guardarStorage(CLAVE_UBICACION, JSON.stringify(u));
+                        usarUbicacion(u);
+                    })
+                    .catch(() => errorBanner(T('No pudimos buscar la dirección. Probá de nuevo.')));
+            });
+        }
+    }
+
+    // Botones "Cerca mío" (ofertas y comercios): piden la ubicación en el momento
+    $$('[data-cerca-mio]').forEach((boton) => {
+        const texto = $('span', boton);
+        const aviso = boton.closest('form') && $('[data-aviso-ubicacion]', boton.closest('form'));
+        boton.addEventListener('click', () => {
+            texto.textContent = T('Buscando…');
+            boton.disabled = true;
+            if (aviso) aviso.hidden = true;
+            pedirUbicacion({ forzar: true })
+                .then(usarUbicacion)
+                .catch((err) => {
+                    texto.textContent = T('Cerca mío');
+                    if (aviso) { aviso.textContent = mensajeErrorUbicacion(err); aviso.hidden = false; }
+                })
+                .finally(() => { boton.disabled = false; });
+        });
+    });
+
+    const marcarCerca = (form) => {
+        const boton = $('[data-cerca-mio]', form);
+        if (boton) {
+            boton.classList.add('activo');
+            boton.setAttribute('aria-pressed', 'true');
+            $('span', boton).textContent = T('Cerca tuyo');
+        }
+        const radio = $('select[name="radio"]', form);
+        if (radio) radio.hidden = false;
+    };
+
+    /* ---------- Ofertas: filtrar por distancia ---------- */
+    if (formFiltros) {
         const inputLat = $('#id_lat');
         const inputLng = $('#id_lng');
         const selectOrden = $('#id_orden');
-        const aviso = $('[data-aviso-ubicacion]');
-        const textoBoton = $('span', botonCerca);
-
-        const avisar = (texto) => { if (aviso) { aviso.textContent = texto || ''; aviso.hidden = !texto; } };
-        const aplicar = (u) => {
+        const recargar = () => formFiltros.dispatchEvent(new Event('submit', { cancelable: true }));
+        document.addEventListener('lup:ubicacion', (ev) => {
+            const u = ev.detail;
+            if (inputLat.value && Math.abs(inputLat.value - u.lat) < 1e-4 && Math.abs(inputLng.value - u.lng) < 1e-4) return;
             inputLat.value = u.lat;
             inputLng.value = u.lng;
             selectOrden.value = 'cercania';
-            botonCerca.classList.add('activo');
-            botonCerca.setAttribute('aria-pressed', 'true');
-            textoBoton.textContent = 'Cerca tuyo';
-            avisar('');
-            formFiltros.dispatchEvent(new Event('submit', { cancelable: true }));
-        };
-        const activar = (forzar) => {
-            textoBoton.textContent = 'Buscando…';
-            botonCerca.disabled = true;
-            pedirUbicacion({ forzar })
-                .then(aplicar)
-                .catch((err) => {
-                    textoBoton.textContent = 'Cerca mío';
-                    avisar(mensajeErrorUbicacion(err));
-                    if (selectOrden.value === 'cercania' && !inputLat.value) selectOrden.value = 'recientes';
-                })
-                .finally(() => { botonCerca.disabled = false; });
-        };
-
-        botonCerca.addEventListener('click', () => activar(true));
-        // Elegir "Más cerca" en el orden también pide la ubicación
-        selectOrden.addEventListener('change', () => {
-            if (selectOrden.value === 'cercania' && !inputLat.value) activar(false);
+            marcarCerca(formFiltros);
+            recargar();
         });
-        // Si la URL ya pide ordenar por cercanía (por ej. desde un link), completar la ubicación sola
-        if (selectOrden.value === 'cercania' && !inputLat.value) activar(false);
+        // Elegir "Más cerca" sin ubicación: pedirla
+        selectOrden.addEventListener('change', () => {
+            if (selectOrden.value === 'cercania' && !inputLat.value) {
+                pedirUbicacion({ forzar: false }).then(usarUbicacion).catch((err) => {
+                    selectOrden.value = 'recientes';
+                    const aviso = $('[data-aviso-ubicacion]', formFiltros);
+                    if (aviso) { aviso.textContent = mensajeErrorUbicacion(err); aviso.hidden = false; }
+                });
+            }
+        });
+        // "Ver todas" cuando hay ofertas más lejos que el radio (el botón viene en la grilla)
+        document.addEventListener('click', (ev) => {
+            if (!ev.target.closest('[data-ampliar-radio]')) return;
+            $('#id_radio').value = 'todos';
+            recargar();
+        });
     }
+
+    /* ---------- Comercios: misma idea, recargando la página ---------- */
+    if (formComercios) {
+        const inputLat = $('input[name="lat"]', formComercios);
+        const inputLng = $('input[name="lng"]', formComercios);
+        document.addEventListener('lup:ubicacion', (ev) => {
+            if (inputLat.value) return; // la página ya viene filtrada por la ubicación
+            inputLat.value = ev.detail.lat;
+            inputLng.value = ev.detail.lng;
+            marcarCerca(formComercios);
+            formComercios.submit();
+        });
+        document.addEventListener('click', (ev) => {
+            if (!ev.target.closest('[data-ampliar-radio]')) return;
+            $('select[name="radio"]', formComercios).value = 'todos';
+            formComercios.submit();
+        });
+    }
+
+    /* ---------- Inicio: ofertas y comercios cercanos ---------- */
+    if (homeCerca) {
+        document.addEventListener('lup:ubicacion', (ev) => {
+            const u = ev.detail;
+            fetch(homeCerca.dataset.homeCerca + '?lat=' + u.lat + '&lng=' + u.lng)
+                .then((r) => (r.ok ? r.json() : Promise.reject(r)))
+                .then((datos) => {
+                    homeCerca.innerHTML = datos.ofertas_html;
+                    const comercios = $('#home-comercios');
+                    if (comercios) { comercios.innerHTML = datos.comercios_html; comercios.hidden = false; }
+                })
+                .catch(() => { /* si falla, queda la home general */ });
+        });
+    }
+
+    // Al entrar (después de registrar a quién le interesa): usar la ubicación si ya la conocemos; si no, pedirla (con nuestro aviso primero)
+    if (paginaUsaUbicacion) {
+        const guardada = ubicacionGuardada();
+        if (guardada) {
+            usarUbicacion(guardada);
+        } else {
+            estadoPermiso().then((estado) => {
+                if (estado === 'granted') {
+                    pedirUbicacion({ forzar: true }).then(usarUbicacion).catch(() => {});
+                } else if (estado === 'prompt' && esCliente) {
+                    const rechazo = parseInt(leerStorage(CLAVE_RECHAZO) || '0', 10);
+                    if (Date.now() - rechazo > RECHAZO_MS) setTimeout(mostrarBanner, 900);
+                }
+            });
+        }
+    }
+
 
     /* ---------- Detalle / comercio: "A 1,2 km de vos" ---------- */
     const etiquetasDistancia = $$('[data-distancia-a]');
@@ -457,7 +601,7 @@
         if (guardada) {
             etiquetasDistancia.forEach((el) => {
                 const [lat, lng] = el.dataset.distanciaA.split(',').map(Number);
-                el.innerHTML = '<i class="bi bi-geo-alt-fill text-lup"></i> A ' + formatoDistancia(distanciaKm(guardada, { lat, lng })) + ' de vos';
+                el.innerHTML = '<i class="bi bi-geo-alt-fill text-lup"></i> ' + T('A %s de vos').replace('%s', formatoDistancia(distanciaKm(guardada, { lat, lng })));
             });
         }
     }
@@ -475,19 +619,19 @@
         boton.addEventListener('click', () => {
             const original = boton.innerHTML;
             boton.disabled = true;
-            boton.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Buscando…';
+            boton.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>' + T('Buscando…');
             pedirUbicacion({ forzar: true, precisa: true })
                 .then((u) => {
                     inputLat.value = u.lat;
                     inputLng.value = u.lng;
-                    estado.innerHTML = '<i class="bi bi-geo-alt-fill text-lup"></i> Ubicación marcada'
+                    estado.innerHTML = '<i class="bi bi-geo-alt-fill text-lup"></i> ' + T('Ubicación marcada')
                         + (u.precision ? ' (±' + u.precision + ' m)' : '')
-                        + '. <strong>Guardá los cambios</strong> para confirmarla.';
+                        + '. ' + T('<strong>Guardá los cambios</strong> para confirmarla.');
                     const q = encodeURIComponent(u.lat + ',' + u.lng);
                     const src = clave
-                        ? 'https://www.google.com/maps/embed/v1/place?key=' + encodeURIComponent(clave) + '&q=' + q + '&zoom=17&language=es'
+                        ? 'https://www.google.com/maps/embed/v1/place?key=' + encodeURIComponent(clave) + '&q=' + q + '&zoom=17&language=' + (LOCALE === 'en-US' ? 'en' : 'es')
                         : 'https://maps.google.com/maps?q=' + q + '&z=17&hl=es&output=embed';
-                    mapa.innerHTML = '<iframe src="' + src + '" title="Ubicación marcada en Google Maps" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>';
+                    mapa.innerHTML = '<iframe src="' + src + '" title="' + T('Ubicación marcada en Google Maps') + '" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>';
                     mapa.hidden = false;
                 })
                 .catch((err) => {

@@ -1,20 +1,20 @@
-{% comment %}
+{% load i18n %}{% comment %}
 Formulario para calificar una reserva retirada. Uso:
     {% include 'includes/_form_calificacion.html' with reserva=r %}
 {% endcomment %}
 <form method="post" action="{% url 'calificar_reserva' reserva.pk %}" class="form-calificacion">
     {% csrf_token %}
     <fieldset>
-        <legend class="visually-hidden">¿Cuántas estrellas le das a {{ reserva.producto.comercio }}?</legend>
+        <legend class="visually-hidden">{% blocktranslate with comercio=reserva.producto.comercio %}¿Cuántas estrellas le das a {{ comercio }}?{% endblocktranslate %}</legend>
         <div class="selector-estrellas">
             {% for n in "54321" %}
                 <input type="radio" name="puntaje" value="{{ n }}" id="estrella-{{ reserva.pk }}-{{ n }}" required {% if reserva.calificacion.puntaje|stringformat:'s' == n %}checked{% endif %}>
-                <label for="estrella-{{ reserva.pk }}-{{ n }}" title="{{ n }} estrella{{ n|pluralize }}"><i class="bi bi-star-fill" aria-hidden="true"></i><span class="visually-hidden">{{ n }} estrella{{ n|pluralize }}</span></label>
+                <label for="estrella-{{ reserva.pk }}-{{ n }}" title="{% blocktranslate count c=n|add:0 %}{{ c }} estrella{% plural %}{{ c }} estrellas{% endblocktranslate %}"><i class="bi bi-star-fill" aria-hidden="true"></i><span class="visually-hidden">{% blocktranslate count c=n|add:0 %}{{ c }} estrella{% plural %}{{ c }} estrellas{% endblocktranslate %}</span></label>
             {% endfor %}
         </div>
     </fieldset>
     <div class="d-flex gap-2 mt-2">
-        <input type="text" name="comentario" class="form-control form-control-sm" maxlength="500" placeholder="Contá cómo te fue (opcional)" aria-label="Comentario" value="{{ reserva.calificacion.comentario|default:'' }}">
-        <button class="btn btn-lup btn-sm">{% if reserva.calificacion %}Actualizar{% else %}Enviar{% endif %}</button>
+        <input type="text" name="comentario" class="form-control form-control-sm" maxlength="500" placeholder="{% translate 'Contá cómo te fue (opcional)' %}" aria-label="{% translate 'Comentario' %}" value="{{ reserva.calificacion.comentario|default:'' }}">
+        <button class="btn btn-lup btn-sm">{% if reserva.calificacion %}{% translate "Actualizar" %}{% else %}{% translate "Enviar" %}{% endif %}</button>
     </div>
 </form>

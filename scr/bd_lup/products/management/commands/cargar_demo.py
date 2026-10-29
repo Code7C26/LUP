@@ -1,7 +1,8 @@
 from datetime import timedelta
 from decimal import Decimal
 
-from django.core.management.base import BaseCommand
+from django.conf import settings
+from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.utils.timezone import localdate
 
@@ -38,8 +39,16 @@ UBICACIONES_DEMO = {
 class Command(BaseCommand):
     help = 'Carga comercios, ofertas y usuarios de ejemplo para probar Lüp.'
 
+    def add_arguments(self, parser):
+        parser.add_argument('--forzar', action='store_true', help='Cargar aunque DEBUG esté desactivado.')
+
     @transaction.atomic
     def handle(self, *args, **options):
+        # Son datos inventados: nunca deberían aparecer en la página publicada
+        if not settings.DEBUG and not options['forzar']:
+            raise CommandError(
+                'cargar_demo solo se usa en desarrollo (DEBUG=1). En la página publicada no se cargan datos de muestra.'
+            )
         hoy = localdate()
         for i, (usuario, nombre, rubro, cuit, direccion, horario, productos) in enumerate(COMERCIOS):
             user, creado = Usuario.objects.get_or_create(
@@ -88,7 +97,8 @@ class Command(BaseCommand):
         self._historial_demo(consumidor, hoy)
 
         self.stdout.write(self.style.SUCCESS(
-            f'Datos de demo cargados. Usuarios: panaderia_sol, consumidor_demo, comedor_demo · Clave: {CLAVE}'
+            f'Datos de demo cargados. Usuarios: panaderia_sol, consumidor_demo, comedor_demo · Clave: {CLAVE}\n'
+            'Antes de presentar la página, borralos con: python manage.py limpiar_demo'
         ))
 
     def _historial_demo(self, consumidor, hoy):

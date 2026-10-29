@@ -1,49 +1,50 @@
 {% extends 'base.html' %}
+{% load i18n %}
 {% load lup_tags humanize %}
 
-{% block title %}Panel de organización · Lüp{% endblock %}
+{% block title %}{% translate "Panel de organización" %} · Lüp{% endblock %}
 
 {% block content %}
 <div class="container pt-4">
     <div class="panel-header d-flex flex-wrap align-items-center gap-3 mb-4">
-        <a href="{% url 'perfil' %}" title="Cambiar foto de perfil">{% include 'includes/_avatar.html' with usuario=user tam='lg' icono='bi-people' %}</a>
+        <a href="{% url 'perfil' %}" title="{% translate 'Cambiar foto de perfil' %}">{% include 'includes/_avatar.html' with usuario=user tam='lg' icono='bi-people' %}</a>
         <div class="me-auto">
             <h1 class="h4 mb-0">{{ user.nombre_visible }}</h1>
             <p class="text-muted-lup mb-0 small">{% if user.organizacion %}{{ user.organizacion.get_tipo_display }} · {{ user.organizacion.direccion }}{% endif %}</p>
         </div>
-        <a href="{% url 'catalogo' %}?donacion=1" class="btn btn-ambar"><i class="bi bi-heart me-1"></i>Ver donaciones disponibles</a>
+        <a href="{% url 'catalogo' %}?donacion=1" class="btn btn-ambar"><i class="bi bi-heart me-1"></i>{% translate "Ver donaciones disponibles" %}</a>
     </div>
 
     <div class="row g-3 mb-5">
-        <div class="col-md-4"><div class="stat ambar"><div class="icono"><i class="bi bi-send"></i></div><div class="numero">{{ stats.total }}</div><div class="etiqueta">Solicitudes enviadas</div></div></div>
-        <div class="col-md-4"><div class="stat"><div class="icono"><i class="bi bi-check2-circle"></i></div><div class="numero">{{ stats.aprobadas }}</div><div class="etiqueta">Donaciones aprobadas</div></div></div>
-        <div class="col-md-4"><div class="stat azul"><div class="icono"><i class="bi bi-hourglass-split"></i></div><div class="numero">{{ stats.pendientes }}</div><div class="etiqueta">En espera</div></div></div>
+        <div class="col-md-4"><div class="stat ambar"><div class="icono"><i class="bi bi-send"></i></div><div class="numero">{{ stats.total }}</div><div class="etiqueta">{% translate "Solicitudes enviadas" %}</div></div></div>
+        <div class="col-md-4"><div class="stat"><div class="icono"><i class="bi bi-check2-circle"></i></div><div class="numero">{{ stats.aprobadas }}</div><div class="etiqueta">{% translate "Donaciones aprobadas" %}</div></div></div>
+        <div class="col-md-4"><div class="stat azul"><div class="icono"><i class="bi bi-hourglass-split"></i></div><div class="numero">{{ stats.pendientes }}</div><div class="etiqueta">{% translate "En espera" %}</div></div></div>
     </div>
 
     <div class="row g-4">
         <div class="col-lg-6">
-            <h2 class="h5 mb-3">Mis solicitudes</h2>
+            <h2 class="h5 mb-3">{% translate "Mis solicitudes" %}</h2>
             {% for s in solicitudes %}
                 <div class="lista-item">
                     <div class="mini-foto">{{ s.producto.categoria|emoji_categoria }}</div>
                     <div class="flex-grow-1">
                         <strong class="d-block">{{ s.producto.titulo }}</strong>
                         <small class="text-muted-lup d-block"><i class="bi bi-shop"></i> {{ s.producto.comercio }} · {{ s.producto.comercio.direccion }}</small>
-                        {% if s.estado == 'aprobada' %}<small class="text-lup fw-semibold"><i class="bi bi-clock"></i> Retirar: {{ s.producto.comercio.horario_atencion }}</small>{% else %}<small class="text-muted-lup">{{ s.creada_en|naturaltime }}</small>{% endif %}
+                        {% if s.estado == 'aprobada' %}<small class="text-lup fw-semibold"><i class="bi bi-clock"></i> {% blocktranslate with horario=s.producto.comercio.horario_atencion %}Retirar: {{ horario }}{% endblocktranslate %}</small>{% else %}<small class="text-muted-lup">{{ s.creada_en|naturaltime }}</small>{% endif %}
                     </div>
                     <span class="estado {{ s.estado }}">{{ s.get_estado_display }}</span>
                 </div>
             {% empty %}
-                <div class="vacio py-4"><div class="emoji">🤝</div><p class="text-muted-lup mb-3">Todavía no solicitaste donaciones.</p><a href="{% url 'catalogo' %}?donacion=1" class="btn btn-ambar btn-sm">Buscar donaciones</a></div>
+                <div class="vacio py-4"><div class="emoji">🤝</div><p class="text-muted-lup mb-3">{% translate "Todavía no solicitaste donaciones." %}</p><a href="{% url 'catalogo' %}?donacion=1" class="btn btn-ambar btn-sm">{% translate "Buscar donaciones" %}</a></div>
             {% endfor %}
         </div>
         <div class="col-lg-6">
-            <h2 class="h5 mb-3">Donaciones disponibles ahora</h2>
+            <h2 class="h5 mb-3">{% translate "Donaciones disponibles ahora" %}</h2>
             <div class="row g-3">
                 {% for producto in donaciones_disponibles %}
                     <div class="col-sm-6">{% include 'includes/_producto_card.html' %}</div>
                 {% empty %}
-                    <p class="text-muted-lup">No hay donaciones publicadas en este momento. ¡Volvé pronto!</p>
+                    <p class="text-muted-lup">{% translate "No hay donaciones publicadas en este momento. ¡Volvé pronto!" %}</p>
                 {% endfor %}
             </div>
         </div>

@@ -1,5 +1,6 @@
 from django import forms
 from django.utils.timezone import localdate
+from django.utils.translation import gettext_lazy as _
 
 from scr.bd_lup.users.forms import EstiloBootstrapMixin
 
@@ -21,9 +22,9 @@ class ProductoForm(EstiloBootstrapMixin, forms.ModelForm):
             'imagen',
         ]
         widgets = {
-            'titulo': forms.TextInput(attrs={'placeholder': 'Ej: Docena de medialunas del día'}),
+            'titulo': forms.TextInput(attrs={'placeholder': _('Ej: Docena de medialunas del día')}),
             'descripcion': forms.Textarea(
-                attrs={'rows': 3, 'placeholder': 'Contá qué incluye la oferta y cómo conservarla...'}
+                attrs={'rows': 3, 'placeholder': _('Contá qué incluye la oferta y cómo conservarla...')}
             ),
             'precio_original': forms.NumberInput(attrs={'step': '0.01', 'min': '0', 'placeholder': '0.00'}),
             'precio_descuento': forms.NumberInput(attrs={'step': '0.01', 'min': '0', 'placeholder': '0.00'}),
@@ -32,11 +33,11 @@ class ProductoForm(EstiloBootstrapMixin, forms.ModelForm):
             'imagen': forms.ClearableFileInput(attrs={'accept': 'image/*'}),
         }
         labels = {
-            'titulo': 'Título de la oferta',
-            'precio_original': 'Precio original ($)',
-            'precio_descuento': 'Precio Lüp ($)',
-            'stock': 'Unidades disponibles',
-            'es_donacion': 'También disponible para donación a organizaciones',
+            'titulo': _('Título de la oferta'),
+            'precio_original': _('Precio original ($)'),
+            'precio_descuento': _('Precio Lüp ($)'),
+            'stock': _('Unidades disponibles'),
+            'es_donacion': _('También disponible para donación a organizaciones'),
         }
 
     def __init__(self, *args, **kwargs):
@@ -46,13 +47,13 @@ class ProductoForm(EstiloBootstrapMixin, forms.ModelForm):
     def clean_fecha_vencimiento(self):
         fecha = self.cleaned_data['fecha_vencimiento']
         if fecha < localdate():
-            raise forms.ValidationError('La fecha límite no puede estar en el pasado.')
+            raise forms.ValidationError(_('La fecha límite no puede estar en el pasado.'))
         return fecha
 
     def clean_stock(self):
         stock = self.cleaned_data['stock']
         if stock < 1:
-            raise forms.ValidationError('Publicá al menos una unidad.')
+            raise forms.ValidationError(_('Publicá al menos una unidad.'))
         return stock
 
 
@@ -70,7 +71,7 @@ class ReservaForm(EstiloBootstrapMixin, forms.ModelForm):
     def clean_cantidad(self):
         cantidad = self.cleaned_data['cantidad']
         if self.producto is not None and cantidad > self.producto.stock:
-            raise forms.ValidationError(f'Solo quedan {self.producto.stock} unidades.')
+            raise forms.ValidationError(_('Solo quedan %(n)s unidades.') % {'n': self.producto.stock})
         return cantidad
 
 
@@ -82,17 +83,17 @@ class SolicitudDonacionForm(EstiloBootstrapMixin, forms.ModelForm):
             'mensaje': forms.Textarea(
                 attrs={
                     'rows': 4,
-                    'placeholder': 'Contale al comercio a cuántas personas ayudaría y cuándo podés retirarlo...',
+                    'placeholder': _('Contale al comercio a cuántas personas ayudaría y cuándo podés retirarlo...'),
                 }
             )
         }
-        labels = {'mensaje': 'Mensaje para el comercio'}
+        labels = {'mensaje': _('Mensaje para el comercio')}
 
 
 class CalificacionForm(forms.ModelForm):
     puntaje = forms.TypedChoiceField(
         choices=[(n, n) for n in range(1, 6)], coerce=int, widget=forms.RadioSelect,
-        error_messages={'required': 'Elegí de 1 a 5 estrellas.'},
+        error_messages={'required': _('Elegí de 1 a 5 estrellas.')},
     )
 
     class Meta:

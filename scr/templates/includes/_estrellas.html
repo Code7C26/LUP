@@ -1,3 +1,3 @@
-{% load lup_tags %}{% comment %}
+{% load i18n %}{% load lup_tags %}{% comment %}
 Estrellas de solo lectura. Uso: {% include 'includes/_estrellas.html' with valor=4.5 %}
-{% endcomment %}<span class="estrellas{% if tam %} estrellas-{{ tam }}{% endif %}" role="img" aria-label="{{ valor|promedio }} de 5 estrellas">{% for tipo in valor|estrellas %}<i class="bi {% if tipo == 'llena' %}bi-star-fill{% elif tipo == 'media' %}bi-star-half{% else %}bi-star{% endif %}" aria-hidden="true"></i>{% endfor %}</span>
+{% endcomment %}<span class="estrellas{% if tam %} estrellas-{{ tam }}{% endif %}" role="img" aria-label="{% blocktranslate with v=valor|promedio %}{{ v }} de 5 estrellas{% endblocktranslate %}">{% for tipo in valor|estrellas %}<i class="bi {% if tipo == 'llena' %}bi-star-fill{% elif tipo == 'media' %}bi-star-half{% else %}bi-star{% endif %}" aria-hidden="true"></i>{% endfor %}</span>

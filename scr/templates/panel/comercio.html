@@ -1,37 +1,38 @@
 {% extends 'base.html' %}
+{% load i18n %}
 {% load lup_tags humanize %}
 
-{% block title %}Panel de comercio · Lüp{% endblock %}
+{% block title %}{% translate "Panel de comercio" %} · Lüp{% endblock %}
 
 {% block content %}
 <div class="container pt-4 panel-min">
 
     {# ---------- Encabezado ---------- #}
     <header class="min-header">
-        <a href="{% url 'perfil' %}" title="Cambiar foto o logo">{% include 'includes/_avatar.html' with usuario=user tam='md' icono='bi-shop' %}</a>
+        <a href="{% url 'perfil' %}" title="{% translate 'Cambiar foto o logo' %}">{% include 'includes/_avatar.html' with usuario=user tam='md' icono='bi-shop' %}</a>
         <div class="me-auto min-w-0">
             <h1 class="h4 mb-0 text-truncate">{{ tienda.nombre_fantasia|default:user.username }}</h1>
             <p class="min-sub mb-0">
                 {% if tienda %}
                     {{ tienda.get_rubro_display }} · {{ tienda.direccion }} ·
-                    <a href="{% url 'detalle_tienda' tienda.pk %}">Ver página pública <i class="bi bi-arrow-up-right"></i></a>
+                    <a href="{% url 'detalle_tienda' tienda.pk %}">{% translate "Ver página pública" %} <i class="bi bi-arrow-up-right"></i></a>
                     {% if calificaciones.cantidad %} · <a href="{% url 'detalle_tienda' tienda.pk %}#opiniones" class="calif-mini"><i class="bi bi-star-fill"></i> {{ calificaciones.promedio|promedio }} <span class="text-muted-lup fw-normal">({{ calificaciones.cantidad }})</span></a>{% endif %}
                 {% else %}
-                    <a href="{% url 'perfil' %}">Completá los datos de tu comercio</a>
+                    <a href="{% url 'perfil' %}">{% translate "Completá los datos de tu comercio" %}</a>
                 {% endif %}
             </p>
         </div>
-        {% if tienda %}<a href="{% url 'estadisticas_comercio' %}" class="btn btn-min btn-sm"><i class="bi bi-bar-chart me-1"></i>Estadísticas</a>{% endif %}
+        {% if tienda %}<a href="{% url 'estadisticas_comercio' %}" class="btn btn-min btn-sm"><i class="bi bi-bar-chart me-1"></i>{% translate "Estadísticas" %}</a>{% endif %}
         {# En escritorio el botón ya está en la barra superior #}
-        <a href="{% url 'publicar_excedente' %}" class="btn btn-lup btn-sm d-lg-none"><i class="bi bi-plus-lg me-1"></i>Publicar excedente</a>
+        <a href="{% url 'publicar_excedente' %}" class="btn btn-lup btn-sm d-lg-none"><i class="bi bi-plus-lg me-1"></i>{% translate "Publicar excedente" %}</a>
     </header>
 
     {# ---------- Números ---------- #}
-    <section class="min-stats" aria-label="Resumen">
-        <div><span class="min-num">{{ stats.activas }}</span><span class="min-label">Ofertas activas</span></div>
-        <div><span class="min-num{% if stats.pendientes %} text-ambar{% endif %}">{{ stats.pendientes }}</span><span class="min-label">Retiros pendientes</span></div>
-        <div><span class="min-num">{{ stats.rescatados }}</span><span class="min-label">Unidades rescatadas</span></div>
-        <div><span class="min-num">${{ stats.ingresos|floatformat:0|intcomma }}</span><span class="min-label">Ingresos recuperados</span></div>
+    <section class="min-stats" aria-label="{% translate 'Resumen' %}">
+        <div><span class="min-num">{{ stats.activas }}</span><span class="min-label">{% translate "Ofertas activas" %}</span></div>
+        <div><span class="min-num{% if stats.pendientes %} text-ambar{% endif %}">{{ stats.pendientes }}</span><span class="min-label">{% translate "Retiros pendientes" %}</span></div>
+        <div><span class="min-num">{{ stats.rescatados }}</span><span class="min-label">{% translate "Unidades rescatadas" %}</span></div>
+        <div><span class="min-num">${{ stats.ingresos|floatformat:0|intcomma }}</span><span class="min-label">{% translate "Ingresos recuperados" %}</span></div>
     </section>
 
 
@@ -42,14 +43,14 @@
 
             <form method="post" action="{% url 'confirmar_retiro' %}" class="min-retiro mb-4">
                 {% csrf_token %}
-                <label for="codigo-retiro" class="min-titulo d-block">Confirmar retiro</label>
+                <label for="codigo-retiro" class="min-titulo d-block">{% translate "Confirmar retiro" %}</label>
                 <div class="d-flex gap-2">
-                    <input id="codigo-retiro" name="codigo" class="form-control text-uppercase fw-semibold" placeholder="Código del cliente" maxlength="10" required autocomplete="off">
-                    <button class="btn btn-lup">Confirmar</button>
+                    <input id="codigo-retiro" name="codigo" class="form-control text-uppercase fw-semibold" placeholder="{% translate 'Código del cliente' %}" maxlength="10" required autocomplete="off">
+                    <button class="btn btn-lup">{% translate "Confirmar" %}</button>
                 </div>
             </form>
 
-            <h2 class="min-titulo">Para entregar <span class="min-contador">{{ reservas_pendientes|length }}</span></h2>
+            <h2 class="min-titulo">{% translate "Para entregar" %} <span class="min-contador">{{ reservas_pendientes|length }}</span></h2>
             <ul class="min-lista">
                 {% for r in reservas_pendientes %}
                     <li>
@@ -60,22 +61,22 @@
                         <code class="min-codigo">{{ r.codigo_retiro }}</code>
                     </li>
                 {% empty %}
-                    <li class="min-vacio">No hay reservas pendientes de retiro.</li>
+                    <li class="min-vacio">{% translate "No hay reservas pendientes de retiro." %}</li>
                 {% endfor %}
             </ul>
 
             {% if solicitudes %}
-                <h2 class="min-titulo mt-4">Pedidos de donación <span class="min-contador">{{ solicitudes|length }}</span></h2>
+                <h2 class="min-titulo mt-4">{% translate "Pedidos de donación" %} <span class="min-contador">{{ solicitudes|length }}</span></h2>
                 <ul class="min-lista">
                     {% for s in solicitudes %}
                         <li class="flex-column align-items-stretch gap-2">
                             <div>
-                                <span class="d-block"><strong>{{ s.organizacion.nombre_visible }}</strong> pidió {{ s.producto.titulo }}</span>
+                                <span class="d-block">{% blocktranslate with org=s.organizacion.nombre_visible titulo=s.producto.titulo %}<strong>{{ org }}</strong> pidió {{ titulo }}{% endblocktranslate %}</span>
                                 {% if s.mensaje %}<small class="text-muted-lup">“{{ s.mensaje|truncatechars:160 }}”</small>{% endif %}
                             </div>
                             <div class="d-flex gap-2 justify-content-end">
-                                <form method="post" action="{% url 'responder_donacion' s.pk 'rechazar' %}">{% csrf_token %}<button class="btn btn-sm btn-min">Rechazar</button></form>
-                                <form method="post" action="{% url 'responder_donacion' s.pk 'aprobar' %}">{% csrf_token %}<button class="btn btn-sm btn-ambar">Aprobar</button></form>
+                                <form method="post" action="{% url 'responder_donacion' s.pk 'rechazar' %}">{% csrf_token %}<button class="btn btn-sm btn-min">{% translate "Rechazar" %}</button></form>
+                                <form method="post" action="{% url 'responder_donacion' s.pk 'aprobar' %}">{% csrf_token %}<button class="btn btn-sm btn-ambar">{% translate "Aprobar" %}</button></form>
                             </div>
                         </li>
                     {% endfor %}
@@ -85,17 +86,17 @@
 
         {# ---------- Columna derecha: publicaciones ---------- #}
         <div class="col-lg-7">
-            <h2 class="min-titulo">Mis publicaciones <span class="min-contador">{{ productos|length }}</span></h2>
+            <h2 class="min-titulo">{% translate "Mis publicaciones" %} <span class="min-contador">{{ productos|length }}</span></h2>
             <ul class="min-lista">
                 {% for p in productos %}
                     <li{% if not p.esta_disponible %} class="min-inactiva"{% endif %}>
                         <div class="min-w-0 flex-grow-1">
                             <a href="{% url 'detalle_producto' p.pk %}" class="d-block text-truncate text-reset text-decoration-none fw-medium">{{ p.titulo }}</a>
                             <small class="text-muted-lup">
-                                {% if p.esta_disponible %}<span class="min-estado ok">Activa</span>
-                                {% elif p.estado == 'DISPONIBLE' %}<span class="min-estado mal">Vencida</span>
+                                {% if p.esta_disponible %}<span class="min-estado ok">{% translate "Activa" %}</span>
+                                {% elif p.estado == 'DISPONIBLE' %}<span class="min-estado mal">{% translate "Vencida" %}</span>
                                 {% else %}<span class="min-estado {{ p.estado|lower }}">{{ p.get_estado_display }}</span>{% endif %}
-                                · Hasta {{ p.fecha_vencimiento|date:"d/m" }} · Stock {{ p.stock }}{% if p.es_donacion %} · <span class="text-ambar">Donable</span>{% endif %}
+                                · {% blocktranslate with fecha=p.fecha_vencimiento|date:"d/m" %}Hasta {{ fecha }}{% endblocktranslate %} · {% blocktranslate with n=p.stock %}Stock {{ n }}{% endblocktranslate %}{% if p.es_donacion %} · <span class="text-ambar">{% translate "Donable" %}</span>{% endif %}
                             </small>
                         </div>
                         <div class="text-end text-nowrap">
@@ -103,31 +104,31 @@
                             {% if p.porcentaje_descuento %}<small class="d-block text-lup">-{{ p.porcentaje_descuento }}%</small>{% endif %}
                         </div>
                         <div class="min-acciones">
-                            <a href="{% url 'editar_excedente' p.pk %}" title="Editar" aria-label="Editar {{ p.titulo }}"><i class="bi bi-pencil"></i></a>
+                            <a href="{% url 'editar_excedente' p.pk %}" title="{% translate 'Editar' %}" aria-label="{% blocktranslate with titulo=p.titulo %}Editar {{ titulo }}{% endblocktranslate %}"><i class="bi bi-pencil"></i></a>
                             {% if p.estado != 'DONADO' %}
                             <div class="dropdown">
-                                <button type="button" class="min-mas" data-bs-toggle="dropdown" aria-expanded="false" title="Cambiar estado" aria-label="Cambiar estado de {{ p.titulo }}"><i class="bi bi-three-dots-vertical"></i></button>
+                                <button type="button" class="min-mas" data-bs-toggle="dropdown" aria-expanded="false" title="{% translate 'Cambiar estado' %}" aria-label="{% blocktranslate with titulo=p.titulo %}Cambiar estado de {{ titulo }}{% endblocktranslate %}"><i class="bi bi-three-dots-vertical"></i></button>
                                 <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 p-2">
                                     {% if p.estado == 'DISPONIBLE' %}
-                                        <li><form method="post" action="{% url 'cambiar_estado_producto' p.pk %}">{% csrf_token %}<input type="hidden" name="estado" value="AGOTADO"><button class="dropdown-item rounded-3"><i class="bi bi-bag-check me-2"></i>Marcar como vendido</button></form></li>
-                                        <li><form method="post" action="{% url 'cambiar_estado_producto' p.pk %}">{% csrf_token %}<input type="hidden" name="estado" value="PAUSADO"><button class="dropdown-item rounded-3"><i class="bi bi-pause-circle me-2"></i>Marcar como no disponible</button></form></li>
+                                        <li><form method="post" action="{% url 'cambiar_estado_producto' p.pk %}">{% csrf_token %}<input type="hidden" name="estado" value="AGOTADO"><button class="dropdown-item rounded-3"><i class="bi bi-bag-check me-2"></i>{% translate "Marcar como vendido" %}</button></form></li>
+                                        <li><form method="post" action="{% url 'cambiar_estado_producto' p.pk %}">{% csrf_token %}<input type="hidden" name="estado" value="PAUSADO"><button class="dropdown-item rounded-3"><i class="bi bi-pause-circle me-2"></i>{% translate "Marcar como no disponible" %}</button></form></li>
                                     {% else %}
-                                        <li><form method="post" action="{% url 'cambiar_estado_producto' p.pk %}">{% csrf_token %}<input type="hidden" name="estado" value="DISPONIBLE"><button class="dropdown-item rounded-3"><i class="bi bi-arrow-counterclockwise me-2"></i>Volver a publicar</button></form></li>
-                                        {% if p.estado == 'PAUSADO' %}<li><form method="post" action="{% url 'cambiar_estado_producto' p.pk %}">{% csrf_token %}<input type="hidden" name="estado" value="AGOTADO"><button class="dropdown-item rounded-3"><i class="bi bi-bag-check me-2"></i>Marcar como vendido</button></form></li>{% endif %}
+                                        <li><form method="post" action="{% url 'cambiar_estado_producto' p.pk %}">{% csrf_token %}<input type="hidden" name="estado" value="DISPONIBLE"><button class="dropdown-item rounded-3"><i class="bi bi-arrow-counterclockwise me-2"></i>{% translate "Volver a publicar" %}</button></form></li>
+                                        {% if p.estado == 'PAUSADO' %}<li><form method="post" action="{% url 'cambiar_estado_producto' p.pk %}">{% csrf_token %}<input type="hidden" name="estado" value="AGOTADO"><button class="dropdown-item rounded-3"><i class="bi bi-bag-check me-2"></i>{% translate "Marcar como vendido" %}</button></form></li>{% endif %}
                                     {% endif %}
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item rounded-3 text-danger" href="{% url 'eliminar_excedente' p.pk %}"><i class="bi bi-trash me-2"></i>Eliminar</a></li>
+                                    <li><a class="dropdown-item rounded-3 text-danger" href="{% url 'eliminar_excedente' p.pk %}"><i class="bi bi-trash me-2"></i>{% translate "Eliminar" %}</a></li>
                                 </ul>
                             </div>
                             {% else %}
-                            <a href="{% url 'eliminar_excedente' p.pk %}" class="peligro" title="Eliminar" aria-label="Eliminar {{ p.titulo }}"><i class="bi bi-trash"></i></a>
+                            <a href="{% url 'eliminar_excedente' p.pk %}" class="peligro" title="{% translate 'Eliminar' %}" aria-label="{% blocktranslate with titulo=p.titulo %}Eliminar {{ titulo }}{% endblocktranslate %}"><i class="bi bi-trash"></i></a>
                             {% endif %}
                         </div>
                     </li>
                 {% empty %}
                     <li class="min-vacio flex-column py-5">
-                        <span>Todavía no publicaste excedentes.</span>
-                        <a href="{% url 'publicar_excedente' %}" class="btn btn-lup btn-sm mt-2">Publicar mi primera oferta</a>
+                        <span>{% translate "Todavía no publicaste excedentes." %}</span>
+                        <a href="{% url 'publicar_excedente' %}" class="btn btn-lup btn-sm mt-2">{% translate "Publicar mi primera oferta" %}</a>
                     </li>
                 {% endfor %}
             </ul>
