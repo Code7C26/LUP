@@ -90,7 +90,7 @@ export default function DetalleProducto({ navigation, route }) {
         `Mostrá el código ${reserva.codigo_retiro} en ${reserva.comercio} para retirar tu pedido.`
       );
       cargar(); // el stock bajó
-      navigation.navigate('MisReservas');
+      navigation.navigate('Pestanas', { screen: 'MisReservas' }); // la pestaña, dentro de las pestañas (paso 37)
     } catch (e) {
       Alert.alert('No se pudo reservar', textoError(e) || 'Probá de nuevo.');
       cargar(); // por si otro se llevó lo que quedaba

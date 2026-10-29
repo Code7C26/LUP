@@ -11,6 +11,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { StackActions } from '@react-navigation/native';
 
 import Boton from '../componentes/Boton';
 import Campo from '../componentes/Campo';
@@ -19,6 +20,9 @@ import { useSesion } from '../contexto/Sesion';
 import { espacio, fuentes, radio, tamanos, useTema } from '../tema';
 import { textoError } from '../utilidades';
 import { TIPOS_DE_CUENTA } from './RegistroSeleccion';
+
+// Pantallas de cuenta de la navegación (paso 37): se cierran juntas al terminar el registro
+const PANTALLAS_DE_CUENTA = ['Login', 'Registro', 'RegistroFormulario'];
 
 // ---- Campos de cada parte del formulario ----
 const CAMPOS_CUENTA = [
@@ -111,7 +115,7 @@ export function Opciones({ etiqueta, opciones, valor, alElegir, error }) {
 
 export default function Registro({ navigation, route }) {
   const { colores } = useTema();
-  const { registrar } = useSesion();
+  const { registrar, invitado } = useSesion();
   const rol = route?.params?.rol || 'consumidor';
   const tipo = TIPOS_DE_CUENTA.find((t) => t.rol === rol);
 
@@ -146,7 +150,16 @@ export default function Registro({ navigation, route }) {
     setEnviando(true);
     try {
       await registrar(rol, valores);
-      // Listo: quedó logueada. Con la navegación (paso 37) la app pasa sola al inicio.
+      // Listo: quedó logueada. Si se llegó desde la app como invitado (Perfil o "Ingresá para reservar"),
+      // se cierran el registro y el login y se vuelve a donde estaba. Si no, la navegación cambia sola.
+      if (invitado) {
+        const rutas = navigation?.getState?.()?.routes || [];
+        let deCuenta = 0;
+        while (deCuenta < rutas.length && PANTALLAS_DE_CUENTA.includes(rutas[rutas.length - 1 - deCuenta].name)) {
+          deCuenta += 1;
+        }
+        if (deCuenta > 0 && deCuenta < rutas.length) navigation.dispatch(StackActions.pop(deCuenta));
+      }
     } catch (e) {
       if (e?.sinConexion || e?.error) {
         setErrorGeneral(e);
