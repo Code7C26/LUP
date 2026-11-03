@@ -16,7 +16,7 @@ import BarraCarrito from '../componentes/BarraCarrito';
 import Boton from '../componentes/Boton';
 import BotonFavorito from '../componentes/BotonFavorito';
 import BotonVolver from '../componentes/BotonVolver';
-import Cargando from '../componentes/Cargando';
+import Esqueleto from '../componentes/Esqueleto';
 import Icono from '../componentes/Icono';
 import MensajeError from '../componentes/MensajeError';
 import FilaProducto from '../componentes/FilaProducto';
@@ -52,7 +52,7 @@ export default function DetalleComercio({ navigation, route }) {
     cargar();
   }, [cargar]);
 
-  if (cargando) return <Cargando texto="Cargando el comercio…" />;
+  if (cargando) return <Esqueleto tipo="filas" />;
 
   if (!comercio) {
     return (

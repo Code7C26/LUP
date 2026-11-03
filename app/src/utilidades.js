@@ -1,3 +1,5 @@
+import * as Haptics from 'expo-haptics';
+
 // Funciones chiquitas que se usan en varias pantallas.
 
 // "1700.00" -> "$1.700"
@@ -52,4 +54,16 @@ export function textoError(error) {
   if (Array.isArray(error)) return error.join(' ');
   if (typeof error === 'object') return error.error || error.detail || Object.values(error).flat().join(' ');
   return String(error);
+}
+
+// Vibración suave al tocar algo importante (agregar al carrito, favorito, reservar).
+// Si el celular no vibra o no hay permiso, no pasa nada.
+
+export function vibrar(tipo = 'suave') {
+  try {
+    if (tipo === 'exito') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    else Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+  } catch {
+    // nada
+  }
 }

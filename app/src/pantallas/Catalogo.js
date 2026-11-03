@@ -7,8 +7,10 @@ import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View
 import * as Location from 'expo-location';
 
 import { api } from '../api/cliente';
+import { useBusquedas } from '../contexto/Busquedas';
 import BarraCarrito from '../componentes/BarraCarrito';
 import Campo from '../componentes/Campo';
+import Esqueleto from '../componentes/Esqueleto';
 import Cargando from '../componentes/Cargando';
 import Chip from '../componentes/Chip';
 import Icono from '../componentes/Icono';
@@ -53,6 +55,7 @@ async function ubicacionSiHayPermiso() {
 
 export default function Catalogo({ navigation, route }) {
   const { colores } = useTema();
+  const { recientes, guardarBusqueda, borrarBusquedas } = useBusquedas();
 
   const [texto, setTexto] = useState('');
   const [busqueda, setBusqueda] = useState(''); // el texto, pero con una pequeña espera
@@ -101,7 +104,9 @@ export default function Catalogo({ navigation, route }) {
       .map(([clave, valor]) => `${clave}=${encodeURIComponent(valor)}`)
       .join('&');
     try {
-      setProductos(await api(`/productos/?${consulta}`));
+      const lista = await api(`/productos/?${consulta}`);
+      setProductos(lista);
+      if (busqueda && lista.length) guardarBusqueda(busqueda); // se recuerda solo si encontró algo
     } catch (e) {
       setError(e);
     } finally {
@@ -125,6 +130,27 @@ export default function Catalogo({ navigation, route }) {
         returnKeyType="search"
         clearButtonMode="while-editing"
       />
+
+      {/* Búsquedas recientes (cuando el buscador está vacío) */}
+      {!texto && recientes.length ? (
+        <View style={estilos.recientes}>
+          <View style={estilos.filaRecientes}>
+            <Text style={[estilos.textoRecientes, { color: colores.gris }]}>Búsquedas recientes</Text>
+            <Text
+              onPress={borrarBusquedas}
+              accessibilityRole="button"
+              style={[estilos.textoRecientes, { color: colores.verdeHover, fontFamily: fuentes.negrita }]}
+            >
+              Borrar
+            </Text>
+          </View>
+          <View style={estilos.chipsRecientes}>
+            {recientes.map((r) => (
+              <Chip key={r} texto={r} icono="time-outline" onPress={() => setTexto(r)} />
+            ))}
+          </View>
+        </View>
+      ) : null}
 
       {comercio ? (
         <Pressable
@@ -172,7 +198,7 @@ export default function Catalogo({ navigation, route }) {
     </View>
   );
 
-  if (cargando) return <Cargando texto="Buscando ofertas…" />;
+  if (cargando) return <Esqueleto tipo="filas" />;
 
   return (
     <View style={{ flex: 1, backgroundColor: colores.fondo }}>
@@ -221,6 +247,22 @@ const estilos = StyleSheet.create({
   contenido: {
     padding: espacio(2),
     paddingBottom: espacio(10), // lugar para la barra "Ver carrito"
+  },
+  recientes: {
+    gap: espacio(1),
+  },
+  filaRecientes: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  textoRecientes: {
+    fontFamily: fuentes.normal,
+    fontSize: 12,
+  },
+  chipsRecientes: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: espacio(0.75),
   },
   filaChips: {
     gap: espacio(1),

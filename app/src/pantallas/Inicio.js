@@ -25,7 +25,7 @@ import * as Location from 'expo-location';
 import { api, urlCompleta } from '../api/cliente';
 import BotonCarrito from '../componentes/BotonCarrito';
 import BotonFavorito from '../componentes/BotonFavorito';
-import Cargando from '../componentes/Cargando';
+import Esqueleto from '../componentes/Esqueleto';
 import Icono from '../componentes/Icono';
 import Logo from '../componentes/Logo';
 import MensajeError from '../componentes/MensajeError';
@@ -137,7 +137,7 @@ export default function Inicio({ navigation }) {
     Share.share({ message: 'Rescatá comida rica con descuento cerca tuyo con Lüp 🌱' }).catch(() => {});
   }
 
-  if (cargando) return <Cargando texto="Buscando ofertas cerca tuyo…" />;
+  if (cargando) return <Esqueleto tipo="inicio" />;
 
   // La foto de cada comercio: la de su primera oferta con foto (la API no tiene foto del local)
   const fotoDe = {};
@@ -224,6 +224,18 @@ export default function Inicio({ navigation }) {
             ))}
           </MapView>
           <Logo ancho={52} estilo={estilos.logoMapa} />
+          {/* Tocar el mapa lo abre a pantalla completa */}
+          <Pressable
+            onPress={() => navigation?.navigate?.('Mapa')}
+            accessibilityRole="button"
+            accessibilityLabel="Abrir el mapa a pantalla completa"
+            style={StyleSheet.absoluteFill}
+          >
+            <View style={[estilos.agrandar, { backgroundColor: colores.fondo }]}>
+              <Icono nombre="expand-outline" tamano={16} color={colores.texto} />
+              <Text style={[estilos.textoAgrandar, { color: colores.texto }]}>Ver mapa</Text>
+            </View>
+          </Pressable>
         </View>
       ) : null}
 
@@ -347,6 +359,21 @@ const estilos = StyleSheet.create({
   },
   mapa: {
     height: 230,
+  },
+  agrandar: {
+    position: 'absolute',
+    top: espacio(1),
+    left: espacio(1.5),
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: espacio(1),
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  textoAgrandar: {
+    fontFamily: fuentes.negrita,
+    fontSize: 11,
   },
   logoMapa: {
     position: 'absolute',

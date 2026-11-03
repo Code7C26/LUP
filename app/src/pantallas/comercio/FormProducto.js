@@ -5,7 +5,7 @@
 // Editar: PATCH /api/mis-productos/<id>/   → navigation.navigate('FormProducto', { id })
 import { useEffect, useState } from 'react';
 import { Alert, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { File } from 'expo-file-system';
+import { File, Paths } from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 
 import { api, urlCompleta } from '../../api/cliente';
@@ -63,6 +63,7 @@ function numeroParaDjango(texto) {
 export default function FormProducto({ navigation, route }) {
   const { colores } = useTema();
   const id = route?.params?.id; // si viene, se está editando
+  const copiarDe = route?.params?.copiarDe; // si viene, es "Publicar de nuevo": se copia ese producto
 
   const [valores, setValores] = useState({
     titulo: '',
@@ -78,33 +79,44 @@ export default function FormProducto({ navigation, route }) {
   const [fotoNueva, setFotoNueva] = useState(null); // la que se sacó o eligió ahora
   const [errores, setErrores] = useState({});
   const [errorGeneral, setErrorGeneral] = useState('');
-  const [cargando, setCargando] = useState(Boolean(id));
+  const [cargando, setCargando] = useState(Boolean(id || copiarDe));
   const [enviando, setEnviando] = useState(false);
 
-  // Al editar, se cargan los datos actuales del producto
+  // Al editar (o al "Publicar de nuevo"), se cargan los datos del producto
   useEffect(() => {
-    if (!id) return;
+    const origen = id || copiarDe;
+    if (!origen) return;
     (async () => {
       try {
-        const p = await api(`/mis-productos/${id}/`);
+        const p = await api(`/mis-productos/${origen}/`);
         setValores({
           titulo: p.titulo,
           categoria: p.categoria,
           descripcion: p.descripcion,
           precio_original: String(Number(p.precio_original)),
           precio_descuento: String(Number(p.precio_descuento)),
-          stock: String(p.stock),
-          fecha_vencimiento: isoAFecha(p.fecha_vencimiento),
+          stock: copiarDe ? String(p.stock > 0 ? p.stock : 1) : String(p.stock),
+          fecha_vencimiento: copiarDe ? fechaEnDias(0) : isoAFecha(p.fecha_vencimiento), // la copia vence hoy
           es_donacion: p.es_donacion,
         });
-        setFotoActual(urlCompleta(p.imagen));
+        if (copiarDe && p.imagen) {
+          // La copia lleva la misma foto: se baja al celular para volver a subirla
+          try {
+            const archivo = await File.downloadFileAsync(urlCompleta(p.imagen), Paths.cache, { idempotent: true });
+            setFotoNueva({ uri: archivo.uri });
+          } catch {
+            // si no se pudo bajar, se publica sin foto (o elige otra)
+          }
+        } else {
+          setFotoActual(urlCompleta(p.imagen));
+        }
       } catch (e) {
         setErrorGeneral(e);
       } finally {
         setCargando(false);
       }
     })();
-  }, [id]);
+  }, [id, copiarDe]);
 
   const cambiar = (campo) => (valor) => setValores((v) => ({ ...v, [campo]: valor }));
 
@@ -196,7 +208,9 @@ export default function FormProducto({ navigation, route }) {
         {/* Título con ícono, como el mockup */}
         <View style={estilos.encabezado}>
           <Icono nombre="gift-outline" tamano={28} color={colores.titulo} />
-          <Text style={[estilos.titulo, { color: colores.titulo }]}>{id ? 'Editar Producto' : 'Nuevo Producto'}</Text>
+          <Text style={[estilos.titulo, { color: colores.titulo }]}>
+            {id ? 'Editar Producto' : copiarDe ? 'Publicar de nuevo' : 'Nuevo Producto'}
+          </Text>
         </View>
 
         {/* Foto: el cuadro gris; al tocarlo se elige cámara o galería */}
