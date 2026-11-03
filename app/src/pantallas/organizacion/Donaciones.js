@@ -12,6 +12,8 @@ import MensajeError from '../../componentes/MensajeError';
 import ModalSolicitudDonacion from '../../componentes/ModalSolicitudDonacion';
 import TarjetaProducto from '../../componentes/TarjetaProducto';
 import { espacio, fuentes, tamanos, useTema } from '../../tema';
+import Encabezado from '../../componentes/Encabezado';
+import Vacio from '../../componentes/Vacio';
 
 export default function Donaciones({ navigation }) {
   const { colores } = useTema();
@@ -69,21 +71,13 @@ export default function Donaciones({ navigation }) {
         }
         ListHeaderComponent={
           <View style={{ gap: espacio(1), marginBottom: espacio(1.5) }}>
-            <Text style={[estilos.titulo, { color: colores.titulo }]}>Donaciones disponibles</Text>
-            <Text style={[estilos.texto, { color: colores.gris }]}>
-              Productos que los comercios ofrecen para donar. Pedí lo que te sirva y contales para quién es.
-            </Text>
+            <Encabezado titulo="Donaciones" subtitulo="Disponibles cerca" />
             <MensajeError mensaje={error} alReintentar={cargar} />
           </View>
         }
         ListEmptyComponent={
           !error ? (
-            <View style={estilos.vacio}>
-              <Text style={estilos.emojiVacio}>💚</Text>
-              <Text style={[estilos.texto, { color: colores.gris, textAlign: 'center' }]}>
-                Ahora no hay productos para donar. Volvé a mirar más tarde: los comercios publican durante el día.
-              </Text>
-            </View>
+            <Vacio icono="heart-outline" texto="No hay donaciones ahora. Los comercios publican durante el día." />
           ) : null
         }
         renderItem={({ item }) => (
@@ -93,9 +87,9 @@ export default function Donaciones({ navigation }) {
               onPress={() => navigation.navigate('DetalleProducto', { id: item.id })}
             />
             {item.ya_solicitado ? (
-              <Boton texto="✓ Ya lo pediste" variante="secundario" deshabilitado />
+              <Boton texto="Ya lo pediste" icono="checkmark" variante="texto" chico deshabilitado />
             ) : (
-              <Boton texto="Solicitar" onPress={() => setPidiendo(item)} />
+              <Boton texto="Pedir" icono="heart" chico onPress={() => setPidiendo(item)} />
             )}
           </View>
         )}

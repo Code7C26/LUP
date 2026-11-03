@@ -10,6 +10,9 @@ import Boton from '../../componentes/Boton';
 import Cargando from '../../componentes/Cargando';
 import MensajeError from '../../componentes/MensajeError';
 import { espacio, fuentes, radio, tamanos, useTema } from '../../tema';
+import Encabezado from '../../componentes/Encabezado';
+import Icono from '../../componentes/Icono';
+import Vacio from '../../componentes/Vacio';
 
 // "2026-10-26T14:30:00-03:00" -> "26/10"
 function textoFecha(fechaHora) {
@@ -34,7 +37,7 @@ function TarjetaSolicitud({ solicitud, alVerComercio }) {
             {solicitud.producto}
           </Text>
           <Text style={[estilos.detalle, { color: colores.gris }]}>
-            🏪 {solicitud.comercio} · pedido el {textoFecha(solicitud.creada_en)}
+            {solicitud.comercio} · {textoFecha(solicitud.creada_en)}
           </Text>
         </View>
         <Text style={[estilos.estado, colorEstado]}>{solicitud.estado_texto}</Text>
@@ -46,13 +49,19 @@ function TarjetaSolicitud({ solicitud, alVerComercio }) {
 
       {solicitud.estado === 'aprobada' ? (
         <View style={[estilos.aviso, { backgroundColor: colores.menta }]}>
-          <Text style={[estilos.textoAviso, { color: colores.titulo }]}>🎉 ¡Aprobada! Pasá a retirarla:</Text>
-          <Text style={[estilos.detalle, { color: colores.texto }]}>📍 {solicitud.direccion}</Text>
-          <Text style={[estilos.detalle, { color: colores.texto }]}>🕒 {solicitud.horario}</Text>
-          <Boton texto="Ver comercio y cómo llegar" variante="secundario" onPress={alVerComercio} />
+          <Text style={[estilos.textoAviso, { color: colores.titulo }]}>¡Aprobada! Pasá a retirarla</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Icono nombre="location-outline" tamano={15} color={colores.verdeHover} />
+            <Text style={[estilos.detalle, { color: colores.texto, flex: 1 }]}>{solicitud.direccion}</Text>
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Icono nombre="time-outline" tamano={15} color={colores.verdeHover} />
+            <Text style={[estilos.detalle, { color: colores.texto, flex: 1 }]}>{solicitud.horario}</Text>
+          </View>
+          <Boton texto="Cómo llegar" icono="navigate" chico onPress={alVerComercio} />
         </View>
       ) : solicitud.estado === 'pendiente' ? (
-        <Text style={[estilos.detalle, { color: colores.gris }]}>Esperando la respuesta del comercio.</Text>
+        <Text style={[estilos.detalle, { color: colores.gris }]}>Esperando respuesta…</Text>
       ) : null}
     </View>
   );
@@ -113,23 +122,22 @@ export default function MisSolicitudes({ navigation }) {
       }
       ListHeaderComponent={
         <View style={{ gap: espacio(1.5) }}>
-          <Text style={[estilos.titulo, { color: colores.titulo }]}>Mis solicitudes</Text>
+          <Encabezado titulo="Mis pedidos" />
           <MensajeError mensaje={error} alReintentar={cargar} />
         </View>
       }
       ListEmptyComponent={
         !error ? (
-          <View style={estilos.vacio}>
-            <Text style={estilos.emojiVacio}>📋</Text>
-            <Text style={[estilos.textoVacio, { color: colores.gris }]}>
-              Todavía no pediste ninguna donación.
-            </Text>
-            <Boton texto="Ver donaciones" onPress={() => navigation.navigate('Donaciones')} />
-          </View>
+          <Vacio
+            icono="clipboard-outline"
+            texto="Todavía no pediste donaciones"
+            boton="Ver donaciones"
+            alTocar={() => navigation.navigate('Donaciones')}
+          />
         ) : null
       }
       renderSectionHeader={({ section }) => (
-        <Text style={[estilos.subtitulo, { color: colores.titulo }]}>{section.titulo}</Text>
+        <Text style={[estilos.subtitulo, { color: colores.gris }]}>{section.titulo}</Text>
       )}
       renderItem={({ item }) => (
         <TarjetaSolicitud
@@ -157,7 +165,6 @@ const estilos = StyleSheet.create({
     marginBottom: espacio(1.5),
   },
   tarjeta: {
-    borderWidth: 1,
     borderRadius: radio,
     padding: espacio(2),
     gap: espacio(1),

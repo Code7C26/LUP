@@ -3,17 +3,22 @@
 // el comercio con horario y dirección, el selector de cantidad y "Realizar compra".
 // Usa GET /api/productos/<id>/ y POST /api/productos/<id>/reservar/ (paso 29).
 // Se abre desde el catálogo: navigation.navigate('DetalleProducto', { id: producto.id })
+// PROPUESTA DE ESTÉTICA: foto grande arriba, datos en "pastillas" con íconos
+// y la barra de compra fija abajo (cantidad + botón con el total).
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { api, urlCompleta } from '../api/cliente';
 import Boton from '../componentes/Boton';
+import BotonVolver from '../componentes/BotonVolver';
 import Cargando from '../componentes/Cargando';
+import Icono from '../componentes/Icono';
 import MensajeError from '../componentes/MensajeError';
 import ModalSolicitudDonacion from '../componentes/ModalSolicitudDonacion';
 import { useSesion } from '../contexto/Sesion';
-import { espacio, fuentes, radio, tamanos, useTema } from '../tema';
-import { emojiCategoria, formatoPrecio, textoError } from '../utilidades';
+import { espacio, fuentes, radio, sombra, tamanos, useTema } from '../tema';
+import { emojiCategoria, emojiRubro, formatoPrecio, textoError } from '../utilidades';
 
 // "2026-10-26" -> "hoy", "mañana" o "el 28/10"
 function textoFechaLimite(fecha) {
@@ -29,7 +34,7 @@ function textoFechaLimite(fecha) {
 }
 
 // Botón redondo de − y + para la cantidad
-function BotonCantidad({ texto, onPress, deshabilitado, etiqueta }) {
+function BotonCantidad({ icono, onPress, deshabilitado, etiqueta }) {
   const { colores } = useTema();
   return (
     <Pressable
@@ -40,11 +45,11 @@ function BotonCantidad({ texto, onPress, deshabilitado, etiqueta }) {
       accessibilityState={{ disabled: deshabilitado }}
       style={({ pressed }) => [
         estilos.botonCantidad,
-        { borderColor: colores.verde, backgroundColor: pressed ? colores.menta : 'transparent' },
+        { backgroundColor: pressed ? colores.menta : colores.campo },
         deshabilitado && { opacity: 0.4 },
       ]}
     >
-      <Text style={[estilos.textoBotonCantidad, { color: colores.verdeHover }]}>{texto}</Text>
+      <Icono nombre={icono} tamano={18} color={colores.titulo} />
     </Pressable>
   );
 }
@@ -52,6 +57,7 @@ function BotonCantidad({ texto, onPress, deshabilitado, etiqueta }) {
 export default function DetalleProducto({ navigation, route }) {
   const { colores } = useTema();
   const { usuario } = useSesion();
+  const { bottom } = useSafeAreaInsets();
   const id = route?.params?.id;
 
   const [producto, setProducto] = useState(null);
@@ -103,8 +109,9 @@ export default function DetalleProducto({ navigation, route }) {
 
   if (!producto) {
     return (
-      <View style={[estilos.contenido, { flex: 1, backgroundColor: colores.fondo }]}>
+      <View style={{ flex: 1, padding: espacio(2), paddingTop: espacio(10), backgroundColor: colores.fondo }}>
         <MensajeError mensaje={error} alReintentar={cargar} />
+        <BotonVolver navigation={navigation} />
       </View>
     );
   }
@@ -114,138 +121,154 @@ export default function DetalleProducto({ navigation, route }) {
   const puedeReservar = !usuario || usuario.rol === 'consumidor';
   const total = Number(producto.precio_descuento) * cantidad;
 
+  // "Pastilla" con ícono: hasta cuándo, cuántos quedan, donación
+  const Pastilla = ({ icono, texto, aviso }) => (
+    <View style={[estilos.pastilla, { backgroundColor: aviso ? colores.ambarClaro : colores.menta }]}>
+      <Icono nombre={icono} tamano={14} color={aviso ? colores.ambar : colores.verdeHover} />
+      <Text style={[estilos.textoPastilla, { color: aviso ? colores.texto : colores.verdeHover }]}>{texto}</Text>
+    </View>
+  );
+
   return (
-    <ScrollView style={{ backgroundColor: colores.fondo }} contentContainerStyle={estilos.contenido}>
-      {producto.imagen ? (
-        <Image
-          source={{ uri: urlCompleta(producto.imagen) }}
-          style={estilos.foto}
-          accessibilityLabel={`Foto de ${producto.titulo}`}
-        />
-      ) : (
-        <View style={[estilos.foto, estilos.sinFoto, { backgroundColor: colores.menta }]}>
-          <Text style={estilos.emoji}>{emojiCategoria(producto.categoria)}</Text>
-        </View>
-      )}
-
-      <MensajeError mensaje={error} />
-
-      {/* Título y precios */}
-      <View style={{ gap: espacio(0.5) }}>
-        <Text style={[estilos.categoria, { color: colores.verdeHover }]}>
-          {emojiCategoria(producto.categoria)} {producto.categoria_texto}
-        </Text>
-        <Text style={[estilos.titulo, { color: colores.titulo }]}>{producto.titulo}</Text>
-        <View style={estilos.precios}>
-          <Text style={[estilos.precio, { color: colores.titulo }]}>{formatoPrecio(producto.precio_descuento)}</Text>
-          <Text style={[estilos.tachado, { color: colores.gris }]}>{formatoPrecio(producto.precio_original)}</Text>
+    <View style={{ flex: 1, backgroundColor: colores.fondo }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: espacio(4) }}>
+        {/* Foto grande */}
+        <View style={[estilos.foto, { backgroundColor: colores.menta }]}>
+          {producto.imagen ? (
+            <Image
+              source={{ uri: urlCompleta(producto.imagen) }}
+              style={StyleSheet.absoluteFill}
+              accessibilityLabel={`Foto de ${producto.titulo}`}
+            />
+          ) : (
+            <Text style={estilos.emoji}>{emojiCategoria(producto.categoria)}</Text>
+          )}
           {producto.porcentaje_descuento > 0 ? (
-            <Text style={[estilos.etiqueta, { backgroundColor: colores.verde, color: colores.sobreVerde }]}>
-              -{producto.porcentaje_descuento}%
-            </Text>
+            <Text style={[estilos.descuento, { backgroundColor: colores.ambar }]}>-{producto.porcentaje_descuento}%</Text>
           ) : null}
         </View>
-      </View>
 
-      {producto.descripcion ? (
-        <Text style={[estilos.texto, { color: colores.texto }]}>{producto.descripcion}</Text>
-      ) : null}
+        <View style={estilos.contenido}>
+          <MensajeError mensaje={error} />
 
-      {/* Fecha límite y stock */}
-      <View style={estilos.filaEtiquetas}>
-        <Text
-          style={[
-            estilos.etiqueta,
-            venceHoy
-              ? { backgroundColor: colores.ambarClaro, color: colores.texto }
-              : { backgroundColor: colores.menta, color: colores.verdeHover },
-          ]}
-        >
-          🕒 Retirá hasta {fechaLimite}
-        </Text>
-        <Text style={[estilos.etiqueta, { backgroundColor: colores.menta, color: colores.verdeHover }]}>
-          {producto.stock === 1 ? 'Queda 1' : `Quedan ${producto.stock}`}
-        </Text>
-        {producto.es_donacion ? (
-          <Text style={[estilos.etiqueta, { backgroundColor: colores.menta, color: colores.verdeHover }]}>
-            💚 También para donación
-          </Text>
-        ) : null}
-      </View>
-
-      {/* El comercio: abre su detalle con el mapa (paso 43) */}
-      <Pressable
-        onPress={() => navigation.navigate('DetalleComercio', { id: producto.comercio_id })}
-        accessibilityRole="button"
-        accessibilityLabel={`Ver el comercio ${producto.comercio}`}
-        style={({ pressed }) => [
-          estilos.tarjeta,
-          { backgroundColor: colores.superficie, borderColor: colores.borde },
-          pressed && { opacity: 0.85 },
-        ]}
-      >
-        <View style={estilos.filaComercio}>
-          <Text style={[estilos.nombreComercio, { color: colores.titulo }]} numberOfLines={1}>
-            🏪 {producto.comercio}
-          </Text>
-          <Text style={[estilos.link, { color: colores.verdeHover }]}>Ver comercio ›</Text>
-        </View>
-        <Text style={[estilos.detalle, { color: colores.gris }]}>📍 {producto.direccion}</Text>
-        <Text style={[estilos.detalle, { color: colores.gris }]}>🕒 Retiro: {producto.horario}</Text>
-      </Pressable>
-
-      {/* Cantidad, total y reservar */}
-      {puedeReservar ? (
-        <View style={[estilos.tarjeta, { backgroundColor: colores.superficie, borderColor: colores.borde }]}>
-          <View style={estilos.filaCantidad}>
-            <Text style={[estilos.nombreComercio, { color: colores.titulo }]}>Cantidad</Text>
-            <View style={estilos.selector}>
-              <BotonCantidad
-                texto="−"
-                etiqueta="Restar uno"
-                deshabilitado={cantidad <= 1}
-                onPress={() => setCantidad((c) => c - 1)}
-              />
-              <Text style={[estilos.cantidad, { color: colores.titulo }]} accessibilityLiveRegion="polite">
-                {cantidad}
-              </Text>
-              <BotonCantidad
-                texto="+"
-                etiqueta="Sumar uno"
-                deshabilitado={cantidad >= producto.stock}
-                onPress={() => setCantidad((c) => c + 1)}
-              />
+          {/* Título y precios */}
+          <View style={{ gap: espacio(0.5) }}>
+            <Text style={[estilos.categoria, { color: colores.verdeHover }]}>
+              {emojiCategoria(producto.categoria)} {producto.categoria_texto}
+            </Text>
+            <Text style={[estilos.titulo, { color: colores.titulo }]}>{producto.titulo}</Text>
+            <View style={estilos.precios}>
+              <Text style={[estilos.precio, { color: colores.titulo }]}>{formatoPrecio(producto.precio_descuento)}</Text>
+              <Text style={[estilos.tachado, { color: colores.gris }]}>{formatoPrecio(producto.precio_original)}</Text>
             </View>
           </View>
-          <View style={estilos.filaCantidad}>
-            <Text style={[estilos.texto, { color: colores.gris }]}>Total</Text>
-            <Text style={[estilos.precio, { color: colores.titulo }]}>{formatoPrecio(total)}</Text>
+
+          <View style={estilos.filaPastillas}>
+            <Pastilla icono="time-outline" texto={`Hasta ${fechaLimite}`} aviso={venceHoy} />
+            <Pastilla icono="cube-outline" texto={producto.stock === 1 ? 'Queda 1' : `Quedan ${producto.stock}`} />
+            {producto.es_donacion ? <Pastilla icono="heart-outline" texto="Donable" /> : null}
+          </View>
+
+          {producto.descripcion ? (
+            <Text style={[estilos.texto, { color: colores.texto }]}>{producto.descripcion}</Text>
+          ) : null}
+
+          {/* El comercio: abre su detalle con el mapa (paso 43) */}
+          <Pressable
+            onPress={() => navigation.navigate('DetalleComercio', { id: producto.comercio_id })}
+            accessibilityRole="button"
+            accessibilityLabel={`Ver el comercio ${producto.comercio}`}
+            style={({ pressed }) => [
+              estilos.comercio,
+              { backgroundColor: colores.superficie },
+              sombra(colores),
+              pressed && { opacity: 0.85 },
+            ]}
+          >
+            <View style={[estilos.avatarComercio, { backgroundColor: colores.menta }]}>
+              <Text style={{ fontSize: 22 }}>{emojiRubro(producto.rubro)}</Text>
+            </View>
+            <View style={{ flex: 1, gap: 2 }}>
+              <Text style={[estilos.nombreComercio, { color: colores.titulo }]} numberOfLines={1}>
+                {producto.comercio}
+              </Text>
+              <View style={estilos.fila}>
+                <Icono nombre="location-outline" tamano={13} color={colores.gris} />
+                <Text style={[estilos.detalle, { color: colores.gris }]} numberOfLines={1}>
+                  {producto.direccion}
+                </Text>
+              </View>
+              <View style={estilos.fila}>
+                <Icono nombre="time-outline" tamano={13} color={colores.gris} />
+                <Text style={[estilos.detalle, { color: colores.gris }]} numberOfLines={1}>
+                  {producto.horario}
+                </Text>
+              </View>
+            </View>
+            <Icono nombre="chevron-forward" tamano={20} color={colores.gris} />
+          </Pressable>
+
+          {!puedeReservar && usuario?.rol !== 'organizacion' ? (
+            <Text style={[estilos.aviso, { color: colores.gris }]}>Las reservas son solo para consumidores.</Text>
+          ) : null}
+        </View>
+      </ScrollView>
+
+      {/* Barra fija abajo: cantidad + reservar */}
+      {puedeReservar ? (
+        <View
+          style={[
+            estilos.barra,
+            { backgroundColor: colores.superficie, paddingBottom: bottom + espacio(1.5) },
+            sombra(colores, 2),
+          ]}
+        >
+          <View style={estilos.selector}>
+            <BotonCantidad
+              icono="remove"
+              etiqueta="Restar uno"
+              deshabilitado={cantidad <= 1}
+              onPress={() => setCantidad((c) => c - 1)}
+            />
+            <Text style={[estilos.cantidad, { color: colores.titulo }]} accessibilityLiveRegion="polite">
+              {cantidad}
+            </Text>
+            <BotonCantidad
+              icono="add"
+              etiqueta="Sumar uno"
+              deshabilitado={cantidad >= producto.stock}
+              onPress={() => setCantidad((c) => c + 1)}
+            />
           </View>
           <Boton
-            texto={usuario ? 'Realizar compra' : 'Ingresá para reservar'}
+            texto={usuario ? `Reservar · ${formatoPrecio(total)}` : 'Ingresá para reservar'}
+            icono={usuario ? 'bag-check-outline' : 'log-in-outline'}
             onPress={reservar}
             cargando={reservando}
             deshabilitado={producto.stock < 1}
+            estilo={{ flex: 1 }}
           />
-          <Text style={[estilos.aviso, { color: colores.gris }]}>
-            Recibirás un código para mostrar al retirar.
-          </Text>
         </View>
-      ) : usuario.rol === 'organizacion' && producto.es_donacion ? (
+      ) : usuario?.rol === 'organizacion' && producto.es_donacion ? (
         // La organización lo puede pedir en donación desde acá (paso 48)
-        <View style={{ gap: espacio(1) }}>
+        <View
+          style={[
+            estilos.barra,
+            { backgroundColor: colores.superficie, paddingBottom: bottom + espacio(1.5) },
+            sombra(colores, 2),
+          ]}
+        >
           <Boton
-            texto={pedido ? '✓ Ya lo pediste' : 'Pedir en donación'}
+            texto={pedido ? 'Ya lo pediste' : 'Pedir en donación'}
+            icono={pedido ? 'checkmark-circle' : 'heart'}
             onPress={() => setPidiendo(true)}
             deshabilitado={pedido}
+            estilo={{ flex: 1 }}
           />
-          <Text style={[estilos.aviso, { color: colores.gris }]}>
-            El comercio recibe tu mensaje y te responde en "Mis solicitudes".
-          </Text>
         </View>
-      ) : (
-        <Text style={[estilos.aviso, { color: colores.gris }]}>Las reservas son solo para cuentas de consumidor.</Text>
-      )}
+      ) : null}
+
+      <BotonVolver navigation={navigation} />
 
       <ModalSolicitudDonacion
         producto={pidiendo ? producto : null}
@@ -256,7 +279,7 @@ export default function DetalleProducto({ navigation, route }) {
           Alert.alert('Solicitud enviada', `${producto.comercio} recibió tu pedido. Vas a ver su respuesta en "Mis solicitudes".`);
         }}
       />
-    </ScrollView>
+    </View>
   );
 }
 
@@ -267,15 +290,27 @@ const estilos = StyleSheet.create({
   },
   foto: {
     width: '100%',
-    height: 240,
-    borderRadius: radio,
-  },
-  sinFoto: {
+    height: 280,
+    borderBottomLeftRadius: radio * 1.5,
+    borderBottomRightRadius: radio * 1.5,
+    overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
   },
   emoji: {
-    fontSize: 72,
+    fontSize: 96,
+  },
+  descuento: {
+    position: 'absolute',
+    bottom: espacio(2),
+    left: espacio(2),
+    color: '#FFFFFF',
+    fontFamily: fuentes.negrita,
+    fontSize: tamanos.normal,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 999,
+    overflow: 'hidden',
   },
   categoria: {
     fontFamily: fuentes.media,
@@ -287,85 +322,93 @@ const estilos = StyleSheet.create({
   },
   precios: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'baseline',
     gap: espacio(1),
   },
   precio: {
     fontFamily: fuentes.negrita,
-    fontSize: tamanos.grande,
+    fontSize: tamanos.titulo,
   },
   tachado: {
     fontFamily: fuentes.normal,
     fontSize: tamanos.normal,
     textDecorationLine: 'line-through',
   },
-  etiqueta: {
-    fontFamily: fuentes.media,
-    fontSize: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
-    overflow: 'hidden',
-  },
-  filaEtiquetas: {
+  filaPastillas: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: espacio(1),
   },
-  texto: {
-    fontFamily: fuentes.normal,
-    fontSize: tamanos.normal,
-  },
-  tarjeta: {
-    borderWidth: 1,
-    borderRadius: radio,
-    padding: espacio(2),
-    gap: espacio(1),
-  },
-  filaComercio: {
+  pastilla: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: espacio(1),
+    gap: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
   },
-  nombreComercio: {
-    flex: 1,
-    fontFamily: fuentes.negrita,
-    fontSize: tamanos.mediano,
-  },
-  link: {
+  textoPastilla: {
     fontFamily: fuentes.media,
     fontSize: tamanos.chico,
   },
+  texto: {
+    fontFamily: fuentes.normal,
+    fontSize: tamanos.normal,
+    lineHeight: 22,
+  },
+  comercio: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: espacio(1.5),
+    borderRadius: radio,
+    padding: espacio(1.5),
+  },
+  avatarComercio: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  nombreComercio: {
+    fontFamily: fuentes.negrita,
+    fontSize: tamanos.normal,
+  },
+  fila: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
   detalle: {
+    flex: 1,
     fontFamily: fuentes.normal,
     fontSize: tamanos.chico,
   },
-  filaCantidad: {
+  barra: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: espacio(1.5),
+    paddingHorizontal: espacio(2),
+    paddingTop: espacio(1.5),
+    borderTopLeftRadius: radio,
+    borderTopRightRadius: radio,
   },
   selector: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: espacio(1.5),
+    gap: espacio(1),
   },
   botonCantidad: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  textoBotonCantidad: {
-    fontFamily: fuentes.negrita,
-    fontSize: tamanos.mediano,
   },
   cantidad: {
     fontFamily: fuentes.negrita,
     fontSize: tamanos.mediano,
-    minWidth: 24,
+    minWidth: 22,
     textAlign: 'center',
   },
   aviso: {

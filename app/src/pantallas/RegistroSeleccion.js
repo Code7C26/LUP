@@ -3,26 +3,30 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { espacio, fuentes, radio, tamanos, useTema } from '../tema';
+import Icono from '../componentes/Icono';
 
 // Mismos textos que la web (scr/bd_lup/users/views.py → INFO_ROLES)
 export const TIPOS_DE_CUENTA = [
   {
     rol: 'consumidor',
     emoji: '🛍️',
+    icono: 'bag-handle-outline',
     titulo: 'Consumidor',
-    descripcion: 'Rescatá comida rica a precios reducidos en comercios cerca tuyo.',
+    descripcion: 'Comprá comida rica con descuento.',
   },
   {
     rol: 'comercio',
     emoji: '🏪',
+    icono: 'storefront-outline',
     titulo: 'Comercio',
-    descripcion: 'Vendé tus excedentes del día y recuperá ingresos en lugar de tirarlos.',
+    descripcion: 'Vendé lo que te sobra en el día.',
   },
   {
     rol: 'organizacion',
     emoji: '🤝',
+    icono: 'heart-outline',
     titulo: 'Organización',
-    descripcion: 'Recibí donaciones de alimentos para comedores, merenderos y fundaciones.',
+    descripcion: 'Recibí donaciones de alimentos.',
   },
 ];
 
@@ -41,16 +45,18 @@ export default function RegistroSeleccion({ navigation }) {
           onPress={() => navigation?.navigate('RegistroFormulario', { rol: tipo.rol })}
           style={({ pressed }) => [
             estilos.tarjeta,
-            { backgroundColor: colores.superficie, borderColor: colores.borde },
+            { backgroundColor: colores.superficie, borderColor: colores.superficie },
             pressed && { borderColor: colores.verde },
           ]}
         >
-          <Text style={estilos.emoji}>{tipo.emoji}</Text>
+          <View style={[estilos.circulo, { backgroundColor: colores.menta }]}>
+            <Icono nombre={tipo.icono} tamano={24} color={colores.verdeHover} />
+          </View>
           <View style={{ flex: 1, gap: 2 }}>
             <Text style={[estilos.nombre, { color: colores.titulo }]}>{tipo.titulo}</Text>
             <Text style={[estilos.descripcion, { color: colores.gris }]}>{tipo.descripcion}</Text>
           </View>
-          <Text style={[estilos.flecha, { color: colores.verdeHover }]}>›</Text>
+          <Icono nombre="chevron-forward" tamano={20} color={colores.gris} />
         </Pressable>
       ))}
 
@@ -89,8 +95,12 @@ const estilos = StyleSheet.create({
     borderRadius: radio,
     padding: espacio(2),
   },
-  emoji: {
-    fontSize: 32,
+  circulo: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   nombre: {
     fontFamily: fuentes.negrita,
