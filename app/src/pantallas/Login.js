@@ -89,7 +89,7 @@ export default function Login({ navigation, route }) {
   }
 
   function omitir() {
-    if (enVentana) return navigation.goBack();
+    if (enVentana && navigation?.canGoBack?.()) return navigation.goBack();
     entrarComoInvitado();
   }
 

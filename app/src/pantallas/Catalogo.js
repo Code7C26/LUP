@@ -7,6 +7,7 @@ import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View
 import * as Location from 'expo-location';
 
 import { api } from '../api/cliente';
+import BarraCarrito from '../componentes/BarraCarrito';
 import Campo from '../componentes/Campo';
 import Cargando from '../componentes/Cargando';
 import Chip from '../componentes/Chip';
@@ -174,49 +175,52 @@ export default function Catalogo({ navigation, route }) {
   if (cargando) return <Cargando texto="Buscando ofertas…" />;
 
   return (
-    <FlatList
-      style={{ backgroundColor: colores.fondo }}
-      contentContainerStyle={estilos.contenido}
-      data={productos}
-      keyExtractor={(p) => String(p.id)}
-      keyboardShouldPersistTaps="handled"
-
-      ListHeaderComponent={encabezado}
-      refreshControl={
-        <RefreshControl
-          refreshing={actualizando}
-          tintColor={colores.verde}
-          onRefresh={() => {
-            setActualizando(true);
-            cargar();
-          }}
-        />
-      }
-      ListEmptyComponent={
-        !error ? (
-          <View style={estilos.vacio}>
-            <Icono nombre="search-outline" tamano={44} color={colores.gris} />
-            <Text style={[estilos.textoVacio, { color: colores.gris }]}>
-              Nada por acá. Probá con otros filtros.
-            </Text>
-          </View>
-        ) : null
-      }
-      renderItem={({ item }) => (
-        <FilaProducto
-          producto={item}
-          mostrarComercio
-          onPress={() => navigation?.navigate?.('DetalleProducto', { id: item.id })}
-        />
-      )}
-      ItemSeparatorComponent={() => <View style={{ height: espacio(1.5) }} />}
-    />
+    <View style={{ flex: 1, backgroundColor: colores.fondo }}>
+      <FlatList
+        style={{ backgroundColor: colores.fondo }}
+        contentContainerStyle={estilos.contenido}
+        data={productos}
+        keyExtractor={(p) => String(p.id)}
+        keyboardShouldPersistTaps="handled"
+        ListHeaderComponent={encabezado}
+        refreshControl={
+          <RefreshControl
+            refreshing={actualizando}
+            tintColor={colores.verde}
+            onRefresh={() => {
+              setActualizando(true);
+              cargar();
+            }}
+          />
+        }
+        ListEmptyComponent={
+          !error ? (
+            <View style={estilos.vacio}>
+              <Icono nombre="search-outline" tamano={44} color={colores.gris} />
+              <Text style={[estilos.textoVacio, { color: colores.gris }]}>
+                Nada por acá. Probá con otros filtros.
+              </Text>
+            </View>
+          ) : null
+        }
+        renderItem={({ item }) => (
+          <FilaProducto
+            producto={item}
+            mostrarComercio
+            onPress={() => navigation?.navigate?.('DetalleProducto', { id: item.id })}
+          />
+        )}
+        ItemSeparatorComponent={() => <View style={{ height: espacio(1.5) }} />}
+      />
+      <BarraCarrito navigation={navigation} />
+    </View>
   );
 }
 
 const estilos = StyleSheet.create({
   contenido: {
     padding: espacio(2),
+    paddingBottom: espacio(10), // lugar para la barra "Ver carrito"
   },
   filaChips: {
     gap: espacio(1),

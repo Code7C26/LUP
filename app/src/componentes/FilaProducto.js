@@ -1,22 +1,30 @@
 // Fila de producto IGUAL AL MOCKUP (página 8): la foto cuadrada a la izquierda
-// y una tarjeta gris a la derecha con el nombre, el precio y el botón "Reservar".
+// y una tarjeta gris a la derecha con el nombre, el precio y "Agregar al carrito".
+// Tocar la fila abre el detalle; el botón lo suma al carrito (si ya está, suma uno más).
 // Uso:  <FilaProducto producto={p} onPress={() => navigation.navigate('DetalleProducto', { id: p.id })} />
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { urlCompleta } from '../api/cliente';
+import { useCarrito } from '../contexto/Carrito';
+import { useSesion } from '../contexto/Sesion';
 import { espacio, fuentes, sombra, useTema } from '../tema';
 import { emojiCategoria, formatoPrecio, textoDistancia } from '../utilidades';
 import Icono from './Icono';
 
 export default function FilaProducto({ producto, onPress, mostrarComercio }) {
   const { colores } = useTema();
+  const { usuario } = useSesion();
+  const { agregar, cantidadDe } = useCarrito();
+  const enCarrito = cantidadDe(producto.id);
+  const puedeComprar = !usuario || usuario.rol === 'consumidor';
+  const lleno = enCarrito >= producto.stock;
   const distancia = textoDistancia(producto.distancia_km)?.replace('a ', '');
 
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`${producto.titulo}, ${formatoPrecio(producto.precio_descuento)}. Reservar`}
+      accessibilityLabel={`${producto.titulo}, ${formatoPrecio(producto.precio_descuento)}. Ver detalle`}
       style={({ pressed }) => [estilos.fila, pressed && { opacity: 0.85 }]}
     >
       <View style={[estilos.foto, { backgroundColor: colores.panel }]}>
@@ -43,9 +51,25 @@ export default function FilaProducto({ producto, onPress, mostrarComercio }) {
             <Text style={[estilos.tachado, { color: colores.gris }]}>{formatoPrecio(producto.precio_original)}</Text>
             {producto.es_donacion ? <Icono nombre="heart" tamano={12} color={colores.verde} /> : null}
           </View>
-          <View style={[estilos.boton, { backgroundColor: colores.verdeProfundo }]}>
-            <Text style={[estilos.textoBoton, { color: colores.sobreVerdeProfundo }]}>Reservar</Text>
-          </View>
+          {puedeComprar ? (
+            <Pressable
+              onPress={() => agregar(producto, 1)}
+              disabled={lleno}
+              hitSlop={6}
+              accessibilityRole="button"
+              accessibilityLabel={enCarrito ? `Sumar otro al carrito, hay ${enCarrito}` : 'Agregar al carrito'}
+              style={({ pressed }) => [
+                estilos.boton,
+                { backgroundColor: colores.verdeProfundo },
+                (pressed || lleno) && { opacity: 0.6 },
+              ]}
+            >
+              <Icono nombre={enCarrito ? 'cart' : 'cart-outline'} tamano={12} color={colores.sobreVerdeProfundo} />
+              <Text style={[estilos.textoBoton, { color: colores.sobreVerdeProfundo }]}>
+                {enCarrito ? `En el carrito · ${enCarrito}` : 'Agregar al carrito'}
+              </Text>
+            </Pressable>
+          ) : null}
         </View>
       </View>
     </Pressable>
@@ -105,6 +129,9 @@ const estilos = StyleSheet.create({
     textDecorationLine: 'line-through',
   },
   boton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     borderRadius: 999,
     paddingHorizontal: espacio(1.5),
     paddingVertical: 5,

@@ -15,6 +15,7 @@ import { useSesion } from '../contexto/Sesion';
 import FormProducto from '../pantallas/comercio/FormProducto';
 import DetalleComercio from '../pantallas/DetalleComercio';
 import Bienvenida from '../pantallas/Bienvenida';
+import Carrito from '../pantallas/Carrito';
 import DetalleProducto from '../pantallas/DetalleProducto';
 import Login from '../pantallas/Login';
 import Portada from '../pantallas/Portada';
@@ -46,7 +47,10 @@ export default function Navegacion() {
   // El invitado ve la parte del consumidor, así que también su bienvenida
   const rolActual = usuario?.rol || 'consumidor';
 
-  // Login y registro: tienen su propio "Omitir" y "Volver", así que van sin barra arriba
+  // Login y registro: tienen su propio "Omitir" y "Volver", así que van sin barra arriba.
+  // Están en las dos partes (con y sin sesión). El navigationKey distinto de cada grupo hace que,
+  // al entrar o salir, se cierren y la app pase sola a las pestañas (o a la portada).
+  // Sin eso, el login quedaba abierto como única pantalla y "Omitir" fallaba con GO_BACK.
   const pantallasDeCuenta = (
     <>
       <Stack.Screen name="Login" component={Login} />
@@ -68,19 +72,20 @@ export default function Navegacion() {
             {/* Los detalles tienen la foto o el mapa hasta arriba y su propio botón redondo para volver */}
             <Stack.Screen name="DetalleProducto" component={DetalleProducto} options={{ headerShown: false }} />
             <Stack.Screen name="DetalleComercio" component={DetalleComercio} options={{ headerShown: false }} />
+            <Stack.Screen name="Carrito" component={Carrito} options={{ title: '' }} />
             <Stack.Screen
               name="FormProducto"
               component={FormProducto}
               options={{ title: '' }} // el título grande ("Nuevo Producto") está dentro de la pantalla
             />
-            <Stack.Group screenOptions={{ presentation: 'modal', headerShown: false }}>
+            <Stack.Group navigationKey="dentro" screenOptions={{ presentation: 'modal', headerShown: false }}>
               {pantallasDeCuenta}
               {/* Para volver a ver la bienvenida desde Perfil */}
               <Stack.Screen name="VerBienvenida" component={Bienvenida} />
             </Stack.Group>
           </>
         ) : (
-          <Stack.Group screenOptions={{ headerShown: false }}>
+          <Stack.Group navigationKey="fuera" screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Portada" component={Portada} />
             {pantallasDeCuenta}
           </Stack.Group>
