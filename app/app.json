@@ -12,7 +12,7 @@
     "android": {
       "package": "ar.com.lup",
       "adaptiveIcon": {
-        "backgroundColor": "#F7F5EE",
+        "backgroundColor": "#FFFFFF",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -29,9 +29,9 @@
         {
           "image": "./assets/splash-icon.png",
           "imageWidth": 200,
-          "backgroundColor": "#F7F5EE",
+          "backgroundColor": "#FFFFFF",
           "dark": {
-            "image": "./assets/splash-icon.png",
+            "image": "./assets/splash-icon-claro.png",
             "backgroundColor": "#0E1713"
           }
         }

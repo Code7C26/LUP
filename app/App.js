@@ -1,5 +1,7 @@
 // App de Lüp: carga las tipografías del mockup, Poppins y DM Sans (paso 34), la sesión (paso 36)
 // y muestra la navegación por rol (paso 37).
+import { useEffect } from 'react';
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import {
@@ -14,6 +16,9 @@ import { ProveedorSesion } from './src/contexto/Sesion';
 import Navegacion from './src/navegacion';
 import { useTema } from './src/tema';
 
+// La pantalla de inicio (el logo sobre blanco) queda hasta que cargan las letras
+SplashScreen.preventAutoHideAsync().catch(() => {});
+
 export default function App() {
   const [fuentesListas] = useFonts({
     Poppins_400Regular,
@@ -24,6 +29,10 @@ export default function App() {
     DMSans_700Bold,
   });
   const { esOscuro } = useTema();
+
+  useEffect(() => {
+    if (fuentesListas) SplashScreen.hideAsync().catch(() => {});
+  }, [fuentesListas]);
 
   if (!fuentesListas) return null;
 

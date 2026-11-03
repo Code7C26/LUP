@@ -1,4 +1,5 @@
 // PASO 37 · Estilos de la navegación, con los colores y la tipografía de Lüp (tema.js).
+import { StyleSheet, View } from 'react-native';
 import { DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -42,21 +43,42 @@ export function useOpcionesStack() {
 // solo se deja el espacio de la barra de estado del celular.
 export function useOpcionesPestanas() {
   const { colores } = useTema();
-  const { top } = useSafeAreaInsets();
+  const { top, bottom } = useSafeAreaInsets();
   return {
     headerShown: false,
     sceneStyle: { backgroundColor: colores.fondo, paddingTop: top },
     tabBarActiveTintColor: colores.verdeProfundo,
     tabBarInactiveTintColor: colores.gris,
-    tabBarStyle: { backgroundColor: colores.fondo, borderTopWidth: 0, elevation: 0, paddingTop: 6 },
+    tabBarStyle: { backgroundColor: colores.fondo, borderTopWidth: 0, elevation: 0, paddingTop: 8, height: 64 + bottom },
+    tabBarItemStyle: { gap: 2 },
     tabBarLabelStyle: { fontFamily: fuentes.media, fontSize: tamanos.mini },
   };
 }
 
-// Ícono de cada pestaña (lleno cuando está elegida). Los íconos están en componentes/iconosPestanas.js
+// Ícono de cada pestaña: la elegida lleva una "pastilla" verde claro detrás (como las apps nuevas).
+// Los íconos están en componentes/iconosPestanas.js
+function IconoPestana({ nombrePestana, focused, color }) {
+  const { colores } = useTema();
+  const [vacio, lleno] = ICONOS_PESTANAS[nombrePestana] || ['ellipse-outline', 'ellipse'];
+  return (
+    <View style={[estilosPestana.pastilla, focused && { backgroundColor: colores.verdeClaro }]}>
+      <Icono nombre={focused ? lleno : vacio} tamano={22} color={color} />
+    </View>
+  );
+}
+
 export function icono(nombrePestana) {
-  return function IconoPestana({ focused, color }) {
-    const [vacio, lleno] = ICONOS_PESTANAS[nombrePestana] || ['ellipse-outline', 'ellipse'];
-    return <Icono nombre={focused ? lleno : vacio} tamano={23} color={color} />;
+  return function MostrarIcono({ focused, color }) {
+    return <IconoPestana nombrePestana={nombrePestana} focused={focused} color={color} />;
   };
 }
+
+const estilosPestana = StyleSheet.create({
+  pastilla: {
+    width: 56,
+    height: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});

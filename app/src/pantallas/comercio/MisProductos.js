@@ -2,13 +2,14 @@
 // arriba el círculo del comercio y "Mi Perfil", el ícono de soporte con su cartelito,
 // "Productos disponibles +" y cada producto con la foto a la izquierda y una tarjeta gris con:
 //   arriba a la derecha: 🚫 "Marcar como producto no disponible" y ✔ "Marcar como vendido/reservado"
+//   (agregado) vendido, donado o vencido: 📄 "Publicar de nuevo" copia el producto con la fecha de hoy
 //   abajo: las etiquetas "Descuento" y "Donaciones" (verdes si aplican), "Editar producto" y "Eliminar"
 // Usa GET /api/mis-productos/, POST /api/mis-productos/<id>/estado/ y DELETE /api/mis-productos/<id>/ (paso 30).
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, FlatList, Image, Linking, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
 import { api, urlCompleta } from '../../api/cliente';
-import Cargando from '../../componentes/Cargando';
+import Esqueleto from '../../componentes/Esqueleto';
 import Icono from '../../componentes/Icono';
 import MensajeError from '../../componentes/MensajeError';
 import Vacio from '../../componentes/Vacio';
@@ -76,7 +77,7 @@ function Pildora({ texto, fondo, onPress, deshabilitado }) {
   );
 }
 
-function FilaMiProducto({ producto, ocupado, alCambiarEstado, alEditar, alEliminar }) {
+function FilaMiProducto({ producto, ocupado, alCambiarEstado, alEditar, alEliminar, alCopiar }) {
   const { colores } = useTema();
   const vencido = producto.fecha_vencimiento < hoyIso();
   const disponible = producto.estado === 'DISPONIBLE';
@@ -125,13 +126,24 @@ function FilaMiProducto({ producto, ocupado, alCambiarEstado, alEditar, alElimin
                 deshabilitado={ocupado}
               />
             </>
-          ) : producto.estado !== 'DONADO' && producto.stock > 0 ? (
+          ) : producto.estado === 'PAUSADO' && producto.stock > 0 ? (
             <BotonRedondo
               icono="play"
               color={colores.sobreVerdeProfundo}
               fondo={colores.verdeProfundo}
               etiqueta="Volver a publicar"
               onPress={() => alCambiarEstado('DISPONIBLE')}
+              deshabilitado={ocupado}
+            />
+          ) : null}
+          {/* Vendido, donado o vencido: "Publicar de nuevo" copia todo con la fecha de hoy */}
+          {!disponible || vencido ? (
+            <BotonRedondo
+              icono="copy-outline"
+              color={colores.sobreVerdeProfundo}
+              fondo={colores.verdeProfundo}
+              etiqueta="Publicar de nuevo"
+              onPress={alCopiar}
               deshabilitado={ocupado}
             />
           ) : null}
@@ -220,7 +232,7 @@ export default function MisProductos({ navigation }) {
     );
   }
 
-  if (cargando) return <Cargando texto="Cargando tus productos…" />;
+  if (cargando) return <Esqueleto tipo="filas" />;
 
   const nombre = usuario?.nombre || 'Mi comercio';
 
@@ -306,6 +318,7 @@ export default function MisProductos({ navigation }) {
           alCambiarEstado={(estado) => cambiarEstado(item, estado)}
           alEditar={() => navigation.navigate('FormProducto', { id: item.id })}
           alEliminar={() => eliminar(item)}
+          alCopiar={() => navigation.navigate('FormProducto', { copiarDe: item.id })}
         />
       )}
       ItemSeparatorComponent={() => <View style={{ height: espacio(2) }} />}

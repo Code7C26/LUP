@@ -6,20 +6,23 @@
 // PROPUESTA DE ESTÉTICA: foto grande arriba, datos en "pastillas" con íconos
 // y la barra de compra fija abajo (cantidad + botón con el total).
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { api, urlCompleta } from '../api/cliente';
+import { api } from '../api/cliente';
 import Boton from '../componentes/Boton';
 import BotonVolver from '../componentes/BotonVolver';
+import FotoSuave from '../componentes/FotoSuave';
 import Cargando from '../componentes/Cargando';
 import Icono from '../componentes/Icono';
 import MensajeError from '../componentes/MensajeError';
 import ModalSolicitudDonacion from '../componentes/ModalSolicitudDonacion';
+import { mostrarAviso } from '../contexto/Aviso';
 import { useCarrito } from '../contexto/Carrito';
+import { programarRecordatorio, textoHora } from '../servicios/recordatorios';
 import { useSesion } from '../contexto/Sesion';
 import { espacio, fuentes, radio, sombra, tamanos, useTema } from '../tema';
-import { emojiCategoria, emojiRubro, formatoPrecio, textoError } from '../utilidades';
+import { emojiCategoria, emojiRubro, formatoPrecio, textoError, vibrar } from '../utilidades';
 
 // "2026-10-26" -> "hoy", "mañana" o "el 28/10"
 function textoFechaLimite(fecha) {
@@ -59,7 +62,7 @@ export default function DetalleProducto({ navigation, route }) {
   const { colores } = useTema();
   const { usuario } = useSesion();
   const { agregar } = useCarrito();
-  const { bottom } = useSafeAreaInsets();
+  const { top, bottom } = useSafeAreaInsets();
   const id = route?.params?.id;
 
   const [producto, setProducto] = useState(null);
@@ -93,9 +96,20 @@ export default function DetalleProducto({ navigation, route }) {
     setReservando(true);
     try {
       const reserva = await api(`/productos/${producto.id}/reservar/`, { metodo: 'POST', datos: { cantidad } });
+      vibrar('exito');
+      // Aviso en el celular 30 minutos antes del horario de retiro
+      const aviso = await programarRecordatorio({
+        reservaId: reserva.id,
+        producto: producto.titulo,
+        comercio: reserva.comercio,
+        codigo: reserva.codigo_retiro,
+        horario: producto.horario,
+        fecha: producto.fecha_vencimiento,
+      });
       Alert.alert(
         '¡Reserva confirmada!',
-        `Mostrá el código ${reserva.codigo_retiro} en ${reserva.comercio} para retirar tu pedido.`
+        `Mostrá el código ${reserva.codigo_retiro} en ${reserva.comercio} para retirar tu pedido.` +
+          (aviso ? `\n\nTe avisamos a las ${textoHora(aviso)} para que no te olvides.` : '')
       );
       cargar(); // el stock bajó
       navigation.navigate('Pestanas', { screen: 'MisReservas' }); // la pestaña, dentro de las pestañas (paso 37)
@@ -137,11 +151,7 @@ export default function DetalleProducto({ navigation, route }) {
         {/* Foto grande */}
         <View style={[estilos.foto, { backgroundColor: colores.menta }]}>
           {producto.imagen ? (
-            <Image
-              source={{ uri: urlCompleta(producto.imagen) }}
-              style={StyleSheet.absoluteFill}
-              accessibilityLabel={`Foto de ${producto.titulo}`}
-            />
+            <FotoSuave uri={producto.imagen} estilo={StyleSheet.absoluteFill} etiqueta={`Foto de ${producto.titulo}`} />
           ) : (
             <Text style={estilos.emoji}>{emojiCategoria(producto.categoria)}</Text>
           )}
@@ -246,10 +256,12 @@ export default function DetalleProducto({ navigation, route }) {
           <Pressable
             onPress={() => {
               agregar(producto, cantidad);
-              Alert.alert('Agregado al carrito', `${cantidad} × ${producto.titulo}`, [
-                { text: 'Seguir mirando', style: 'cancel' },
-                { text: 'Ver carrito', onPress: () => navigation.navigate('Carrito') },
-              ]);
+              vibrar();
+              mostrarAviso({
+                texto: `${cantidad} × ${producto.titulo} al carrito`,
+                boton: 'Ver',
+                alTocar: () => navigation.navigate('Carrito'),
+              });
             }}
             disabled={producto.stock < 1}
             accessibilityRole="button"
@@ -291,6 +303,27 @@ export default function DetalleProducto({ navigation, route }) {
       ) : null}
 
       <BotonVolver navigation={navigation} />
+      {/* Compartir la oferta (WhatsApp, Instagram, etc.) */}
+      <Pressable
+        onPress={() =>
+          Share.share({
+            message:
+              `¡Mirá esta oferta en Lüp! ${producto.titulo} a ${formatoPrecio(producto.precio_descuento)} ` +
+              `(antes ${formatoPrecio(producto.precio_original)}) en ${producto.comercio}, ${producto.direccion}. 🌱`,
+          }).catch(() => {})
+        }
+        hitSlop={8}
+        accessibilityRole="button"
+        accessibilityLabel="Compartir oferta"
+        style={({ pressed }) => [
+          estilos.compartir,
+          { top: top + espacio(1), backgroundColor: colores.superficie },
+          sombra(colores),
+          pressed && { opacity: 0.7 },
+        ]}
+      >
+        <Icono nombre="share-social-outline" tamano={20} color={colores.texto} />
+      </Pressable>
 
       <ModalSolicitudDonacion
         producto={pidiendo ? producto : null}
@@ -419,6 +452,15 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: espacio(1),
+  },
+  compartir: {
+    position: 'absolute',
+    right: espacio(2),
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   botonCarrito: {
     width: 44,

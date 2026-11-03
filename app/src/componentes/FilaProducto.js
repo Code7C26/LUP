@@ -2,13 +2,16 @@
 // y una tarjeta gris a la derecha con el nombre, el precio y "Agregar al carrito".
 // Tocar la fila abre el detalle; el botón lo suma al carrito (si ya está, suma uno más).
 // Uso:  <FilaProducto producto={p} onPress={() => navigation.navigate('DetalleProducto', { id: p.id })} />
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
-import { urlCompleta } from '../api/cliente';
+import { mostrarAviso } from '../contexto/Aviso';
 import { useCarrito } from '../contexto/Carrito';
 import { useSesion } from '../contexto/Sesion';
 import { espacio, fuentes, sombra, useTema } from '../tema';
-import { emojiCategoria, formatoPrecio, textoDistancia } from '../utilidades';
+import { emojiCategoria, formatoPrecio, textoDistancia, vibrar } from '../utilidades';
+import FotoSuave from './FotoSuave';
 import Icono from './Icono';
 
 export default function FilaProducto({ producto, onPress, mostrarComercio }) {
@@ -18,9 +21,28 @@ export default function FilaProducto({ producto, onPress, mostrarComercio }) {
   const enCarrito = cantidadDe(producto.id);
   const puedeComprar = !usuario || usuario.rol === 'consumidor';
   const lleno = enCarrito >= producto.stock;
+  const navigation = useNavigation();
+
+  // La fila aparece suave (sube un poquito y se hace visible)
+  const entrada = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.timing(entrada, { toValue: 1, duration: 280, useNativeDriver: true }).start();
+  }, [entrada]);
+
+  function agregarAlCarrito() {
+    agregar(producto, 1);
+    vibrar();
+    mostrarAviso({ texto: 'Agregado al carrito', boton: 'Ver', alTocar: () => navigation.navigate('Carrito') });
+  }
   const distancia = textoDistancia(producto.distancia_km)?.replace('a ', '');
 
   return (
+    <Animated.View
+      style={{
+        opacity: entrada,
+        transform: [{ translateY: entrada.interpolate({ inputRange: [0, 1], outputRange: [8, 0] }) }],
+      }}
+    >
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
@@ -29,7 +51,7 @@ export default function FilaProducto({ producto, onPress, mostrarComercio }) {
     >
       <View style={[estilos.foto, { backgroundColor: colores.panel }]}>
         {producto.imagen ? (
-          <Image source={{ uri: urlCompleta(producto.imagen) }} style={StyleSheet.absoluteFill} />
+          <FotoSuave uri={producto.imagen} estilo={StyleSheet.absoluteFill} />
         ) : (
           <Text style={estilos.emoji}>{emojiCategoria(producto.categoria)}</Text>
         )}
@@ -53,7 +75,7 @@ export default function FilaProducto({ producto, onPress, mostrarComercio }) {
           </View>
           {puedeComprar ? (
             <Pressable
-              onPress={() => agregar(producto, 1)}
+              onPress={agregarAlCarrito}
               disabled={lleno}
               hitSlop={6}
               accessibilityRole="button"
@@ -73,6 +95,7 @@ export default function FilaProducto({ producto, onPress, mostrarComercio }) {
         </View>
       </View>
     </Pressable>
+    </Animated.View>
   );
 }
 

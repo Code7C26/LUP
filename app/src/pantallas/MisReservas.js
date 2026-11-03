@@ -8,15 +8,16 @@ import QRCode from 'react-native-qrcode-svg';
 
 import { api } from '../api/cliente';
 import Boton from '../componentes/Boton';
-import Cargando from '../componentes/Cargando';
+import Esqueleto from '../componentes/Esqueleto';
 import Encabezado from '../componentes/Encabezado';
 import Estrellas from '../componentes/Estrellas';
 import Icono from '../componentes/Icono';
 import MensajeError from '../componentes/MensajeError';
 import Vacio from '../componentes/Vacio';
 import { useSesion } from '../contexto/Sesion';
+import { cancelarRecordatorio } from '../servicios/recordatorios';
 import { espacio, fuentes, radio, sombra, tamanos, useTema } from '../tema';
-import { formatoPrecio, textoError } from '../utilidades';
+import { formatoPrecio, textoError, vibrar } from '../utilidades';
 
 // "2026-10-26T14:30:00-03:00" -> "26/10"
 function textoFecha(fechaHora) {
@@ -126,6 +127,7 @@ export default function MisReservas({ navigation }) {
   async function calificar(reserva, puntaje) {
     // Se muestra al instante y, si falla, se vuelve atrás
     const anterior = reserva.calificacion;
+    vibrar();
     setReservas((lista) => lista.map((r) => (r.id === reserva.id ? { ...r, calificacion: { puntaje, comentario: '' } } : r)));
     try {
       const actualizada = await api(`/reservas/${reserva.id}/calificar/`, { metodo: 'POST', datos: { puntaje } });
@@ -172,6 +174,7 @@ export default function MisReservas({ navigation }) {
             setCancelando(reserva.id);
             try {
               await api(`/reservas/${reserva.id}/cancelar/`, { metodo: 'POST' });
+              await cancelarRecordatorio(reserva.id); // ya no hace falta el aviso
               await cargar();
             } catch (e) {
               Alert.alert('No se pudo cancelar', textoError(e) || 'Probá de nuevo.');
@@ -198,7 +201,7 @@ export default function MisReservas({ navigation }) {
     );
   }
 
-  if (cargando) return <Cargando texto="Buscando tus reservas…" />;
+  if (cargando) return <Esqueleto tipo="filas" />;
 
   const pendientes = reservas.filter((r) => r.estado === 'pendiente');
   const historial = reservas.filter((r) => r.estado !== 'pendiente');

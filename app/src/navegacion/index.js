@@ -9,6 +9,7 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+import Aviso from '../componentes/Aviso';
 import Cargando from '../componentes/Cargando';
 import { useBienvenida } from '../contexto/Bienvenida';
 import { useSesion } from '../contexto/Sesion';
@@ -18,6 +19,7 @@ import Bienvenida from '../pantallas/Bienvenida';
 import Carrito from '../pantallas/Carrito';
 import DetalleProducto from '../pantallas/DetalleProducto';
 import Login from '../pantallas/Login';
+import Mapa from '../pantallas/Mapa';
 import Portada from '../pantallas/Portada';
 import Registro from '../pantallas/Registro';
 import RegistroSeleccion from '../pantallas/RegistroSeleccion';
@@ -47,10 +49,7 @@ export default function Navegacion() {
   // El invitado ve la parte del consumidor, así que también su bienvenida
   const rolActual = usuario?.rol || 'consumidor';
 
-  // Login y registro: tienen su propio "Omitir" y "Volver", así que van sin barra arriba.
-  // Están en las dos partes (con y sin sesión). El navigationKey distinto de cada grupo hace que,
-  // al entrar o salir, se cierren y la app pase sola a las pestañas (o a la portada).
-  // Sin eso, el login quedaba abierto como única pantalla y "Omitir" fallaba con GO_BACK.
+  // Login y registro: tienen su propio "Omitir" y "Volver", así que van sin barra arriba
   const pantallasDeCuenta = (
     <>
       <Stack.Screen name="Login" component={Login} />
@@ -73,24 +72,27 @@ export default function Navegacion() {
             <Stack.Screen name="DetalleProducto" component={DetalleProducto} options={{ headerShown: false }} />
             <Stack.Screen name="DetalleComercio" component={DetalleComercio} options={{ headerShown: false }} />
             <Stack.Screen name="Carrito" component={Carrito} options={{ title: '' }} />
+            <Stack.Screen name="Mapa" component={Mapa} options={{ headerShown: false }} />
             <Stack.Screen
               name="FormProducto"
               component={FormProducto}
               options={{ title: '' }} // el título grande ("Nuevo Producto") está dentro de la pantalla
             />
-            <Stack.Group navigationKey="dentro" screenOptions={{ presentation: 'modal', headerShown: false }}>
+            <Stack.Group screenOptions={{ presentation: 'modal', headerShown: false }}>
               {pantallasDeCuenta}
               {/* Para volver a ver la bienvenida desde Perfil */}
               <Stack.Screen name="VerBienvenida" component={Bienvenida} />
             </Stack.Group>
           </>
         ) : (
-          <Stack.Group navigationKey="fuera" screenOptions={{ headerShown: false }}>
+          <Stack.Group screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Portada" component={Portada} />
             {pantallasDeCuenta}
           </Stack.Group>
         )}
       </Stack.Navigator>
+      {/* Avisos cortitos ("Agregado al carrito · Ver"), encima de todas las pantallas */}
+      <Aviso />
     </NavigationContainer>
   );
 }

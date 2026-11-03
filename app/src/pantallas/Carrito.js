@@ -13,8 +13,9 @@ import Icono from '../componentes/Icono';
 import Vacio from '../componentes/Vacio';
 import { useCarrito } from '../contexto/Carrito';
 import { useSesion } from '../contexto/Sesion';
+import { programarRecordatorio } from '../servicios/recordatorios';
 import { espacio, fuentes, sombra, tamanos, useTema } from '../tema';
-import { emojiCategoria, formatoPrecio, textoError } from '../utilidades';
+import { emojiCategoria, formatoPrecio, textoError, vibrar } from '../utilidades';
 
 // Botón redondo − / +
 function BotonMasMenos({ icono, onPress, deshabilitado, etiqueta }) {
@@ -85,7 +86,17 @@ export default function Carrito({ navigation }) {
     // Una reserva por producto (así cada comercio recibe la suya, con su código)
     for (const item of disponibles) {
       try {
-        await api(`/productos/${item.id}/reservar/`, { metodo: 'POST', datos: { cantidad: item.cantidad } });
+        const reserva = await api(`/productos/${item.id}/reservar/`, { metodo: 'POST', datos: { cantidad: item.cantidad } });
+        const p = detalles[item.id];
+        // Aviso en el celular 30 minutos antes del horario de retiro de ese comercio
+        await programarRecordatorio({
+          reservaId: reserva.id,
+          producto: p.titulo,
+          comercio: reserva.comercio,
+          codigo: reserva.codigo_retiro,
+          horario: p.horario,
+          fecha: p.fecha_vencimiento,
+        });
         hechas.push(item);
         quitar(item.id);
       } catch (e) {
@@ -94,8 +105,9 @@ export default function Carrito({ navigation }) {
     }
     setComprando(false);
 
+    if (hechas.length) vibrar('exito');
     if (hechas.length && !fallidas.length) {
-      Alert.alert('¡Compra realizada!', 'Mostrá tus códigos en cada comercio para retirar.', [
+      Alert.alert('¡Compra realizada!', 'Mostrá tus códigos en cada comercio para retirar. Te avisamos antes de cada horario de retiro.', [
         { text: 'Ver mis reservas', onPress: () => navigation.navigate('Pestanas', { screen: 'MisReservas' }) },
       ]);
     } else if (hechas.length) {
