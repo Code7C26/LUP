@@ -1,5 +1,5 @@
 // PASO 40 · Inicio, IGUAL AL MOCKUP (página 7 del PDF):
-//   arriba: soporte a la izquierda y compartir / mis reservas a la derecha
+//   arriba: soporte a la izquierda y compartir / carrito (con el número de productos) a la derecha
 //   el mapa a todo lo ancho con los comercios y el logo en la esquina
 //   "Cerca tuyo" con el buscador chiquito, y los comercios con foto, km y "Ver catálogo"
 //   "Ver catálogo completo" y las fotos de las ofertas con sus km
@@ -23,6 +23,7 @@ import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 
 import { api, urlCompleta } from '../api/cliente';
+import BotonCarrito from '../componentes/BotonCarrito';
 import BotonFavorito from '../componentes/BotonFavorito';
 import Cargando from '../componentes/Cargando';
 import Icono from '../componentes/Icono';
@@ -180,15 +181,7 @@ export default function Inicio({ navigation }) {
         <Pressable onPress={compartir} hitSlop={8} accessibilityRole="button" accessibilityLabel="Compartir Lüp" style={estilos.botonBarra}>
           <Icono nombre="share-social-outline" tamano={22} color={colores.texto} />
         </Pressable>
-        <Pressable
-          onPress={() => navigation?.navigate?.('MisReservas')}
-          hitSlop={8}
-          accessibilityRole="button"
-          accessibilityLabel="Mis reservas"
-          style={[estilos.botonBarra, { backgroundColor: colores.panel }]}
-        >
-          <Icono nombre="cart-outline" tamano={22} color={colores.texto} />
-        </Pressable>
+        <BotonCarrito navigation={navigation} />
       </View>
 
       {/* Cartelito de soporte, como el mockup */}

@@ -12,6 +12,7 @@ import MapView, { Marker } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { api, urlCompleta } from '../api/cliente';
+import BarraCarrito from '../componentes/BarraCarrito';
 import Boton from '../componentes/Boton';
 import BotonFavorito from '../componentes/BotonFavorito';
 import BotonVolver from '../componentes/BotonVolver';
@@ -139,7 +140,7 @@ export default function DetalleComercio({ navigation, route }) {
     <View style={{ flex: 1, backgroundColor: colores.fondo }}>
       <FlatList
         style={{ backgroundColor: colores.fondo }}
-        contentContainerStyle={{ paddingBottom: espacio(4) }}
+        contentContainerStyle={{ paddingBottom: espacio(10) }}
         data={productos}
         keyExtractor={(p) => String(p.id)}
         ListHeaderComponent={encabezado}
@@ -166,6 +167,7 @@ export default function DetalleComercio({ navigation, route }) {
         )}
         ItemSeparatorComponent={() => <View style={{ height: espacio(2) }} />}
       />
+      <BarraCarrito navigation={navigation} />
       <BotonVolver navigation={navigation} />
       <BotonFavorito id={comercio.id} estilo={[estilos.favorito, { top: top + espacio(1) }]} />
     </View>

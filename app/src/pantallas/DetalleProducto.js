@@ -16,6 +16,7 @@ import Cargando from '../componentes/Cargando';
 import Icono from '../componentes/Icono';
 import MensajeError from '../componentes/MensajeError';
 import ModalSolicitudDonacion from '../componentes/ModalSolicitudDonacion';
+import { useCarrito } from '../contexto/Carrito';
 import { useSesion } from '../contexto/Sesion';
 import { espacio, fuentes, radio, sombra, tamanos, useTema } from '../tema';
 import { emojiCategoria, emojiRubro, formatoPrecio, textoError } from '../utilidades';
@@ -57,6 +58,7 @@ function BotonCantidad({ icono, onPress, deshabilitado, etiqueta }) {
 export default function DetalleProducto({ navigation, route }) {
   const { colores } = useTema();
   const { usuario } = useSesion();
+  const { agregar } = useCarrito();
   const { bottom } = useSafeAreaInsets();
   const id = route?.params?.id;
 
@@ -240,6 +242,26 @@ export default function DetalleProducto({ navigation, route }) {
               onPress={() => setCantidad((c) => c + 1)}
             />
           </View>
+          {/* Agregar al carrito (para comprar varias cosas juntas) */}
+          <Pressable
+            onPress={() => {
+              agregar(producto, cantidad);
+              Alert.alert('Agregado al carrito', `${cantidad} × ${producto.titulo}`, [
+                { text: 'Seguir mirando', style: 'cancel' },
+                { text: 'Ver carrito', onPress: () => navigation.navigate('Carrito') },
+              ]);
+            }}
+            disabled={producto.stock < 1}
+            accessibilityRole="button"
+            accessibilityLabel="Agregar al carrito"
+            style={({ pressed }) => [
+              estilos.botonCarrito,
+              { borderColor: colores.verdeProfundo },
+              pressed && { opacity: 0.6 },
+            ]}
+          >
+            <Icono nombre="cart-outline" tamano={21} color={colores.verdeProfundo} />
+          </Pressable>
           <Boton
             texto={usuario ? `Reservar · ${formatoPrecio(total)}` : 'Ingresá para reservar'}
             icono={usuario ? 'bag-check-outline' : 'log-in-outline'}
@@ -397,6 +419,14 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: espacio(1),
+  },
+  botonCarrito: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   botonCantidad: {
     width: 40,

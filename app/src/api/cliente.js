@@ -8,14 +8,17 @@ import * as SecureStore from 'expo-secure-store';
 // Dirección del servidor de Django.
 // En desarrollo, se usa la MISMA compu que está corriendo Expo, en el puerto 8000.
 // (Expo ya sabe la IP de la compu: la saca del QR que escaneaste).
-// Cuando la web esté publicada (paso 32), cambiar esto por la dirección real, por ejemplo:
-//   export const URL_SERVIDOR = 'https://lup.onrender.com';
+// Si el celular no llega a esa IP (Expo con --tunnel, otra red, la IP de VirtualBox), se puede
+// fijar la dirección a mano en app/.env y reiniciar Expo:
+//   EXPO_PUBLIC_URL_SERVIDOR=http://192.168.1.9:8000
+// Cuando la web esté publicada (paso 32), poner ahí la dirección real, por ejemplo:
+//   EXPO_PUBLIC_URL_SERVIDOR=https://lup.onrender.com
 function servidorDeDesarrollo() {
   const host = Constants.expoConfig?.hostUri?.split(':')[0];
   return host ? `http://${host}:8000` : 'http://127.0.0.1:8000';
 }
 
-export const URL_SERVIDOR = servidorDeDesarrollo();
+export const URL_SERVIDOR = (process.env.EXPO_PUBLIC_URL_SERVIDOR || servidorDeDesarrollo()).replace(/\/$/, '');
 export const URL_API = `${URL_SERVIDOR}/api`;
 
 // ---- Token de la sesión (se guarda cifrado en el celular) ----
@@ -45,17 +48,24 @@ export async function api(ruta, { metodo = 'GET', datos } = {}) {
     body = JSON.stringify(datos);
   }
 
+  // Sin esto, si el celular no llega al servidor, fetch se queda esperando varios minutos.
+  // Las fotos tardan más en subir, así que tienen más margen.
+  const control = new AbortController();
+  const espera = setTimeout(() => control.abort(), datos instanceof FormData ? 60000 : 15000);
+
   let respuesta;
   try {
-    respuesta = await fetch(URL_API + ruta, { method: metodo, headers, body });
+    respuesta = await fetch(URL_API + ruta, { method: metodo, headers, body, signal: control.signal });
   } catch (e) {
     // No llegó ni a Django (servidor apagado, otra red, un FormData mal armado, etc.)
     // El error real queda en la terminal de Expo para poder ver qué pasó.
-    console.warn(`api(${metodo} ${ruta}) falló antes de llegar a Django:`, e?.message || e);
+    console.warn(`api(${metodo} ${ruta}) falló antes de llegar a Django (${URL_SERVIDOR}):`, e?.message || e);
     throw {
       sinConexion: true,
-      error: 'No pudimos conectar con Lüp. Revisá que el servidor de Django esté corriendo.',
+      error: `No pudimos conectar con Lüp (${URL_SERVIDOR}). Revisá que Django esté corriendo y que el celular esté en el mismo Wi-Fi que la compu.`,
     };
+  } finally {
+    clearTimeout(espera);
   }
 
   const json = await respuesta.json().catch(() => ({}));
