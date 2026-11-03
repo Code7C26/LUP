@@ -10,6 +10,8 @@ import Cargando from '../../componentes/Cargando';
 import MensajeError from '../../componentes/MensajeError';
 import { espacio, fuentes, radio, tamanos, useTema } from '../../tema';
 import { textoError } from '../../utilidades';
+import Encabezado from '../../componentes/Encabezado';
+import Vacio from '../../componentes/Vacio';
 
 function TarjetaSolicitud({ solicitud, ocupado, alResponder }) {
   const { colores } = useTema();
@@ -35,16 +37,17 @@ function TarjetaSolicitud({ solicitud, ocupado, alResponder }) {
           </Text>
         ) : null}
       </View>
-      <Text style={[estilos.detalle, { color: colores.gris }]}>💚 {solicitud.organizacion}</Text>
+      <Text style={[estilos.detalle, { color: colores.gris }]}>{solicitud.organizacion}</Text>
       <Text style={[estilos.mensaje, { color: colores.texto, backgroundColor: colores.fondo }]}>
         “{solicitud.mensaje}”
       </Text>
 
       {pendiente ? (
         <View style={estilos.botones}>
-          <Boton texto="Aprobar" onPress={() => alResponder('aprobar')} cargando={ocupado} estilo={{ flex: 1 }} />
+          <Boton texto="Aprobar" icono="checkmark" chico onPress={() => alResponder('aprobar')} cargando={ocupado} estilo={{ flex: 1 }} />
           <Boton
             texto="Rechazar"
+            chico
             variante="secundario"
             onPress={() => alResponder('rechazar')}
             deshabilitado={ocupado}
@@ -137,26 +140,17 @@ export default function Solicitudes({ navigation }) {
       }
       ListHeaderComponent={
         <View style={{ gap: espacio(1.5) }}>
-          <Text style={[estilos.titulo, { color: colores.titulo }]}>Donaciones</Text>
-          <Text style={[estilos.detalle, { color: colores.gris }]}>
-            Pedidos de organizaciones por tus productos marcados como aptos para donación.
-          </Text>
+          <Encabezado titulo="Donaciones" />
           <MensajeError mensaje={error} alReintentar={cargar} />
         </View>
       }
       ListEmptyComponent={
         !error ? (
-          <View style={estilos.vacio}>
-            <Text style={estilos.emojiVacio}>💚</Text>
-            <Text style={[estilos.textoVacio, { color: colores.gris }]}>
-              Todavía no hay solicitudes. Marcá tus productos como “aptos para donación” para que las organizaciones
-              los puedan pedir.
-            </Text>
-          </View>
+          <Vacio icono="heart-outline" texto="Sin pedidos todavía. Marcá productos como donables para recibirlos." />
         ) : null
       }
       renderSectionHeader={({ section }) => (
-        <Text style={[estilos.subtitulo, { color: colores.titulo }]}>{section.titulo}</Text>
+        <Text style={[estilos.subtitulo, { color: colores.gris }]}>{section.titulo}</Text>
       )}
       renderItem={({ item }) => (
         <TarjetaSolicitud
@@ -185,7 +179,6 @@ const estilos = StyleSheet.create({
     marginBottom: espacio(1.5),
   },
   tarjeta: {
-    borderWidth: 1,
     borderRadius: radio,
     padding: espacio(2),
     gap: espacio(1),

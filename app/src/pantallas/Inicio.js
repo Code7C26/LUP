@@ -1,82 +1,123 @@
-// PASO 40 · Inicio "Cerca tuyo", como en el mockup:
-// la lista de comercios ordenada por distancia, con los km, las ofertas y "Ver catálogo".
-// Usa la ubicación del celular (expo-location) y GET /api/comercios/?lat=&lng=
+// PASO 40 · Inicio, IGUAL AL MOCKUP (página 7 del PDF):
+//   arriba: soporte a la izquierda y compartir / mis reservas a la derecha
+//   el mapa a todo lo ancho con los comercios y el logo en la esquina
+//   "Cerca tuyo" con el buscador chiquito, y los comercios con foto, km y "Ver catálogo"
+//   "Ver catálogo completo" y las fotos de las ofertas con sus km
+//   (agregado) "Tus favoritos" al final, si marcaste alguno con el corazón
+// Usa GET /api/comercios/?lat=&lng= y GET /api/productos/?orden=cercania&lat=&lng=
 import { useCallback, useEffect, useState } from 'react';
-import { FlatList, Linking, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import {
+  Alert,
+  FlatList,
+  Image,
+  Linking,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  Share,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 
-import { api } from '../api/cliente';
-import Boton from '../componentes/Boton';
+import { api, urlCompleta } from '../api/cliente';
+import BotonFavorito from '../componentes/BotonFavorito';
 import Cargando from '../componentes/Cargando';
+import Icono from '../componentes/Icono';
+import Logo from '../componentes/Logo';
 import MensajeError from '../componentes/MensajeError';
-import { espacio, fuentes, radio, tamanos, useTema } from '../tema';
-import { emojiRubro, textoDistancia } from '../utilidades';
+import { useFavoritos } from '../contexto/Favoritos';
+import { espacio, fuentes, useTema } from '../tema';
+import { emojiCategoria, textoDistancia } from '../utilidades';
 
-function TarjetaComercio({ comercio, alVerCatalogo }) {
+const WHATSAPP_SOPORTE = 'https://wa.me/5493547620629';
+
+// "1 km", "350 m" (sin el "a" de adelante, como el mockup)
+const km = (distancia) => textoDistancia(distancia)?.replace('a ', '') || null;
+
+// Pin + distancia chiquitos
+function Distancia({ valor }) {
   const { colores } = useTema();
-  const distancia = textoDistancia(comercio.distancia_km);
-
+  if (!valor) return null;
   return (
-    <View style={[estilos.tarjeta, { backgroundColor: colores.superficie, borderColor: colores.borde }]}>
-      <View style={estilos.fila}>
-        <View style={[estilos.icono, { backgroundColor: colores.menta }]}>
-          <Text style={estilos.emoji}>{emojiRubro(comercio.rubro)}</Text>
-        </View>
-        <View style={{ flex: 1, gap: 2 }}>
-          <Text style={[estilos.nombre, { color: colores.titulo }]} numberOfLines={1}>
-            {comercio.nombre_fantasia}
-          </Text>
-          <Text style={[estilos.detalle, { color: colores.gris }]} numberOfLines={1}>
-            {comercio.rubro_texto}
-          </Text>
-        </View>
-        {distancia ? (
-          <Text style={[estilos.km, { backgroundColor: colores.menta, color: colores.verdeHover }]}>{distancia}</Text>
-        ) : null}
-      </View>
-
-      <Text style={[estilos.detalle, { color: colores.gris }]}>🕒 Retiro: {comercio.horario_atencion}</Text>
-      <Text style={[estilos.ofertas, { color: comercio.ofertas ? colores.verdeHover : colores.gris }]}>
-        {comercio.ofertas === 0
-          ? 'Sin ofertas por ahora'
-          : `${comercio.ofertas} ${comercio.ofertas === 1 ? 'oferta disponible' : 'ofertas disponibles'}`}
-      </Text>
-
-      <View style={estilos.botones}>
-        <Boton texto="Ver catálogo" onPress={alVerCatalogo} estilo={{ flex: 1 }} deshabilitado={!comercio.ofertas} />
-        <Boton
-          texto="Cómo llegar"
-          variante="secundario"
-          onPress={() => Linking.openURL(comercio.como_llegar)}
-          estilo={{ flex: 1 }}
-        />
-      </View>
+    <View style={estilos.distancia}>
+      <Icono nombre="location-sharp" tamano={11} color={colores.titulo} />
+      <Text style={[estilos.textoKm, { color: colores.titulo }]}>{valor}</Text>
     </View>
+  );
+}
+
+// Foto (o, si no hay, un cuadro gris con un ícono) con bordes redondeados
+function Foto({ uri, icono, emoji, estilo }) {
+  const { colores } = useTema();
+  return (
+    <View style={[estilo, { backgroundColor: colores.panel, overflow: 'hidden' }]}>
+      {uri ? (
+        <Image source={{ uri: urlCompleta(uri) }} style={StyleSheet.absoluteFill} />
+      ) : (
+        <View style={estilos.sinFoto}>
+          {emoji ? <Text style={{ fontSize: 34 }}>{emoji}</Text> : <Icono nombre={icono} tamano={30} color={colores.gris} />}
+        </View>
+      )}
+    </View>
+  );
+}
+
+// Tarjeta de comercio del carrusel "Cerca tuyo": foto, nombre, km y "Ver catálogo"
+function TarjetaComercio({ comercio, foto, onPress }) {
+  const { colores } = useTema();
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`${comercio.nombre_fantasia}. Ver catálogo`}
+      style={({ pressed }) => [estilos.comercio, pressed && { opacity: 0.8 }]}
+    >
+      <View>
+        <Foto uri={foto} icono="storefront-outline" estilo={estilos.fotoComercio} />
+        <BotonFavorito id={comercio.id} chico estilo={[estilos.corazon, { backgroundColor: colores.superficie }]} />
+      </View>
+      <Text style={[estilos.nombreComercio, { color: colores.titulo }]} numberOfLines={1}>
+        {comercio.nombre_fantasia}
+      </Text>
+      <Distancia valor={km(comercio.distancia_km)} />
+      <Text style={[estilos.verCatalogo, { color: colores.titulo }]}>
+        {comercio.ofertas ? 'Ver catálogo' : 'Sin ofertas por ahora'}
+      </Text>
+    </Pressable>
   );
 }
 
 export default function Inicio({ navigation }) {
   const { colores } = useTema();
+  const { favoritos } = useFavoritos();
+
   const [comercios, setComercios] = useState([]);
+  const [ofertas, setOfertas] = useState([]);
+  const [coords, setCoords] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [actualizando, setActualizando] = useState(false);
   const [error, setError] = useState('');
-  const [sinUbicacion, setSinUbicacion] = useState(false);
-  // "Ver catálogo" abre el catálogo filtrado por ese comercio (paso 41)
+  const [verSoporte, setVerSoporte] = useState(false);
 
   const cargar = useCallback(async () => {
     setError('');
     try {
-      let ruta = '/comercios/';
+      let ubicacion = '';
       const permiso = await Location.requestForegroundPermissionsAsync();
       if (permiso.status === 'granted') {
-        const { coords } = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-        ruta += `?lat=${coords.latitude}&lng=${coords.longitude}`;
-        setSinUbicacion(false);
-      } else {
-        setSinUbicacion(true); // igual se muestran, pero sin distancias
+        const { coords: c } = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+        setCoords({ latitude: c.latitude, longitude: c.longitude });
+        ubicacion = `lat=${c.latitude}&lng=${c.longitude}`;
       }
-      setComercios(await api(ruta));
+      const [listaComercios, listaOfertas] = await Promise.all([
+        api(`/comercios/?${ubicacion}`),
+        api(`/productos/?orden=${ubicacion ? 'cercania' : 'recientes'}&${ubicacion}`),
+      ]);
+      setComercios(listaComercios);
+      setOfertas(listaOfertas);
     } catch (e) {
       setError(e);
     } finally {
@@ -89,14 +130,30 @@ export default function Inicio({ navigation }) {
     cargar();
   }, [cargar]);
 
-  if (cargando) return <Cargando texto="Buscando comercios cerca tuyo…" />;
+  const abrirComercio = (c) => navigation?.navigate?.('DetalleComercio', { id: c.id });
+
+  function compartir() {
+    Share.share({ message: 'Rescatá comida rica con descuento cerca tuyo con Lüp 🌱' }).catch(() => {});
+  }
+
+  if (cargando) return <Cargando texto="Buscando ofertas cerca tuyo…" />;
+
+  // La foto de cada comercio: la de su primera oferta con foto (la API no tiene foto del local)
+  const fotoDe = {};
+  ofertas.forEach((p) => {
+    if (p.imagen && !fotoDe[p.comercio_id]) fotoDe[p.comercio_id] = p.imagen;
+  });
+
+  const conUbicacion = comercios.filter((c) => c.latitud !== null && c.longitud !== null);
+  const centro =
+    coords ||
+    (conUbicacion[0] && { latitude: Number(conUbicacion[0].latitud), longitude: Number(conUbicacion[0].longitud) });
+  const misFavoritos = comercios.filter((c) => favoritos.includes(c.id));
 
   return (
-    <FlatList
+    <ScrollView
       style={{ backgroundColor: colores.fondo }}
-      contentContainerStyle={estilos.contenido}
-      data={comercios}
-      keyExtractor={(c) => String(c.id)}
+      contentContainerStyle={{ paddingBottom: espacio(4) }}
       refreshControl={
         <RefreshControl
           refreshing={actualizando}
@@ -107,92 +164,280 @@ export default function Inicio({ navigation }) {
           }}
         />
       }
-      ListHeaderComponent={
-        <View style={{ gap: espacio(1.5), marginBottom: espacio(1) }}>
-          <Text style={[estilos.titulo, { color: colores.titulo }]}>Cerca tuyo</Text>
-          {sinUbicacion ? (
-            <Text style={[estilos.detalle, { color: colores.gris }]}>
-              Activá la ubicación para ver qué comercios te quedan más cerca.
-            </Text>
-          ) : null}
-          <MensajeError mensaje={error} alReintentar={cargar} />
+    >
+      {/* Barra de arriba */}
+      <View style={estilos.barra}>
+        <Pressable
+          onPress={() => setVerSoporte((v) => !v)}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel="Soporte al Consumidor"
+          style={[estilos.botonBarra, { backgroundColor: colores.panel }]}
+        >
+          <Icono nombre="chatbubble-ellipses-outline" tamano={20} color={colores.texto} />
+        </Pressable>
+        <View style={{ flex: 1 }} />
+        <Pressable onPress={compartir} hitSlop={8} accessibilityRole="button" accessibilityLabel="Compartir Lüp" style={estilos.botonBarra}>
+          <Icono nombre="share-social-outline" tamano={22} color={colores.texto} />
+        </Pressable>
+        <Pressable
+          onPress={() => navigation?.navigate?.('MisReservas')}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel="Mis reservas"
+          style={[estilos.botonBarra, { backgroundColor: colores.panel }]}
+        >
+          <Icono nombre="cart-outline" tamano={22} color={colores.texto} />
+        </Pressable>
+      </View>
+
+      {/* Cartelito de soporte, como el mockup */}
+      {verSoporte ? (
+        <Pressable
+          onPress={() => Linking.openURL(WHATSAPP_SOPORTE).catch(() => Alert.alert('Soporte', '+54 9 3547 62-0629'))}
+          style={[estilos.soporte, { backgroundColor: colores.panel }]}
+        >
+          <Text style={[estilos.tituloSoporte, { color: colores.titulo }]}>Soporte al Consumidor</Text>
+          <Text style={[estilos.textoSoporte, { color: colores.titulo }]}>
+            Por cualquier duda, consulta o inquietud, comuníquese al{' '}
+            <Text style={{ textDecorationLine: 'underline' }}>+54 9 3547620629</Text>
+          </Text>
+        </Pressable>
+      ) : null}
+
+      {/* Mapa a todo lo ancho */}
+      {centro ? (
+        <View style={[estilos.mapa, { backgroundColor: colores.panel }]}>
+          <MapView
+            style={StyleSheet.absoluteFill}
+            initialRegion={{ ...centro, latitudeDelta: 0.03, longitudeDelta: 0.03 }}
+            showsUserLocation={!!coords}
+            scrollEnabled={false}
+            zoomEnabled={false}
+            rotateEnabled={false}
+            pitchEnabled={false}
+            toolbarEnabled={false}
+            accessibilityLabel="Mapa con los comercios cerca tuyo"
+          >
+            {conUbicacion.map((c) => (
+              <Marker
+                key={c.id}
+                coordinate={{ latitude: Number(c.latitud), longitude: Number(c.longitud) }}
+                title={c.nombre_fantasia}
+                description="Tocá para ver su catálogo"
+                pinColor={colores.verdeProfundo}
+                onCalloutPress={() => abrirComercio(c)}
+              />
+            ))}
+          </MapView>
+          <Logo ancho={52} estilo={estilos.logoMapa} />
         </View>
-      }
-      ListEmptyComponent={
-        !error ? (
+      ) : null}
+
+      <View style={estilos.cuerpo}>
+        {error ? <MensajeError mensaje={error} alReintentar={cargar} /> : null}
+
+        {/* "Cerca tuyo" con el buscador */}
+        <View style={estilos.filaTitulo}>
+          <Text style={[estilos.titulo, { color: colores.titulo }]}>Cerca tuyo</Text>
+          <Pressable
+            onPress={() => navigation?.navigate?.('Catalogo')}
+            accessibilityRole="search"
+            accessibilityLabel="Buscar"
+            style={estilos.buscar}
+          >
+            <View style={[estilos.cajaBuscar, { backgroundColor: colores.panel, borderColor: colores.borde }]} />
+            <Icono nombre="search" tamano={20} color={colores.texto} />
+          </Pressable>
+        </View>
+      </View>
+
+      <FlatList
+        horizontal
+        data={comercios}
+        keyExtractor={(c) => String(c.id)}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={estilos.carrusel}
+        renderItem={({ item }) => (
+          <TarjetaComercio comercio={item} foto={fotoDe[item.id]} onPress={() => abrirComercio(item)} />
+        )}
+        ListEmptyComponent={
           <Text style={[estilos.vacio, { color: colores.gris }]}>Todavía no hay comercios adheridos.</Text>
-        ) : null
-      }
-      renderItem={({ item }) => (
-        <TarjetaComercio
-          comercio={item}
-          alVerCatalogo={() => navigation?.navigate?.('Catalogo', { comercio: item.id, nombre: item.nombre_fantasia })}
-        />
-      )}
-      ItemSeparatorComponent={() => <View style={{ height: espacio(1.5) }} />}
-    />
+        }
+      />
+
+      {/* "Ver catálogo completo" y las ofertas */}
+      <View style={estilos.cuerpo}>
+        <Text
+          onPress={() => navigation?.navigate?.('Catalogo')}
+          accessibilityRole="link"
+          style={[estilos.titulo, estilos.subrayado, { color: colores.titulo, marginTop: espacio(3) }]}
+        >
+          Ver catálogo completo
+        </Text>
+      </View>
+
+      <FlatList
+        horizontal
+        data={ofertas.slice(0, 12)}
+        keyExtractor={(p) => String(p.id)}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={estilos.carrusel}
+        renderItem={({ item }) => (
+          <Pressable
+            onPress={() => navigation?.navigate?.('DetalleProducto', { id: item.id })}
+            accessibilityRole="button"
+            accessibilityLabel={`${item.titulo}, ${km(item.distancia_km) || ''}`}
+            style={({ pressed }) => [{ gap: 4 }, pressed && { opacity: 0.8 }]}
+          >
+            <Foto uri={item.imagen} emoji={emojiCategoria(item.categoria)} estilo={estilos.fotoProducto} />
+            <Distancia valor={km(item.distancia_km)} />
+          </Pressable>
+        )}
+        ListEmptyComponent={
+          <Text style={[estilos.vacio, { color: colores.gris }]}>No hay ofertas por ahora.</Text>
+        }
+      />
+
+      {/* Agregado: favoritos */}
+      {misFavoritos.length ? (
+        <>
+          <View style={estilos.cuerpo}>
+            <Text style={[estilos.titulo, { color: colores.titulo, marginTop: espacio(3) }]}>Tus favoritos</Text>
+          </View>
+          <FlatList
+            horizontal
+            data={misFavoritos}
+            keyExtractor={(c) => `fav-${c.id}`}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={estilos.carrusel}
+            renderItem={({ item }) => (
+              <TarjetaComercio comercio={item} foto={fotoDe[item.id]} onPress={() => abrirComercio(item)} />
+            )}
+          />
+        </>
+      ) : null}
+    </ScrollView>
   );
 }
 
 const estilos = StyleSheet.create({
-  contenido: {
-    padding: espacio(2),
-    paddingTop: espacio(2),
-  },
-  titulo: {
-    fontFamily: fuentes.negrita,
-    fontSize: tamanos.grande,
-  },
-  tarjeta: {
-    borderWidth: 1,
-    borderRadius: radio,
-    padding: espacio(2),
-    gap: espacio(1),
-  },
-  fila: {
+  barra: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: espacio(1.5),
+    paddingHorizontal: espacio(2),
+    paddingVertical: espacio(1),
   },
-  icono: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+  botonBarra: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  emoji: {
-    fontSize: 26,
+  soporte: {
+    marginHorizontal: espacio(2),
+    marginBottom: espacio(1),
+    borderRadius: 10,
+    padding: espacio(1.25),
+    gap: 2,
   },
-  nombre: {
-    fontFamily: fuentes.negrita,
-    fontSize: tamanos.mediano,
-  },
-  detalle: {
+  tituloSoporte: {
     fontFamily: fuentes.normal,
-    fontSize: tamanos.chico,
+    fontSize: 13,
+    textDecorationLine: 'underline',
   },
-  km: {
-    fontFamily: fuentes.media,
-    fontSize: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
-    overflow: 'hidden',
+  textoSoporte: {
+    fontFamily: fuentes.normal,
+    fontSize: 11,
   },
-  ofertas: {
-    fontFamily: fuentes.media,
-    fontSize: tamanos.chico,
+  mapa: {
+    height: 230,
   },
-  botones: {
+  logoMapa: {
+    position: 'absolute',
+    right: espacio(1.5),
+    bottom: espacio(1),
+  },
+  cuerpo: {
+    paddingHorizontal: espacio(2),
+  },
+  filaTitulo: {
     flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: espacio(2.5),
+    marginBottom: espacio(1.5),
+  },
+  titulo: {
+    fontFamily: fuentes.normal,
+    fontSize: 18,
+  },
+  subrayado: {
+    textDecorationLine: 'underline',
+    marginBottom: espacio(1.5),
+  },
+  buscar: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: espacio(1),
-    marginTop: espacio(0.5),
+  },
+  cajaBuscar: {
+    width: 130,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  carrusel: {
+    paddingHorizontal: espacio(2),
+    gap: espacio(1.5),
+  },
+  comercio: {
+    width: 150,
+    gap: 3,
+  },
+  fotoComercio: {
+    width: 150,
+    height: 86,
+    borderRadius: 10,
+  },
+  corazon: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+  },
+  sinFoto: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  nombreComercio: {
+    fontFamily: fuentes.negrita,
+    fontSize: 12,
+    marginTop: 3,
+  },
+  distancia: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+  },
+  textoKm: {
+    fontFamily: fuentes.negrita,
+    fontSize: 10,
+  },
+  verCatalogo: {
+    fontFamily: fuentes.normal,
+    fontSize: 10,
+    textDecorationLine: 'underline',
+  },
+  fotoProducto: {
+    width: 100,
+    height: 100,
+    borderRadius: 12,
   },
   vacio: {
     fontFamily: fuentes.normal,
-    fontSize: tamanos.normal,
-    textAlign: 'center',
-    marginTop: espacio(4),
+    fontSize: 13,
   },
 });

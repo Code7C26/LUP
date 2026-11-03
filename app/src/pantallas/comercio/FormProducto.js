@@ -1,4 +1,4 @@
-// PASO 46 · Comercio: nuevo y editar producto, como "Nuevo Producto" del mockup.
+// PASO 46 · Comercio: nuevo y editar producto, IGUAL a "Nuevo Producto" del mockup (página 12).
 // Pide los MISMOS campos que el formulario de la web (products/forms.py → ProductoForm)
 // y la foto (sacarla con la cámara o elegirla de la galería).
 // Nuevo:  POST  /api/mis-productos/        → navigation.navigate('FormProducto')
@@ -16,6 +16,7 @@ import MensajeError from '../../componentes/MensajeError';
 import { espacio, fuentes, radio, tamanos, useTema } from '../../tema';
 import { textoError } from '../../utilidades';
 import { Opciones } from '../Registro';
+import Icono from '../../componentes/Icono';
 
 // Mismas categorías que products/models.py (CATEGORIAS)
 const CATEGORIAS = [
@@ -192,59 +193,54 @@ export default function FormProducto({ navigation, route }) {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={estilos.contenido} keyboardShouldPersistTaps="handled">
-        <Text style={[estilos.titulo, { color: colores.titulo }]}>{id ? 'Editar producto' : 'Nuevo producto'}</Text>
-
-        {/* Foto */}
-        <View style={{ gap: espacio(1) }}>
-          {foto ? (
-            <Image source={{ uri: foto }} style={estilos.foto} accessibilityLabel="Foto del producto" />
-          ) : (
-            <View style={[estilos.foto, estilos.sinFoto, { backgroundColor: colores.menta }]}>
-              <Text style={estilos.emoji}>📷</Text>
-              <Text style={[estilos.ayuda, { color: colores.gris }]}>Las ofertas con foto se reservan más</Text>
-            </View>
-          )}
-          <View style={estilos.fila}>
-            <Boton texto="Sacar foto" variante="secundario" onPress={sacarFoto} estilo={{ flex: 1 }} />
-            <Boton texto="Elegir de la galería" variante="secundario" onPress={elegirFoto} estilo={estilos.botonChico} />
-          </View>
-          {errores.imagen ? (
-            <Text style={[estilos.ayuda, { color: colores.error }]}>{textoError(errores.imagen)}</Text>
-          ) : null}
+        {/* Título con ícono, como el mockup */}
+        <View style={estilos.encabezado}>
+          <Icono nombre="gift-outline" tamano={28} color={colores.titulo} />
+          <Text style={[estilos.titulo, { color: colores.titulo }]}>{id ? 'Editar Producto' : 'Nuevo Producto'}</Text>
         </View>
 
+        {/* Foto: el cuadro gris; al tocarlo se elige cámara o galería */}
+        <Pressable
+          onPress={() =>
+            Alert.alert('Foto del producto', 'Las ofertas con foto se reservan más.', [
+              { text: 'Sacar foto', onPress: sacarFoto },
+              { text: 'Elegir de la galería', onPress: elegirFoto },
+              { text: 'Cancelar', style: 'cancel' },
+            ])
+          }
+          accessibilityRole="button"
+          accessibilityLabel={foto ? 'Cambiar la foto' : 'Agregar una foto'}
+          style={[estilos.foto, { backgroundColor: colores.panel }]}
+        >
+          {foto ? (
+            <Image source={{ uri: foto }} style={StyleSheet.absoluteFill} accessibilityLabel="Foto del producto" />
+          ) : (
+            <Icono nombre="image-outline" tamano={44} color={colores.titulo} />
+          )}
+        </Pressable>
+        {errores.imagen ? <Text style={[estilos.ayuda, { color: colores.error }]}>{textoError(errores.imagen)}</Text> : null}
+
         <Campo
-          etiqueta="Nombre del producto"
-          placeholder="Ej: Docena de medialunas del día"
+          placeholder="Nombre del Producto"
           value={valores.titulo}
           onChangeText={cambiar('titulo')}
           error={errores.titulo}
           maxLength={100}
         />
 
-        <Opciones
-          etiqueta="Categoría"
-          opciones={CATEGORIAS}
-          valor={valores.categoria}
-          alElegir={cambiar('categoria')}
-          error={errores.categoria}
-        />
-
         <Campo
-          etiqueta="Descripción"
-          placeholder="Contá qué incluye la oferta y cómo conservarla…"
+          placeholder="Añadir descripción"
           value={valores.descripcion}
           onChangeText={cambiar('descripcion')}
           error={errores.descripcion}
           multiline
           textAlignVertical="top"
-          estiloInput={{ minHeight: 96, paddingTop: espacio(1.5) }}
+          estiloInput={{ minHeight: 64 }}
         />
 
         <View style={estilos.fila}>
           <Campo
-            etiqueta="Precio original ($)"
-            placeholder="3000"
+            placeholder="Insertar precio original"
             keyboardType="decimal-pad"
             value={valores.precio_original}
             onChangeText={cambiar('precio_original')}
@@ -252,8 +248,7 @@ export default function FormProducto({ navigation, route }) {
             estilo={{ flex: 1 }}
           />
           <Campo
-            etiqueta="Precio Lüp ($)"
-            placeholder="1500"
+            placeholder="Insertar precio con %"
             keyboardType="decimal-pad"
             value={valores.precio_descuento}
             onChangeText={cambiar('precio_descuento')}
@@ -262,52 +257,69 @@ export default function FormProducto({ navigation, route }) {
           />
         </View>
         {porcentaje !== null ? (
-          <Text style={[estilos.ayuda, { color: colores.verdeHover }]}>Descuento del {porcentaje}%</Text>
+          <Text style={[estilos.ayuda, { color: colores.verdeHover, marginTop: -espacio(1.5) }]}>
+            Descuento del {porcentaje}%
+          </Text>
         ) : null}
 
-        <Campo
-          etiqueta="Cantidad disponible"
-          keyboardType="number-pad"
-          value={valores.stock}
-          onChangeText={cambiar('stock')}
-          error={errores.stock}
-        />
-
-        <View style={{ gap: espacio(1) }}>
-          <Campo
-            etiqueta="Fecha límite de retiro"
-            placeholder="DD/MM/AAAA"
-            keyboardType="numbers-and-punctuation"
-            value={valores.fecha_vencimiento}
-            onChangeText={cambiar('fecha_vencimiento')}
-            error={errores.fecha_vencimiento}
-            maxLength={10}
-          />
-          <View style={estilos.fila}>
-            {[
-              [0, 'Hoy'],
-              [1, 'Mañana'],
-              [2, 'Pasado mañana'],
-            ].map(([dias, texto]) => {
-              const elegida = valores.fecha_vencimiento === fechaEnDias(dias);
-              return (
-                <Pressable
-                  key={dias}
-                  onPress={() => cambiar('fecha_vencimiento')(fechaEnDias(dias))}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: elegida }}
-                  style={[
-                    estilos.chip,
-                    { borderColor: elegida ? colores.verde : colores.borde },
-                    elegida && { backgroundColor: colores.verde },
-                  ]}
-                >
-                  <Text style={[estilos.textoChip, { color: elegida ? colores.sobreVerde : colores.texto }]}>{texto}</Text>
-                </Pressable>
-              );
-            })}
+        {/* Cantidad y fecha, cada una con su leyenda abajo (como el mockup) */}
+        <View style={estilos.fila}>
+          <View style={{ flex: 1, gap: 4 }}>
+            <Campo
+              placeholder="0"
+              keyboardType="number-pad"
+              value={valores.stock}
+              onChangeText={cambiar('stock')}
+              error={errores.stock}
+              estilo={{ width: 96 }}
+            />
+            <Text style={[estilos.leyenda, { color: colores.titulo }]}>Insertar cantidad disponible</Text>
+          </View>
+          <View style={{ flex: 1, gap: 4 }}>
+            <Campo
+              placeholder="00/00/0000"
+              keyboardType="numbers-and-punctuation"
+              value={valores.fecha_vencimiento}
+              onChangeText={cambiar('fecha_vencimiento')}
+              error={errores.fecha_vencimiento}
+              maxLength={10}
+            />
+            <Text style={[estilos.leyenda, { color: colores.titulo }]}>Insertar fecha de vencimiento</Text>
           </View>
         </View>
+        <View style={[estilos.fila, { marginTop: -espacio(1) }]}>
+          {[
+            [0, 'Hoy'],
+            [1, 'Mañana'],
+            [2, 'Pasado'],
+          ].map(([dias, texto]) => {
+            const elegida = valores.fecha_vencimiento === fechaEnDias(dias);
+            return (
+              <Pressable
+                key={dias}
+                onPress={() => cambiar('fecha_vencimiento')(fechaEnDias(dias))}
+                accessibilityRole="button"
+                accessibilityLabel={`Vence ${texto}`}
+                accessibilityState={{ selected: elegida }}
+                style={[
+                  estilos.chip,
+                  { borderColor: elegida ? colores.verdeProfundo : colores.borde },
+                  elegida && { backgroundColor: colores.verdeProfundo },
+                ]}
+              >
+                <Text style={[estilos.textoChip, { color: elegida ? colores.sobreVerdeProfundo : colores.texto }]}>{texto}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        <Opciones
+          etiqueta="Categoría"
+          opciones={CATEGORIAS}
+          valor={valores.categoria}
+          alElegir={cambiar('categoria')}
+          error={errores.categoria}
+        />
 
         {/* Apto para donación */}
         <Pressable
@@ -319,21 +331,23 @@ export default function FormProducto({ navigation, route }) {
           <View
             style={[
               estilos.casilla,
-              { borderColor: colores.verde },
-              valores.es_donacion && { backgroundColor: colores.verde },
+              { borderColor: colores.verdeProfundo },
+              valores.es_donacion && { backgroundColor: colores.verdeProfundo },
             ]}
           >
-            {valores.es_donacion ? <Text style={[estilos.tilde, { color: colores.sobreVerde }]}>✓</Text> : null}
+            {valores.es_donacion ? <Icono nombre="checkmark" tamano={16} color={colores.sobreVerdeProfundo} /> : null}
           </View>
-          <Text style={[estilos.textoCasilla, { color: colores.texto }]}>
-            También disponible para donación a organizaciones
-          </Text>
+          <Text style={[estilos.textoCasilla, { color: colores.texto }]}>También para donar a organizaciones</Text>
         </Pressable>
 
         <MensajeError mensaje={errorGeneral} />
 
-        <Boton texto={id ? 'Guardar cambios' : 'Publicar'} onPress={publicar} cargando={enviando} />
-        <Boton texto="Cancelar" variante="secundario" onPress={() => navigation.goBack()} />
+        <Boton
+          texto={id ? 'Guardar' : 'Publicar'}
+          onPress={publicar}
+          cargando={enviando}
+          estilo={{ alignSelf: 'center', paddingHorizontal: espacio(4), marginTop: espacio(2) }}
+        />
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -341,17 +355,31 @@ export default function FormProducto({ navigation, route }) {
 
 const estilos = StyleSheet.create({
   contenido: {
-    padding: espacio(2),
-    gap: espacio(2),
+    padding: espacio(2.5),
+    paddingBottom: espacio(5),
+    gap: espacio(2.5),
+  },
+  encabezado: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: espacio(1),
   },
   titulo: {
-    fontFamily: fuentes.negrita,
-    fontSize: tamanos.grande,
+    fontFamily: fuentes.normal,
+    fontSize: 26,
   },
   foto: {
-    width: '100%',
-    aspectRatio: 4 / 3,
-    borderRadius: radio,
+    width: 116,
+    height: 116,
+    borderRadius: 12,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  leyenda: {
+    fontFamily: fuentes.normal,
+    fontSize: 11,
+    marginLeft: 4,
   },
   sinFoto: {
     alignItems: 'center',
@@ -374,8 +402,8 @@ const estilos = StyleSheet.create({
     paddingHorizontal: espacio(1),
   },
   chip: {
-    borderWidth: 1.5,
-    borderRadius: radio,
+    borderWidth: 1,
+    borderRadius: 999,
     paddingHorizontal: espacio(1.5),
     paddingVertical: espacio(0.75),
   },

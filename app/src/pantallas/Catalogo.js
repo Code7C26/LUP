@@ -1,6 +1,7 @@
 // PASO 41 · Catálogo con búsqueda y filtros, como el catálogo de la web.
 // Usa GET /api/productos/?q=&categoria=&comercio=&donacion=&orden=&lat=&lng=
 // Si se llega desde "Ver catálogo" (Inicio), viene filtrado por ese comercio.
+// Con el estilo del mockup: buscador, filtros y los productos en filas (foto + tarjeta gris con "Reservar").
 import { useCallback, useEffect, useState } from 'react';
 import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import * as Location from 'expo-location';
@@ -8,8 +9,10 @@ import * as Location from 'expo-location';
 import { api } from '../api/cliente';
 import Campo from '../componentes/Campo';
 import Cargando from '../componentes/Cargando';
+import Chip from '../componentes/Chip';
+import Icono from '../componentes/Icono';
 import MensajeError from '../componentes/MensajeError';
-import TarjetaProducto from '../componentes/TarjetaProducto';
+import FilaProducto from '../componentes/FilaProducto';
 import { espacio, fuentes, radio, tamanos, useTema } from '../tema';
 import { emojiCategoria } from '../utilidades';
 
@@ -27,29 +30,11 @@ const CATEGORIAS = [
 ];
 
 const ORDENES = [
-  ['recientes', 'Más nuevos'],
-  ['cercania', 'Más cerca'],
-  ['precio', 'Más baratos'],
-  ['vencimiento', 'Vencen antes'],
+  ['recientes', 'Nuevos', 'sparkles-outline'],
+  ['cercania', 'Cerca', 'navigate-outline'],
+  ['precio', 'Baratos', 'pricetag-outline'],
+  ['vencimiento', 'Vencen antes', 'time-outline'],
 ];
-
-// Botoncito redondeado para los filtros
-function Chip({ texto, activo, onPress }) {
-  const { colores } = useTema();
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityState={{ selected: activo }}
-      style={[
-        estilos.chip,
-        { borderColor: activo ? colores.verde : colores.borde, backgroundColor: activo ? colores.verde : colores.superficie },
-      ]}
-    >
-      <Text style={[estilos.textoChip, { color: activo ? colores.sobreVerde : colores.texto }]}>{texto}</Text>
-    </Pressable>
-  );
-}
 
 // Busca la ubicación SIN volver a pedir permiso (ya se pidió en "Cerca tuyo")
 async function ubicacionSiHayPermiso() {
@@ -131,7 +116,8 @@ export default function Catalogo({ navigation, route }) {
   const encabezado = (
     <View style={{ gap: espacio(1.5), marginBottom: espacio(1.5) }}>
       <Campo
-        placeholder="Buscar medialunas, verduras, un comercio…"
+        icono="search"
+        placeholder="Buscar medialunas, verduras…"
         value={texto}
         onChangeText={setTexto}
         autoCorrect={false}
@@ -146,10 +132,11 @@ export default function Catalogo({ navigation, route }) {
           accessibilityLabel={`Quitar filtro de ${comercio.nombre}`}
           style={[estilos.filtroComercio, { backgroundColor: colores.menta }]}
         >
+          <Icono nombre="storefront" tamano={16} color={colores.verdeHover} />
           <Text style={[estilos.textoChip, { color: colores.titulo, flex: 1 }]} numberOfLines={1}>
-            🏪 Solo {comercio.nombre}
+            {comercio.nombre}
           </Text>
-          <Text style={[estilos.textoChip, { color: colores.verdeHover }]}>Ver todos ✕</Text>
+          <Icono nombre="close-circle" tamano={20} color={colores.verdeHover} />
         </Pressable>
       ) : null}
 
@@ -158,7 +145,8 @@ export default function Catalogo({ navigation, route }) {
         {CATEGORIAS.map(([clave, nombre]) => (
           <Chip
             key={clave || 'todas'}
-            texto={clave ? `${emojiCategoria(clave)} ${nombre}` : nombre}
+            texto={nombre}
+            emoji={clave ? emojiCategoria(clave) : null}
             activo={categoria === clave}
             onPress={() => setCategoria(clave)}
           />
@@ -167,10 +155,10 @@ export default function Catalogo({ navigation, route }) {
 
       {/* Orden y donación */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={estilos.filaChips}>
-        {ORDENES.filter(([clave]) => clave !== 'cercania' || coords).map(([clave, nombre]) => (
-          <Chip key={clave} texto={nombre} activo={orden === clave} onPress={() => setOrden(clave)} />
+        {ORDENES.filter(([clave]) => clave !== 'cercania' || coords).map(([clave, nombre, icono]) => (
+          <Chip key={clave} texto={nombre} icono={icono} activo={orden === clave} onPress={() => setOrden(clave)} />
         ))}
-        <Chip texto="💚 Para donación" activo={soloDonacion} onPress={() => setSoloDonacion((v) => !v)} />
+        <Chip texto="Donación" icono="heart-outline" activo={soloDonacion} onPress={() => setSoloDonacion((v) => !v)} />
       </ScrollView>
 
       <MensajeError mensaje={error} alReintentar={cargar} />
@@ -192,6 +180,7 @@ export default function Catalogo({ navigation, route }) {
       data={productos}
       keyExtractor={(p) => String(p.id)}
       keyboardShouldPersistTaps="handled"
+
       ListHeaderComponent={encabezado}
       refreshControl={
         <RefreshControl
@@ -206,16 +195,17 @@ export default function Catalogo({ navigation, route }) {
       ListEmptyComponent={
         !error ? (
           <View style={estilos.vacio}>
-            <Text style={estilos.emojiVacio}>🔎</Text>
+            <Icono nombre="search-outline" tamano={44} color={colores.gris} />
             <Text style={[estilos.textoVacio, { color: colores.gris }]}>
-              No encontramos ofertas con esos filtros.
+              Nada por acá. Probá con otros filtros.
             </Text>
           </View>
         ) : null
       }
       renderItem={({ item }) => (
-        <TarjetaProducto
+        <FilaProducto
           producto={item}
+          mostrarComercio
           onPress={() => navigation?.navigate?.('DetalleProducto', { id: item.id })}
         />
       )}

@@ -12,6 +12,7 @@ import Campo from '../../componentes/Campo';
 import MensajeError from '../../componentes/MensajeError';
 import { espacio, fuentes, radio, tamanos, useTema } from '../../tema';
 import { formatoPrecio, textoError } from '../../utilidades';
+import Encabezado from '../../componentes/Encabezado';
 
 export default function ConfirmarRetiro({ navigation }) {
   const { colores } = useTema();
@@ -100,10 +101,8 @@ export default function ConfirmarRetiro({ navigation }) {
         />
       }
     >
-      <Text style={[estilos.titulo, { color: colores.titulo }]}>Confirmar retiro</Text>
-      <Text style={[estilos.texto, { color: colores.gris }]}>
-        Escaneá el QR que te muestra el cliente en su celular, o escribí el código.
-      </Text>
+      <Encabezado titulo="Retiros" />
+      <Text style={[estilos.texto, { color: colores.gris }]}>Escaneá el QR del cliente o escribí su código.</Text>
 
       {escaneando ? (
         <View style={{ gap: espacio(1) }}>
@@ -115,10 +114,10 @@ export default function ConfirmarRetiro({ navigation }) {
               onBarcodeScanned={alEscanear}
             />
           </View>
-          <Boton texto="Cerrar cámara" variante="secundario" onPress={() => setEscaneando(false)} />
+          <Boton texto="Cerrar cámara" icono="close" variante="texto" onPress={() => setEscaneando(false)} />
         </View>
       ) : (
-        <Boton texto="📷 Escanear QR" onPress={abrirCamara} cargando={enviando} />
+        <Boton texto="Escanear QR" icono="scan-outline" onPress={abrirCamara} cargando={enviando} />
       )}
 
       <View style={estilos.fila}>
@@ -133,7 +132,7 @@ export default function ConfirmarRetiro({ navigation }) {
           onSubmitEditing={() => confirmar(codigo)}
           estilo={{ flex: 1 }}
         />
-        <Boton texto="Confirmar" variante="secundario" onPress={() => confirmar(codigo)} deshabilitado={enviando} />
+        <Boton icono="checkmark" etiqueta="Confirmar código" variante="secundario" onPress={() => confirmar(codigo)} deshabilitado={enviando} />
       </View>
 
       {resultado ? (
@@ -147,16 +146,15 @@ export default function ConfirmarRetiro({ navigation }) {
           ]}
         >
           <Text style={[estilos.textoResultado, { color: colores.texto }]}>
-            {resultado.ok ? '✅ ' : '⚠️ '}
             {resultado.texto}
           </Text>
         </View>
       ) : null}
 
-      <Text style={[estilos.subtitulo, { color: colores.titulo }]}>Retiros pendientes</Text>
+      <Text style={[estilos.subtitulo, { color: colores.gris }]}>Pendientes</Text>
       <MensajeError mensaje={errorLista} alReintentar={cargarPendientes} />
       {!errorLista && pendientes.length === 0 ? (
-        <Text style={[estilos.texto, { color: colores.gris }]}>No hay reservas esperando ser retiradas.</Text>
+        <Text style={[estilos.texto, { color: colores.gris }]}>Nadie esperando por ahora.</Text>
       ) : null}
       {pendientes.map((reserva) => (
         <View
@@ -205,7 +203,6 @@ const estilos = StyleSheet.create({
     gap: espacio(1),
   },
   resultado: {
-    borderWidth: 1,
     borderRadius: radio,
     padding: espacio(2),
   },
@@ -217,7 +214,6 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: espacio(1.5),
-    borderWidth: 1,
     borderRadius: radio,
     paddingHorizontal: espacio(2),
     paddingVertical: espacio(1.5),

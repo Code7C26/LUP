@@ -7,6 +7,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { espacio, fuentes, radio, tamanos, useTema } from '../tema';
 import { textoError } from '../utilidades';
 import Boton from './Boton';
+import Icono from './Icono';
 
 export default function MensajeError({ mensaje, alReintentar }) {
   const { colores } = useTema();
@@ -14,25 +15,27 @@ export default function MensajeError({ mensaje, alReintentar }) {
   if (!texto) return null;
 
   return (
-    <View
-      accessibilityRole="alert"
-      style={[estilos.caja, { backgroundColor: colores.ambarClaro, borderColor: colores.ambar }]}
-    >
+    <View accessibilityRole="alert" style={[estilos.caja, { backgroundColor: colores.ambarClaro }]}>
+      <Icono nombre="alert-circle" tamano={22} color={colores.ambar} />
       <Text style={[estilos.texto, { color: colores.texto }]}>{texto}</Text>
-      {alReintentar ? <Boton texto="Reintentar" variante="secundario" onPress={alReintentar} /> : null}
+      {alReintentar ? <Boton icono="refresh" etiqueta="Reintentar" texto="Reintentar" variante="texto" chico onPress={alReintentar} /> : null}
     </View>
   );
 }
 
 const estilos = StyleSheet.create({
   caja: {
-    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
     borderRadius: radio,
-    padding: espacio(2),
-    gap: espacio(1.5),
+    paddingVertical: espacio(1.25),
+    paddingLeft: espacio(1.5),
+    paddingRight: espacio(0.5),
+    gap: espacio(1),
   },
   texto: {
+    flex: 1,
     fontFamily: fuentes.normal,
-    fontSize: tamanos.normal,
+    fontSize: tamanos.chico,
   },
 });

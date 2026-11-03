@@ -76,7 +76,7 @@ export default function ModalSolicitudDonacion({ producto, alCerrar, alEnviar })
           <MensajeError mensaje={error} />
 
           <Boton texto="Enviar solicitud" onPress={enviar} cargando={enviando} />
-          <Boton texto="Cancelar" variante="secundario" onPress={alCerrar} deshabilitado={enviando} />
+          <Boton texto="Cancelar" variante="texto" onPress={alCerrar} deshabilitado={enviando} />
         </View>
       </KeyboardAvoidingView>
     </Modal>

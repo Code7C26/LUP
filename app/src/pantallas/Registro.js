@@ -20,6 +20,7 @@ import { useSesion } from '../contexto/Sesion';
 import { espacio, fuentes, radio, tamanos, useTema } from '../tema';
 import { textoError } from '../utilidades';
 import { TIPOS_DE_CUENTA } from './RegistroSeleccion';
+import Icono from '../componentes/Icono';
 
 // Pantallas de cuenta de la navegación (paso 37): se cierran juntas al terminar el registro
 const PANTALLAS_DE_CUENTA = ['Login', 'Registro', 'RegistroFormulario'];
@@ -99,11 +100,11 @@ export function Opciones({ etiqueta, opciones, valor, alElegir, error }) {
               accessibilityState={{ checked: elegida }}
               style={[
                 estilos.opcion,
-                { borderColor: elegida ? colores.verde : colores.borde },
-                elegida && { backgroundColor: colores.verde },
+                { borderColor: elegida ? colores.verdeProfundo : colores.borde },
+                elegida && { backgroundColor: colores.verdeProfundo },
               ]}
             >
-              <Text style={[estilos.textoOpcion, { color: elegida ? colores.sobreVerde : colores.texto }]}>{texto}</Text>
+              <Text style={[estilos.textoOpcion, { color: elegida ? colores.sobreVerdeProfundo : colores.texto }]}>{texto}</Text>
             </Pressable>
           );
         })}
@@ -185,10 +186,7 @@ export default function Registro({ navigation, route }) {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={estilos.contenido} keyboardShouldPersistTaps="handled">
-        <Text style={[estilos.titulo, { color: colores.titulo }]}>
-          {tipo.emoji} Cuenta de {tipo.titulo}
-        </Text>
-        <Text style={[estilos.subtitulo, { color: colores.gris }]}>{tipo.descripcion}</Text>
+        <Text style={[estilos.titulo, { color: colores.titulo }]}>Cuenta de {tipo.titulo}</Text>
 
         <Text style={[estilos.seccion, { color: colores.verdeHover }]}>Tu cuenta</Text>
         {dibujarCampos(CAMPOS_CUENTA)}
@@ -236,11 +234,11 @@ export default function Registro({ navigation, route }) {
           <View
             style={[
               estilos.casilla,
-              { borderColor: errores.acepta_terminos ? colores.error : colores.verde },
-              valores.acepta_terminos && { backgroundColor: colores.verde },
+              { borderColor: errores.acepta_terminos ? colores.error : colores.verdeProfundo },
+              valores.acepta_terminos && { backgroundColor: colores.verdeProfundo },
             ]}
           >
-            {valores.acepta_terminos ? <Text style={[estilos.tilde, { color: colores.sobreVerde }]}>✓</Text> : null}
+            {valores.acepta_terminos ? <Icono nombre="checkmark" tamano={16} color={colores.sobreVerdeProfundo} /> : null}
           </View>
           <Text style={[estilos.textoTerminos, { color: colores.texto }]}>
             Acepto los términos y condiciones de Lüp
@@ -253,7 +251,7 @@ export default function Registro({ navigation, route }) {
         <MensajeError mensaje={errorGeneral} />
 
         <Boton texto="Crear mi cuenta" onPress={crearCuenta} cargando={enviando} />
-        <Boton texto="Volver" variante="secundario" onPress={() => navigation?.goBack?.()} />
+        <Boton texto="Volver" variante="texto" onPress={() => navigation?.goBack?.()} />
       </ScrollView>
     </KeyboardAvoidingView>
   );

@@ -1,9 +1,9 @@
-// PASO 38 · Pantalla de login, como en el mockup:
-// pestañas Consumidor / Organización / Comercio, usuario o email, contraseña,
-// "Ingresar como...", "Registrate gratis acá" y "Omitir".
+// PASO 38 · Login IGUAL AL MOCKUP (páginas 3, 5 y 9 del PDF):
+// logo arriba, "Ingresá a tu cuenta", barra verde claro con los 3 roles,
+// el recuadro gris con la frase del rol, los campos con su etiqueta en negrita,
+// el botón verde oscuro y "¿Todavía no tenés una cuenta? Regístrate gratis acá".
 import { useState } from 'react';
 import {
-  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -15,45 +15,59 @@ import {
 
 import Boton from '../componentes/Boton';
 import Campo from '../componentes/Campo';
+import Icono from '../componentes/Icono';
+import Logo from '../componentes/Logo';
 import MensajeError from '../componentes/MensajeError';
 import { useSesion } from '../contexto/Sesion';
-import { espacio, fuentes, radio, tamanos, useTema } from '../tema';
+import { espacio, fuentes, tamanos, useTema } from '../tema';
 
-// Mismos textos que la web (scr/bd_lup/users/views.py → INFO_ROLES)
+// Los textos son los del mockup
 const ROLES = [
   {
     id: 'consumidor',
     titulo: 'Consumidor',
-    descripcion: 'Rescatá comida rica a precios reducidos en comercios cerca tuyo.',
+    icono: 'cart-outline',
+    frase: 'Accedé para comprar productos con descuento cerca tuyo.',
+    usuario: 'Usuario o Email',
+    boton: 'Ingresar como Consumidor',
   },
   {
     id: 'organizacion',
-    titulo: 'Organización',
-    descripcion: 'Recibí donaciones de alimentos para comedores, merenderos y fundaciones.',
+    titulo: 'Fundación',
+    icono: 'heart-outline',
+    frase: 'Accedé para solicitar o recibir donaciones de alimentos.',
+    usuario: 'Email Institucional o Usuario',
+    boton: 'Ingresar como Fundación',
   },
   {
     id: 'comercio',
     titulo: 'Comercio',
-    descripcion: 'Vendé tus excedentes del día y recuperá ingresos en lugar de tirarlos.',
+    icono: 'storefront-outline',
+    frase: 'Gestioná tus productos en oferta y donaciones publicadas.',
+    usuario: 'Usuario del Comercio',
+    boton: 'Ingresar a mi Comercio',
   },
 ];
 
-export default function Login({ navigation }) {
+export default function Login({ navigation, route }) {
   const { colores } = useTema();
-  const { iniciarSesion, cerrarSesion, entrarComoInvitado } = useSesion();
+  const { iniciarSesion, cerrarSesion, entrarComoInvitado, invitado } = useSesion();
+  // Si ya estaba como invitado, el login se abrió como ventana (desde Perfil o "Reservar"): al terminar se cierra.
+  // Si no, al entrar la navegación cambia sola a las pestañas.
+  const enVentana = invitado;
 
-  const [rol, setRol] = useState('consumidor');
+  const [rol, setRol] = useState(route?.params?.rol || 'consumidor');
   const [usuario, setUsuario] = useState('');
   const [clave, setClave] = useState('');
   const [error, setError] = useState('');
   const [enviando, setEnviando] = useState(false);
 
-  const rolElegido = ROLES.find((r) => r.id === rol);
+  const rolElegido = ROLES.find((r) => r.id === rol) || ROLES[0];
 
   async function ingresar() {
     setError('');
     if (!usuario.trim() || !clave) {
-      setError('Completá tu usuario o email y la contraseña.');
+      setError('Completá tu usuario y contraseña.');
       return;
     }
     setEnviando(true);
@@ -63,10 +77,10 @@ export default function Login({ navigation }) {
       if (datos.rol !== rol) {
         await cerrarSesion();
         const real = ROLES.find((r) => r.id === datos.rol)?.titulo || datos.rol;
-        setError(`Esta cuenta está registrada como ${real}. Elegí esa pestaña para ingresar.`);
+        setError(`Esta cuenta es de ${real}. Elegí esa opción arriba.`);
         return;
       }
-      if (navigation?.canGoBack?.()) navigation.goBack(); // si se abrió desde Perfil (paso 37)
+      if (enVentana && navigation?.canGoBack?.()) navigation.goBack();
     } catch (e) {
       setError(e);
     } finally {
@@ -75,8 +89,8 @@ export default function Login({ navigation }) {
   }
 
   function omitir() {
+    if (enVentana) return navigation.goBack();
     entrarComoInvitado();
-    if (navigation?.canGoBack?.()) navigation.goBack();
   }
 
   return (
@@ -85,21 +99,24 @@ export default function Login({ navigation }) {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={estilos.contenido} keyboardShouldPersistTaps="handled">
-        <Pressable onPress={omitir} style={estilos.omitir} accessibilityRole="button">
-          <Text style={[estilos.textoOmitir, { color: colores.gris }]}>Omitir</Text>
+        <Pressable
+          onPress={omitir}
+          hitSlop={10}
+          accessibilityRole="button"
+          style={[estilos.omitir, { backgroundColor: colores.borde }]}
+        >
+          <Text style={estilos.textoOmitir}>Omitir</Text>
         </Pressable>
 
-        <View style={estilos.circuloLogo}>
-          <Image source={require('../../assets/logo.png')} style={estilos.logo} resizeMode="contain" />
-        </View>
-        <Text style={[estilos.lema, { color: colores.gris }]}>Una segunda oportunidad para cada alimento</Text>
+        <Logo ancho={120} />
 
         <Text style={[estilos.titulo, { color: colores.titulo }]}>Ingresá a tu cuenta</Text>
 
-        {/* Pestañas de rol */}
-        <View style={[estilos.pestanas, { backgroundColor: colores.menta }]}>
+        {/* Barra verde claro con los roles */}
+        <View style={[estilos.roles, { backgroundColor: colores.verdeClaro, borderColor: colores.borde }]}>
           {ROLES.map((r) => {
-            const activa = r.id === rol;
+            const activo = r.id === rol;
+            const color = activo ? colores.sobreVerdeProfundo : colores.texto;
             return (
               <Pressable
                 key={r.id}
@@ -108,12 +125,13 @@ export default function Login({ navigation }) {
                   setError('');
                 }}
                 accessibilityRole="tab"
-                accessibilityState={{ selected: activa }}
-                style={[estilos.pestana, activa && { backgroundColor: colores.superficie }]}
+                accessibilityState={{ selected: activo }}
+                style={[estilos.rol, activo && { backgroundColor: colores.verdeProfundo }]}
               >
+                <Icono nombre={r.icono} tamano={14} color={color} />
                 <Text
                   numberOfLines={1}
-                  style={[estilos.textoPestana, { color: activa ? colores.titulo : colores.gris }]}
+                  style={[estilos.textoRol, { color, fontFamily: activo ? fuentes.negrita : fuentes.normal }]}
                 >
                   {r.titulo}
                 </Text>
@@ -121,41 +139,42 @@ export default function Login({ navigation }) {
             );
           })}
         </View>
-        <Text style={[estilos.descripcion, { color: colores.gris }]}>{rolElegido.descripcion}</Text>
 
-        <Campo
-          etiqueta="Usuario o email"
-          placeholder="tu_usuario o tu@email.com"
-          autoCapitalize="none"
-          autoCorrect={false}
-          keyboardType="email-address"
-          textContentType="username"
-          value={usuario}
-          onChangeText={setUsuario}
-        />
-        <Campo
-          etiqueta="Contraseña"
-          placeholder="••••••••"
-          secureTextEntry
-          textContentType="password"
-          value={clave}
-          onChangeText={setClave}
-          onSubmitEditing={ingresar}
-        />
+        {/* Recuadro gris con la frase del rol */}
+        <View style={[estilos.frase, { backgroundColor: colores.panel, borderColor: colores.borde }]}>
+          <Text style={[estilos.textoFrase, { color: colores.texto }]}>{rolElegido.frase}</Text>
+        </View>
+
+        <View style={estilos.campos}>
+          <Campo
+            etiqueta={rolElegido.usuario}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="email-address"
+            textContentType="username"
+            value={usuario}
+            onChangeText={setUsuario}
+          />
+          <Campo
+            etiqueta="Contraseña"
+            secureTextEntry
+            textContentType="password"
+            value={clave}
+            onChangeText={setClave}
+            onSubmitEditing={ingresar}
+          />
+        </View>
 
         <MensajeError mensaje={error} />
 
-        <Boton texto={`Ingresar como ${rolElegido.titulo}`} onPress={ingresar} cargando={enviando} />
+        <Boton texto={rolElegido.boton} onPress={ingresar} cargando={enviando} estilo={estilos.boton} />
 
-        <Text style={[estilos.registro, { color: colores.gris }]}>
-          ¿Todavía no tenés una cuenta?{' '}
-          <Text
-            style={{ color: colores.verdeHover, fontFamily: fuentes.media }}
-            onPress={() => navigation?.navigate('Registro')}
-          >
-            Registrate gratis acá
+        <Pressable onPress={() => navigation?.navigate('Registro')} accessibilityRole="link" style={estilos.registro}>
+          <Text style={[estilos.textoRegistro, { color: colores.titulo }]}>¿Todavía no tenés una cuenta?</Text>
+          <Text style={[estilos.textoRegistro, { color: colores.verdeHover, fontFamily: fuentes.negrita }]}>
+            Regístrate gratis acá
           </Text>
-        </Text>
+        </Pressable>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -163,65 +182,76 @@ export default function Login({ navigation }) {
 
 const estilos = StyleSheet.create({
   contenido: {
-    padding: espacio(3),
-    paddingTop: espacio(6),
+    flexGrow: 1,
+    paddingHorizontal: espacio(3),
+    paddingTop: espacio(8),
+    paddingBottom: espacio(4),
     gap: espacio(2),
   },
   omitir: {
-    alignSelf: 'flex-end',
-    padding: espacio(1),
+    position: 'absolute',
+    top: espacio(6),
+    right: espacio(3),
+    paddingHorizontal: espacio(1.25),
+    paddingVertical: 3,
+    borderRadius: 999,
   },
   textoOmitir: {
-    fontFamily: fuentes.media,
-    fontSize: tamanos.normal,
-  },
-  circuloLogo: {
-    alignSelf: 'center',
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    backgroundColor: '#F7F5EE',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logo: {
-    width: 105,
-    height: 88,
-  },
-  lema: {
-    fontFamily: fuentes.normal,
-    fontSize: tamanos.chico,
-    textAlign: 'center',
+    color: '#FAFAFA',
+    fontFamily: fuentes.negrita,
+    fontSize: 12,
   },
   titulo: {
-    fontFamily: fuentes.negrita,
-    fontSize: tamanos.grande,
-    textAlign: 'center',
-    marginTop: espacio(1),
-  },
-  pestanas: {
-    flexDirection: 'row',
-    borderRadius: radio,
-    padding: 4,
-  },
-  pestana: {
-    flex: 1,
-    paddingVertical: espacio(1.25),
-    borderRadius: radio - 4,
-    alignItems: 'center',
-  },
-  textoPestana: {
-    fontFamily: fuentes.media,
-    fontSize: tamanos.chico,
-  },
-  descripcion: {
     fontFamily: fuentes.normal,
-    fontSize: tamanos.chico,
+    fontSize: 17,
     textAlign: 'center',
+    marginTop: -espacio(0.5),
+  },
+  roles: {
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 3,
+  },
+  rol: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    paddingVertical: 7,
+    borderRadius: 8,
+  },
+  textoRol: {
+    fontSize: 13,
+  },
+  frase: {
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: espacio(1.5),
+    paddingVertical: espacio(1.25),
+  },
+  textoFrase: {
+    fontFamily: fuentes.normal,
+    fontSize: 13,
+    lineHeight: 18,
+    textAlign: 'center',
+  },
+  campos: {
+    gap: espacio(2),
+    marginTop: espacio(1.5),
+  },
+  boton: {
+    alignSelf: 'center',
+    width: '82%',
+    marginTop: espacio(2),
   },
   registro: {
+    alignItems: 'center',
+    gap: 1,
+  },
+  textoRegistro: {
     fontFamily: fuentes.normal,
     fontSize: tamanos.chico,
-    textAlign: 'center',
   },
 });
