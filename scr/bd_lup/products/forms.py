@@ -90,13 +90,31 @@ class SolicitudDonacionForm(EstiloBootstrapMixin, forms.ModelForm):
         labels = {'mensaje': _('Mensaje para el comercio')}
 
 
+ESTRELLAS = [(n, n) for n in range(1, 6)]
+
+
 class CalificacionForm(forms.ModelForm):
+    """Opinión después de retirar: estrellas al comercio, al producto y un comentario."""
+
     puntaje = forms.TypedChoiceField(
-        choices=[(n, n) for n in range(1, 6)], coerce=int, widget=forms.RadioSelect,
-        error_messages={'required': _('Elegí de 1 a 5 estrellas.')},
+        choices=ESTRELLAS, coerce=int, widget=forms.RadioSelect,
+        error_messages={'required': _('Calificá al comercio con 1 a 5 estrellas.')},
+    )
+    puntaje_producto = forms.TypedChoiceField(
+        choices=ESTRELLAS, coerce=int, widget=forms.RadioSelect,
+        error_messages={'required': _('Calificá el producto con 1 a 5 estrellas.')},
     )
 
     class Meta:
         model = Calificacion
-        fields = ('puntaje', 'comentario')
-        widgets = {'comentario': forms.Textarea(attrs={'rows': 2, 'maxlength': 500})}
+        fields = ('puntaje', 'puntaje_producto', 'comentario')
+        widgets = {'comentario': forms.Textarea(attrs={'rows': 3, 'maxlength': 500})}
+
+    def clean_comentario(self):
+        return ' '.join(self.cleaned_data.get('comentario', '').split())[:500]
+
+
+class RespuestaForm(forms.Form):
+    """Respuesta pública del comercio a una opinión (vacía = borrar la respuesta)."""
+
+    respuesta = forms.CharField(required=False, max_length=500, widget=forms.Textarea(attrs={'rows': 2}))

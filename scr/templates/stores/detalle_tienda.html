@@ -53,16 +53,7 @@
                 <div class="col-md-8">
                     <ul class="min-lista opiniones">
                         {% for o in opiniones %}
-                            <li class="flex-column align-items-stretch gap-1">
-                                <div class="d-flex align-items-center gap-2">
-                                    {% include 'includes/_avatar.html' with usuario=o.consumidor tam='sm' %}
-                                    <strong class="small">{{ o.consumidor.first_name|default:o.consumidor.username }}</strong>
-                                    {% include 'includes/_estrellas.html' with valor=o.puntaje %}
-                                    <small class="text-muted-lup ms-auto">{{ o.creada_en|date:"d/m/Y" }}</small>
-                                </div>
-                                {% if o.comentario %}<p class="mb-0 small">{{ o.comentario }}</p>{% endif %}
-                                <small class="text-muted-lup">{% blocktranslate with titulo=o.reserva.producto.titulo %}Retiró: {{ titulo }}{% endblocktranslate %}</small>
-                            </li>
+                            {% include 'includes/_opinion.html' with o=o %}
                         {% endfor %}
                     </ul>
                     {% if opiniones.has_other_pages %}

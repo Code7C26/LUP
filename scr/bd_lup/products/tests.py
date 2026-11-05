@@ -268,12 +268,18 @@ class AvisosEmailTests(FlujoLupTests.__bases__[0]):
         self.assertEqual(len(mail.outbox), 2)
         self.assertIn('Reserva cancelada', mail.outbox[1].subject)
 
-    def test_retiro_confirmado_no_manda_email(self):
+    def test_retiro_confirmado_le_pide_la_opinion_al_cliente(self):
         reserva = self.reservar_web()
         self.client.force_login(self.comercio)
         with self.captureOnCommitCallbacks(execute=True):
             self.client.post(reverse('confirmar_retiro'), {'codigo': reserva.codigo_retiro})
-        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(len(mail.outbox), 2)
+        pedido = mail.outbox[1]
+        self.assertEqual(pedido.to, ['c@lup.test'])
+        self.assertIn('¿Cómo te fue', pedido.subject)
+        self.assertIn(f'https://lup.test/productos/reservas/{reserva.pk}/calificar/', pedido.body)
+        reserva.refresh_from_db()
+        self.assertIsNotNone(reserva.retirada_en)
 
     def test_pedido_de_donacion_avisa_al_comercio(self):
         self.client.force_login(self.org)
@@ -479,9 +485,11 @@ class CalificacionesTests(FlujoLupTests.__bases__[0]):
             precio_total=self.producto.precio_descuento, estado=Reserva.RETIRADA,
         )
 
-    def calificar(self, reserva, puntaje, comentario=''):
+    def calificar(self, reserva, puntaje, comentario='', puntaje_producto=None):
         self.client.force_login(reserva.consumidor)
-        return self.client.post(reverse('calificar_reserva', args=[reserva.pk]), {'puntaje': puntaje, 'comentario': comentario})
+        return self.client.post(reverse('calificar_reserva', args=[reserva.pk]), {
+            'puntaje': puntaje, 'puntaje_producto': puntaje_producto or puntaje, 'comentario': comentario, 'volver': 'panel',
+        })
 
     def test_consumidor_califica_despues_de_retirar(self):
         reserva = self.reserva_retirada()
@@ -533,7 +541,8 @@ class CalificacionesTests(FlujoLupTests.__bases__[0]):
         self.client.force_login(self.consumidor)
         r = self.client.post(reverse('api_calificar_reserva', args=[reserva.pk]), {'puntaje': 3, 'comentario': 'Bien'}, content_type='application/json')
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.json()['calificacion'], {'puntaje': 3, 'comentario': 'Bien'})
+        self.assertEqual(r.json()['calificacion']['puntaje'], 3)
+        self.assertEqual(r.json()['calificacion']['comentario'], 'Bien')
         datos = self.client.get(reverse('api_detalle_comercio', args=[self.tienda.pk])).json()
         self.assertEqual((datos['calificacion_promedio'], datos['calificaciones']), (3.0, 1))
         # Los campos que ya usaba la app siguen estando
@@ -713,3 +722,132 @@ class BusquedaCercanaTests(FlujoLupTests.__bases__[0]):
             r = self.client.get(reverse('buscar_direccion'), {'q': 'Belgrano 120, Alta Gracia'})
         self.assertEqual(r.json(), {'lat': -31.65, 'lng': -64.42})
         self.assertContains(self.client.get(reverse('home')), 'data-direccion-manual')
+
+
+# ==========================================================
+# Opiniones de comercio y producto + pedido de opinión
+# ==========================================================
+
+@override_settings(EMAIL_EN_SEGUNDO_PLANO=False, SITIO_URL='https://lup.test')
+class OpinionesTests(FlujoLupTests.__bases__[0]):
+    setUp = FlujoLupTests.setUp
+
+    def retirar(self, consumidor=None):
+        """Reserva + el comercio confirma el retiro (como en la vida real)."""
+        consumidor = consumidor or self.consumidor
+        reserva = Reserva.objects.create(consumidor=consumidor, producto=self.producto, cantidad=1, precio_total=1200)
+        reserva.marcar_retirada()
+        return reserva
+
+    def opinar(self, reserva, **datos):
+        self.client.force_login(reserva.consumidor)
+        return self.client.post(reverse('calificar_reserva', args=[reserva.pk]), datos)
+
+    def test_pagina_para_opinar_y_publicar(self):
+        from .models import Calificacion
+        reserva = self.retirar()
+        self.client.force_login(self.consumidor)
+        r = self.client.get(reverse('calificar_reserva', args=[reserva.pk]), {'estrellas': '4'})
+        self.assertContains(r, '¿Cómo te fue?')
+        self.assertContains(r, 'value="4" id="op-puntaje-4" required checked')
+        r = self.opinar(reserva, puntaje=4, puntaje_producto=5, comentario='  Medialunas   riquísimas ')
+        self.assertRedirects(r, reverse('detalle_producto', args=[self.producto.pk]))
+        c = Calificacion.objects.get()
+        self.assertEqual((c.puntaje, c.puntaje_producto, c.producto, c.comentario), (4, 5, self.producto, 'Medialunas riquísimas'))
+
+    def test_faltan_estrellas_del_producto(self):
+        from .models import Calificacion
+        r = self.opinar(self.retirar(), puntaje=4)
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Calificá el producto con 1 a 5 estrellas.')
+        self.assertFalse(Calificacion.objects.exists())
+
+    def test_no_se_opina_sin_haber_retirado(self):
+        pendiente = Reserva.objects.create(consumidor=self.consumidor, producto=self.producto, cantidad=1, precio_total=1)
+        self.client.force_login(self.consumidor)
+        self.assertEqual(self.client.get(reverse('calificar_reserva', args=[pendiente.pk])).status_code, 404)
+        self.client.force_login(self.comercio)  # un comercio no opina
+        self.assertNotEqual(self.client.get(reverse('calificar_reserva', args=[pendiente.pk])).status_code, 200)
+
+    def test_opiniones_del_producto_en_su_pagina(self):
+        self.opinar(self.retirar(), puntaje=5, puntaje_producto=4, comentario='Muy frescas')
+        r = self.client.get(reverse('detalle_producto', args=[self.producto.pk]))
+        self.assertContains(r, 'Opiniones del producto')
+        self.assertContains(r, 'Muy frescas')
+        self.assertContains(r, 'Compra verificada')
+        self.assertEqual(r.context['calificacion_producto']['promedio'], 4)
+
+    def test_el_comercio_responde_y_se_ve_en_publico(self):
+        from .models import Calificacion
+        self.opinar(self.retirar(), puntaje=3, puntaje_producto=3, comentario='Tardaron en atender')
+        c = Calificacion.objects.get()
+        self.client.force_login(self.comercio)
+        r = self.client.get(reverse('panel'))
+        self.assertContains(r, 'Tardaron en atender')
+        self.assertContains(r, '1 sin responder')
+        self.client.post(reverse('responder_opinion', args=[c.pk]), {'respuesta': '¡Gracias! Sumamos una persona más.'})
+        c.refresh_from_db()
+        self.assertIsNotNone(c.respondida_en)
+        r = self.client.get(reverse('detalle_tienda', args=[self.tienda.pk]))
+        self.assertContains(r, 'Respuesta de Panadería Sol')
+        self.assertContains(r, 'Sumamos una persona más.')
+        # Borrar la respuesta
+        self.client.post(reverse('responder_opinion', args=[c.pk]), {'respuesta': ''})
+        c.refresh_from_db()
+        self.assertEqual((c.respuesta, c.respondida_en), ('', None))
+
+    def test_otro_comercio_no_puede_responder(self):
+        from .models import Calificacion
+        self.opinar(self.retirar(), puntaje=3, puntaje_producto=3)
+        otro = Usuario.objects.create_user('otro', 'otro@lup.test', 'Clave#2026', rol=Usuario.COMERCIO)
+        self.client.force_login(otro)
+        r = self.client.post(reverse('responder_opinion', args=[Calificacion.objects.get().pk]), {'respuesta': 'x'})
+        self.assertEqual(r.status_code, 404)
+
+    def test_aviso_como_te_fue_en_la_web(self):
+        reserva = self.retirar()
+        self.client.force_login(self.consumidor)
+        r = self.client.get(reverse('catalogo'))
+        self.assertContains(r, f'data-pedir-opinion="{reserva.pk}"')
+        # En el panel no (ya tiene el formulario) y después de opinar desaparece
+        self.assertNotContains(self.client.get(reverse('panel')), 'data-pedir-opinion=')
+        self.opinar(reserva, puntaje=5, puntaje_producto=5)
+        self.assertNotContains(self.client.get(reverse('catalogo')), 'data-pedir-opinion=')
+
+    def test_el_aviso_no_aparece_para_retiros_viejos_ni_para_comercios(self):
+        from datetime import timedelta
+
+        from django.utils import timezone
+        reserva = self.retirar()
+        Reserva.objects.filter(pk=reserva.pk).update(retirada_en=timezone.now() - timedelta(days=40))
+        self.client.force_login(self.consumidor)
+        self.assertNotContains(self.client.get(reverse('catalogo')), 'data-pedir-opinion=')
+        self.client.force_login(self.comercio)
+        self.assertNotContains(self.client.get(reverse('catalogo')), 'data-pedir-opinion=')
+
+    def test_emails_pedir_opinion_y_nueva_opinion(self):
+        with self.captureOnCommitCallbacks(execute=True):
+            reserva = self.retirar()
+        self.assertEqual(mail.outbox[-1].to, ['c@lup.test'])
+        self.assertIn('Dejar mi opinión', mail.outbox[-1].alternatives[0][0])
+        with self.captureOnCommitCallbacks(execute=True):
+            self.opinar(reserva, puntaje=5, puntaje_producto=4, comentario='Excelente')
+        aviso = mail.outbox[-1]
+        self.assertEqual(aviso.to, ['p@lup.test'])
+        self.assertIn('Nueva opinión: 5★', aviso.subject)
+        self.assertIn('Excelente', aviso.body)
+
+    def test_api_confirmar_retiro_y_estrellas_al_producto(self):
+        reserva = Reserva.objects.create(consumidor=self.consumidor, producto=self.producto, cantidad=1, precio_total=1)
+        self.client.force_login(self.comercio)
+        r = self.client.post(reverse('api_confirmar_retiro'), {'codigo': reserva.codigo_retiro}, content_type='application/json')
+        self.assertEqual(r.status_code, 200)
+        reserva.refresh_from_db()
+        self.assertIsNotNone(reserva.retirada_en)
+        self.client.force_login(self.consumidor)
+        r = self.client.post(reverse('api_calificar_reserva', args=[reserva.pk]),
+                             {'puntaje': 4, 'puntaje_producto': 2}, content_type='application/json')
+        self.assertEqual(r.json()['calificacion']['puntaje_producto'], 2)
+        r = self.client.post(reverse('api_calificar_reserva', args=[reserva.pk]),
+                             {'puntaje': 4, 'puntaje_producto': 9}, content_type='application/json')
+        self.assertEqual(r.status_code, 400)

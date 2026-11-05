@@ -1,0 +1,13 @@
+{% load i18n %}{% comment %}
+Selector de 1 a 5 estrellas (radios). Uso:
+    {% include 'includes/_selector_estrellas.html' with nombre='puntaje' valor=form.puntaje.value prefijo='c12' titulo='Comercio' %}
+{% endcomment %}
+<fieldset class="campo-estrellas">
+    <legend class="campo-estrellas-titulo">{{ titulo }}</legend>
+    <div class="selector-estrellas">
+        {% for n in "54321" %}
+            <input type="radio" name="{{ nombre }}" value="{{ n }}" id="{{ prefijo }}-{{ nombre }}-{{ n }}" required {% if valor|stringformat:'s' == n %}checked{% endif %}>
+            <label for="{{ prefijo }}-{{ nombre }}-{{ n }}" title="{% blocktranslate count c=n|add:0 %}{{ c }} estrella{% plural %}{{ c }} estrellas{% endblocktranslate %}"><i class="bi bi-star-fill" aria-hidden="true"></i><span class="visually-hidden">{% blocktranslate count c=n|add:0 %}{{ c }} estrella{% plural %}{{ c }} estrellas{% endblocktranslate %}</span></label>
+        {% endfor %}
+    </div>
+</fieldset>

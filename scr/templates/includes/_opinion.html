@@ -1,0 +1,39 @@
+{% load i18n lup_tags %}{% comment %}
+Una opinión de un cliente (con la respuesta del comercio, si hay). Uso:
+    {% include 'includes/_opinion.html' with o=calificacion %}             → en la página del comercio
+    {% include 'includes/_opinion.html' with o=calificacion modo='producto' %} → en la página del producto
+    {% include 'includes/_opinion.html' with o=calificacion responder=True %}  → en el panel del comercio
+{% endcomment %}
+<li class="opinion flex-column align-items-stretch gap-1">
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+        {% include 'includes/_avatar.html' with usuario=o.consumidor tam='sm' %}
+        <strong class="small">{{ o.consumidor.first_name|default:o.consumidor.username }}</strong>
+        {% if modo == 'producto' %}{% include 'includes/_estrellas.html' with valor=o.puntaje_producto %}{% else %}{% include 'includes/_estrellas.html' with valor=o.puntaje %}{% endif %}
+        <span class="chip-verificada" title="{% translate 'Opinión de una persona que retiró su reserva' %}"><i class="bi bi-patch-check-fill"></i> {% translate "Compra verificada" %}</span>
+        <small class="text-muted-lup ms-auto">{{ o.creada_en|date:"d/m/Y" }}</small>
+    </div>
+    {% if o.comentario %}<p class="mb-0 small">{{ o.comentario }}</p>{% endif %}
+    {% if modo != 'producto' and o.producto %}
+        <small class="text-muted-lup">
+            {% blocktranslate with titulo=o.producto.titulo %}Retiró: {{ titulo }}{% endblocktranslate %}
+            {% if o.puntaje_producto %}· {% translate "Producto" %} {% include 'includes/_estrellas.html' with valor=o.puntaje_producto tam='sm' %}{% endif %}
+        </small>
+    {% endif %}
+    {% if o.respuesta %}
+        <div class="respuesta-comercio">
+            <strong class="small"><i class="bi bi-reply-fill"></i> {% blocktranslate with comercio=o.tienda.nombre_fantasia %}Respuesta de {{ comercio }}{% endblocktranslate %}</strong>
+            <p class="mb-0 small">{{ o.respuesta }}</p>
+        </div>
+    {% endif %}
+    {% if responder %}
+        <details class="mt-1" {% if not o.respuesta and o.comentario %}open{% endif %}>
+            <summary class="small text-lup">{% if o.respuesta %}{% translate "Editar respuesta" %}{% else %}{% translate "Responder" %}{% endif %}</summary>
+            <form method="post" action="{% url 'responder_opinion' o.pk %}" class="d-flex gap-2 mt-2">
+                {% csrf_token %}
+                <input type="hidden" name="volver" value="{% url 'panel' %}">
+                <input type="text" name="respuesta" class="form-control form-control-sm" maxlength="500" value="{{ o.respuesta }}" placeholder="{% translate 'Agradecé o contá qué vas a mejorar…' %}" aria-label="{% translate 'Respuesta pública' %}">
+                <button class="btn btn-lup btn-sm">{% translate "Publicar" %}</button>
+            </form>
+        </details>
+    {% endif %}
+</li>

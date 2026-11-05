@@ -1,0 +1,9 @@
+NUEVA OPINIÓN sobre {{ tienda.nombre_fantasia }}
+
+{{ cliente.first_name|default:cliente.username }} calificó tu comercio con {{ calificacion.puntaje }}/5{% if calificacion.puntaje_producto %} y {{ producto.titulo }} con {{ calificacion.puntaje_producto }}/5{% endif %}.
+{% if calificacion.comentario %}
+"{{ calificacion.comentario }}"
+{% endif %}
+Podés responderle públicamente desde tu panel: {{ url_panel }}
+
+— Lüp · Podés desactivar estos avisos desde "Mis datos".

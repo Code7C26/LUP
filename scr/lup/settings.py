@@ -83,6 +83,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'scr.bd_lup.products.context_processors.google_maps',
+                'scr.bd_lup.products.context_processors.opinion_pendiente',
             ],
         },
     },

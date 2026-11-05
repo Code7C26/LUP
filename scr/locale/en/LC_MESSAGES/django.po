@@ -31,7 +31,7 @@ msgid "Lüp, inicio"
 msgstr "Lüp, home"
 
 #: scr/templates/base.html:37
-#: scr/templates/base.html:148
+#: scr/templates/base.html:164
 msgid "Lüp"
 msgstr "Lüp"
 
@@ -44,7 +44,7 @@ msgid "Inicio"
 msgstr "Home"
 
 #: scr/templates/base.html:46
-#: scr/templates/base.html:157
+#: scr/templates/base.html:173
 #: scr/templates/products/catalogo.html:5
 msgid "Ofertas"
 msgstr "Offers"
@@ -56,7 +56,7 @@ msgid "Comercios"
 msgstr "Stores"
 
 #: scr/templates/base.html:48
-#: scr/templates/base.html:159
+#: scr/templates/base.html:175
 msgid "Cómo funciona"
 msgstr "How it works"
 
@@ -94,121 +94,151 @@ msgid "Cerrar sesión"
 msgstr "Log out"
 
 #: scr/templates/base.html:95
-#: scr/templates/products/detalle.html:99
+#: scr/templates/products/detalle.html:100
 #: scr/templates/users/login.html:5
 msgid "Iniciar sesión"
 msgstr "Log in"
 
 #: scr/templates/base.html:96
 #: scr/templates/home.html:100
-#: scr/templates/products/detalle.html:100
+#: scr/templates/products/detalle.html:101
 msgid "Crear cuenta"
 msgstr "Sign up"
 
 #: scr/templates/base.html:111
-#: scr/templates/base.html:140
+#: scr/templates/base.html:156
 msgid "Cerrar"
 msgstr "Close"
 
-#: scr/templates/base.html:126
-msgid "¿Te mostramos lo que está cerca tuyo?"
-msgstr "Want to see what's near you?"
-
 #: scr/templates/base.html:127
-msgid "Usamos tu ubicación solo para buscar comercios y ofertas cercanas. No la guardamos ni la compartimos."
-msgstr "We only use your location to find nearby stores and offers. We don't store it or share it."
+#: scr/templates/products/opinar.html:4
+#: scr/templates/products/opinar.html:14
+msgid "¿Cómo te fue?"
+msgstr "How did it go?"
+
+#: scr/templates/base.html:128
+#, python-format
+msgid "%(producto)s en %(comercio)s"
+msgstr "%(producto)s at %(comercio)s"
 
 #: scr/templates/base.html:129
-msgid "Usar mi ubicación"
-msgstr "Use my location"
+msgid "Calificar al comercio"
+msgstr "Rate the store"
 
 #: scr/templates/base.html:130
+#: scr/templates/includes/_selector_estrellas.html:10
+#: scr/templates/includes/_selector_estrellas.html:10
+#, python-format
+msgid "%(c)s estrella"
+msgid_plural "%(c)s estrellas"
+msgstr[0] "%(c)s star"
+msgstr[1] "%(c)s stars"
+
+#: scr/templates/base.html:132
+msgid "Dejar mi opinión"
+msgstr "Leave my review"
+
+#: scr/templates/base.html:134
+#: scr/templates/base.html:146
+#: scr/templates/products/opinar.html:44
 msgid "Ahora no"
 msgstr "Not now"
 
-#: scr/templates/base.html:134
+#: scr/templates/base.html:142
+msgid "¿Te mostramos lo que está cerca tuyo?"
+msgstr "Want to see what's near you?"
+
+#: scr/templates/base.html:143
+msgid "Usamos tu ubicación solo para buscar comercios y ofertas cercanas. No la guardamos ni la compartimos."
+msgstr "We only use your location to find nearby stores and offers. We don't store it or share it."
+
+#: scr/templates/base.html:145
+msgid "Usar mi ubicación"
+msgstr "Use my location"
+
+#: scr/templates/base.html:150
 msgid "O escribí tu dirección o barrio"
 msgstr "Or type your address or neighborhood"
 
-#: scr/templates/base.html:134
+#: scr/templates/base.html:150
 msgid "Tu dirección"
 msgstr "Your address"
 
-#: scr/templates/base.html:135
+#: scr/templates/base.html:151
 #: scr/templates/home.html:22
 #: scr/templates/products/catalogo.html:25
 msgid "Buscar"
 msgstr "Search"
 
-#: scr/templates/base.html:149
+#: scr/templates/base.html:165
 msgid "Una segunda oportunidad para cada alimento. Conectamos comercios, consumidores y organizaciones para reducir el desperdicio de comida."
 msgstr "A second chance for every food. We connect stores, consumers and organizations to reduce food waste."
 
-#: scr/templates/base.html:151
+#: scr/templates/base.html:167
 msgid "Lüp en Instagram"
 msgstr "Lüp on Instagram"
 
-#: scr/templates/base.html:151
+#: scr/templates/base.html:167
 msgid "@lupcomidas en Instagram"
 msgstr "@lupcomidas on Instagram"
 
-#: scr/templates/base.html:155
+#: scr/templates/base.html:171
 msgid "Explorar"
 msgstr "Explore"
 
-#: scr/templates/base.html:158
+#: scr/templates/base.html:174
 msgid "Donaciones"
 msgstr "Donations"
 
-#: scr/templates/base.html:163
+#: scr/templates/base.html:179
 msgid "Sumate"
 msgstr "Join us"
 
-#: scr/templates/base.html:165
+#: scr/templates/base.html:181
 msgid "Soy consumidor"
 msgstr "I'm a consumer"
 
-#: scr/templates/base.html:166
+#: scr/templates/base.html:182
 msgid "Tengo un comercio"
 msgstr "I have a store"
 
-#: scr/templates/base.html:167
+#: scr/templates/base.html:183
 msgid "Soy una organización"
 msgstr "I'm an organization"
 
-#: scr/templates/base.html:171
+#: scr/templates/base.html:187
 msgid "Impacto"
 msgstr "Impact"
 
-#: scr/templates/base.html:172
+#: scr/templates/base.html:188
 msgid "🌿 Ambiental"
 msgstr "🌿 Environmental"
 
-#: scr/templates/base.html:172
+#: scr/templates/base.html:188
 msgid "🤝 Social"
 msgstr "🤝 Social"
 
-#: scr/templates/base.html:172
+#: scr/templates/base.html:188
 msgid "💰 Económico"
 msgstr "💰 Economic"
 
-#: scr/templates/base.html:175
+#: scr/templates/base.html:191
 msgid "Soporte al usuario"
 msgstr "User support"
 
-#: scr/templates/base.html:176
+#: scr/templates/base.html:192
 msgid "¿Tenés alguna duda o problema? Escribinos o llamanos."
 msgstr "Got a question or a problem? Message or call us."
 
-#: scr/templates/base.html:178
+#: scr/templates/base.html:194
 msgid "WhatsApp"
 msgstr "WhatsApp"
 
-#: scr/templates/base.html:185
+#: scr/templates/base.html:201
 msgid "Más valor. Menos desperdicio."
 msgstr "More value. Less waste."
 
-#: scr/templates/base.html:186
+#: scr/templates/base.html:202
 msgid "Hecho con 💚 en Córdoba, Argentina"
 msgstr "Made with 💚 in Córdoba, Argentina"
 
@@ -255,7 +285,7 @@ msgstr "Being rescued right now"
 
 #: scr/templates/home.html:45
 #: scr/templates/includes/_producto_card.html:11
-#: scr/templates/panel/comercio.html:99
+#: scr/templates/panel/comercio.html:109
 msgid "Donable"
 msgstr "Donatable"
 
@@ -431,32 +461,31 @@ msgstr "Photo of %(nombre)s"
 msgid "%(v)s de 5 estrellas"
 msgstr "%(v)s out of 5 stars"
 
-#: scr/templates/includes/_form_calificacion.html:8
-#, python-format
-msgid "¿Cuántas estrellas le das a %(comercio)s?"
-msgstr "How many stars do you give %(comercio)s?"
+#: scr/templates/includes/_form_calificacion.html:9
+#: scr/templates/panel/consumidor.html:66
+#: scr/templates/users/perfil.html:35
+msgid "Comercio"
+msgstr "Store"
 
-#: scr/templates/includes/_form_calificacion.html:12
-#: scr/templates/includes/_form_calificacion.html:12
-#, python-format
-msgid "%(c)s estrella"
-msgid_plural "%(c)s estrellas"
-msgstr[0] "%(c)s star"
-msgstr[1] "%(c)s stars"
+#: scr/templates/includes/_form_calificacion.html:9
+#: scr/templates/includes/_opinion.html:19
+#: scr/templates/panel/consumidor.html:66
+msgid "Producto"
+msgstr "Product"
 
-#: scr/templates/includes/_form_calificacion.html:17
+#: scr/templates/includes/_form_calificacion.html:14
 msgid "Contá cómo te fue (opcional)"
 msgstr "Tell us how it went (optional)"
 
-#: scr/templates/includes/_form_calificacion.html:17
+#: scr/templates/includes/_form_calificacion.html:14
 msgid "Comentario"
 msgstr "Comment"
 
-#: scr/templates/includes/_form_calificacion.html:18
+#: scr/templates/includes/_form_calificacion.html:15
 msgid "Actualizar"
 msgstr "Update"
 
-#: scr/templates/includes/_form_calificacion.html:18
+#: scr/templates/includes/_form_calificacion.html:15
 msgid "Enviar"
 msgstr "Send"
 
@@ -492,6 +521,7 @@ msgid "Recién publicadas"
 msgstr "Just posted"
 
 #: scr/templates/includes/_home_ofertas.html:8
+#: scr/templates/panel/comercio.html:91
 #: scr/templates/products/_grilla.html:4
 msgid "Ver todas"
 msgstr "See all"
@@ -525,6 +555,44 @@ msgstr "Map of %(nombre)s on Google Maps"
 #: scr/templates/panel/consumidor.html:34
 msgid "Cómo llegar"
 msgstr "Get directions"
+
+#: scr/templates/includes/_opinion.html:12
+msgid "Opinión de una persona que retiró su reserva"
+msgstr "Review from someone who picked up their reservation"
+
+#: scr/templates/includes/_opinion.html:12
+msgid "Compra verificada"
+msgstr "Verified purchase"
+
+#: scr/templates/includes/_opinion.html:18
+#, python-format
+msgid "Retiró: %(titulo)s"
+msgstr "Picked up: %(titulo)s"
+
+#: scr/templates/includes/_opinion.html:24
+#, python-format
+msgid "Respuesta de %(comercio)s"
+msgstr "Reply from %(comercio)s"
+
+#: scr/templates/includes/_opinion.html:30
+msgid "Editar respuesta"
+msgstr "Edit reply"
+
+#: scr/templates/includes/_opinion.html:30
+msgid "Responder"
+msgstr "Reply"
+
+#: scr/templates/includes/_opinion.html:34
+msgid "Agradecé o contá qué vas a mejorar…"
+msgstr "Say thanks or tell them what you'll improve…"
+
+#: scr/templates/includes/_opinion.html:34
+msgid "Respuesta pública"
+msgstr "Public reply"
+
+#: scr/templates/includes/_opinion.html:35
+msgid "Publicar"
+msgstr "Publish"
 
 #: scr/templates/includes/_producto_card.html:12
 #: scr/templates/panel/estadisticas.html:53
@@ -640,76 +708,92 @@ msgstr "Reject"
 msgid "Aprobar"
 msgstr "Approve"
 
-#: scr/templates/panel/comercio.html:89
+#: scr/templates/panel/comercio.html:86
+#: scr/templates/stores/detalle_tienda.html:34
+msgid "Opiniones de clientes"
+msgstr "Customer reviews"
+
+#: scr/templates/panel/comercio.html:86
+#, python-format
+msgid "%(n)s sin responder"
+msgid_plural "%(n)s sin responder"
+msgstr[0] "%(n)s unanswered"
+msgstr[1] "%(n)s unanswered"
+
+#: scr/templates/panel/comercio.html:93
+msgid "Cuando tus clientes retiren y opinen, sus comentarios van a aparecer acá para que puedas responderlos."
+msgstr "When your customers pick up and leave a review, their comments will show up here so you can reply."
+
+#: scr/templates/panel/comercio.html:99
 msgid "Mis publicaciones"
 msgstr "My listings"
 
-#: scr/templates/panel/comercio.html:96
+#: scr/templates/panel/comercio.html:106
 msgid "Activa"
 msgstr "Active"
 
-#: scr/templates/panel/comercio.html:97
+#: scr/templates/panel/comercio.html:107
 msgid "Vencida"
 msgstr "Expired"
 
-#: scr/templates/panel/comercio.html:99
+#: scr/templates/panel/comercio.html:109
 #, python-format
 msgid "Hasta %(fecha)s"
 msgstr "Until %(fecha)s"
 
-#: scr/templates/panel/comercio.html:99
+#: scr/templates/panel/comercio.html:109
 #, python-format
 msgid "Stock %(n)s"
 msgstr "Stock %(n)s"
 
-#: scr/templates/panel/comercio.html:107
-#: scr/templates/products/detalle.html:91
+#: scr/templates/panel/comercio.html:117
+#: scr/templates/products/detalle.html:92
 msgid "Editar"
 msgstr "Edit"
 
-#: scr/templates/panel/comercio.html:107
+#: scr/templates/panel/comercio.html:117
 #, python-format
 msgid "Editar %(titulo)s"
 msgstr "Edit %(titulo)s"
 
-#: scr/templates/panel/comercio.html:110
+#: scr/templates/panel/comercio.html:120
 msgid "Cambiar estado"
 msgstr "Change status"
 
-#: scr/templates/panel/comercio.html:110
+#: scr/templates/panel/comercio.html:120
 #, python-format
 msgid "Cambiar estado de %(titulo)s"
 msgstr "Change status of %(titulo)s"
 
-#: scr/templates/panel/comercio.html:113
-#: scr/templates/panel/comercio.html:117
+#: scr/templates/panel/comercio.html:123
+#: scr/templates/panel/comercio.html:127
 msgid "Marcar como vendido"
 msgstr "Mark as sold"
 
-#: scr/templates/panel/comercio.html:114
+#: scr/templates/panel/comercio.html:124
 msgid "Marcar como no disponible"
 msgstr "Mark as unavailable"
 
-#: scr/templates/panel/comercio.html:116
+#: scr/templates/panel/comercio.html:126
 msgid "Volver a publicar"
 msgstr "Publish again"
 
-#: scr/templates/panel/comercio.html:120
-#: scr/templates/panel/comercio.html:124
-#: scr/templates/products/detalle.html:92
+#: scr/templates/panel/comercio.html:130
+#: scr/templates/panel/comercio.html:134
+#: scr/templates/products/detalle.html:93
 msgid "Eliminar"
 msgstr "Delete"
 
-#: scr/templates/panel/comercio.html:124
+#: scr/templates/panel/comercio.html:134
 #, python-format
 msgid "Eliminar %(titulo)s"
 msgstr "Delete %(titulo)s"
 
-#: scr/templates/panel/comercio.html:130
+#: scr/templates/panel/comercio.html:140
 msgid "Todavía no publicaste excedentes."
 msgstr "You haven't posted any surplus yet."
 
-#: scr/templates/panel/comercio.html:131
+#: scr/templates/panel/comercio.html:141
 msgid "Publicar mi primera oferta"
 msgstr "Post my first offer"
 
@@ -779,16 +863,6 @@ msgid "Historial"
 msgstr "History"
 
 #: scr/templates/panel/consumidor.html:66
-msgid "Producto"
-msgstr "Product"
-
-#: scr/templates/panel/consumidor.html:66
-#: scr/templates/users/perfil.html:35
-#: scr/bd_lup/users/models.py:22
-msgid "Comercio"
-msgstr "Store"
-
-#: scr/templates/panel/consumidor.html:66
 msgid "Fecha"
 msgstr "Date"
 
@@ -805,8 +879,13 @@ msgid "Tu opinión"
 msgstr "Your review"
 
 #: scr/templates/panel/consumidor.html:69
-msgid "Sin calificar"
-msgstr "Not rated"
+#: scr/templates/products/opinar.html:14
+msgid "Editar mi opinión"
+msgstr "Edit my review"
+
+#: scr/templates/panel/consumidor.html:69
+msgid "Opinar"
+msgstr "Review"
 
 #: scr/templates/panel/consumidor.html:78
 msgid "Te puede interesar"
@@ -818,7 +897,7 @@ msgstr "New offers coming soon."
 
 #: scr/templates/panel/estadisticas.html:10
 #: scr/templates/products/form_producto.html:9
-#: scr/templates/users/perfil.html:9
+#: scr/templates/products/opinar.html:8
 msgid "Volver a mi panel"
 msgstr "Back to my dashboard"
 
@@ -1121,100 +1200,126 @@ msgstr "Yes, delete"
 msgid "breadcrumb"
 msgstr "breadcrumb"
 
-#: scr/templates/products/detalle.html:33
+#: scr/templates/products/detalle.html:30
+#: scr/templates/products/detalle.html:116
+msgid "Opiniones del producto"
+msgstr "Product reviews"
+
+#: scr/templates/products/detalle.html:31
+msgid "Opiniones del comercio"
+msgstr "Store reviews"
+
+#: scr/templates/products/detalle.html:34
 #: scr/bd_lup/products/models.py:40
 msgid "No disponible"
 msgstr "Unavailable"
 
-#: scr/templates/products/detalle.html:44
+#: scr/templates/products/detalle.html:45
 msgid "Dónde:"
 msgstr "Where:"
 
-#: scr/templates/products/detalle.html:45
+#: scr/templates/products/detalle.html:46
 msgid "Horario:"
 msgstr "Hours:"
 
-#: scr/templates/products/detalle.html:46
+#: scr/templates/products/detalle.html:47
 msgid "Retirá hasta:"
 msgstr "Pick up by:"
 
-#: scr/templates/products/detalle.html:47
+#: scr/templates/products/detalle.html:48
 msgid "Disponibles:"
 msgstr "Available:"
 
-#: scr/templates/products/detalle.html:47
+#: scr/templates/products/detalle.html:48
 #, python-format
 msgid "%(n)s unidad"
 msgid_plural "%(n)s unidades"
 msgstr[0] "%(n)s unit"
 msgstr[1] "%(n)s units"
 
-#: scr/templates/products/detalle.html:53
-#: scr/bd_lup/products/views.py:140
+#: scr/templates/products/detalle.html:54
+#: scr/bd_lup/products/views.py:146
 msgid "Esta oferta ya no está disponible."
 msgstr "This offer is no longer available."
 
-#: scr/templates/products/detalle.html:53
+#: scr/templates/products/detalle.html:54
 msgid "Ver otras ofertas"
 msgstr "See other offers"
 
-#: scr/templates/products/detalle.html:60
+#: scr/templates/products/detalle.html:61
 msgid "Cantidad"
 msgstr "Quantity"
 
-#: scr/templates/products/detalle.html:62
+#: scr/templates/products/detalle.html:63
 msgid "Restar"
 msgstr "Decrease"
 
-#: scr/templates/products/detalle.html:64
+#: scr/templates/products/detalle.html:65
 msgid "Sumar"
 msgstr "Increase"
 
-#: scr/templates/products/detalle.html:68
+#: scr/templates/products/detalle.html:69
 msgid "Total a pagar en el local"
 msgstr "Total to pay at the store"
 
-#: scr/templates/products/detalle.html:72
+#: scr/templates/products/detalle.html:73
 msgid "Reservar ahora"
 msgstr "Reserve now"
 
-#: scr/templates/products/detalle.html:73
+#: scr/templates/products/detalle.html:74
 msgid "Recibirás un código para mostrar al retirar."
 msgstr "You'll get a code to show when you pick up."
 
-#: scr/templates/products/detalle.html:78
+#: scr/templates/products/detalle.html:79
 msgid "Ya enviaste una solicitud por esta donación. Podés seguirla desde"
 msgstr "You already sent a request for this donation. You can follow it from"
 
-#: scr/templates/products/detalle.html:78
+#: scr/templates/products/detalle.html:79
 msgid "tu panel"
 msgstr "your dashboard"
 
-#: scr/templates/products/detalle.html:82
+#: scr/templates/products/detalle.html:83
 msgid "Solicitar como donación"
 msgstr "Request as a donation"
 
-#: scr/templates/products/detalle.html:84
+#: scr/templates/products/detalle.html:85
 msgid "Enviar solicitud al comercio"
 msgstr "Send request to the store"
 
-#: scr/templates/products/detalle.html:90
+#: scr/templates/products/detalle.html:91
 msgid "Esta es tu publicación"
 msgstr "This is your listing"
 
-#: scr/templates/products/detalle.html:97
+#: scr/templates/products/detalle.html:98
 msgid "Iniciá sesión como consumidor para reservar esta oferta."
 msgstr "Log in as a consumer to reserve this offer."
 
-#: scr/templates/products/detalle.html:106
+#: scr/templates/products/detalle.html:107
 msgid "Esta oferta no está marcada para donación."
 msgstr "This offer is not marked for donation."
 
-#: scr/templates/products/detalle.html:106
+#: scr/templates/products/detalle.html:107
 msgid "Las reservas están disponibles para cuentas de consumidor."
 msgstr "Reservations are available for consumer accounts."
 
-#: scr/templates/products/detalle.html:114
+#: scr/templates/products/detalle.html:121
+#: scr/templates/stores/detalle_tienda.html:16
+#, python-format
+msgid "%(n)s opinión"
+msgid_plural "%(n)s opiniones"
+msgstr[0] "%(n)s review"
+msgstr[1] "%(n)s reviews"
+
+#: scr/templates/products/detalle.html:129
+#, python-format
+msgid "Ver todas las opiniones de %(comercio)s"
+msgstr "See all reviews of %(comercio)s"
+
+#: scr/templates/products/detalle.html:131
+msgid "Todavía no tiene opiniones. Las dejan las personas que reservan y retiran este producto."
+msgstr "No reviews yet. They're left by people who reserve and pick up this product."
+
+#: scr/templates/products/detalle.html:137
 #, python-format
 msgid "Más de %(comercio)s"
 msgstr "More from %(comercio)s"
@@ -1257,6 +1362,7 @@ msgid "Las organizaciones sociales podrán solicitarla sin costo."
 msgstr "Social organizations will be able to request it for free."
 
 #: scr/templates/products/form_producto.html:52
+#: scr/templates/products/opinar.html:45
 #: scr/templates/users/perfil.html:80
 msgid "Guardar cambios"
 msgstr "Save changes"
@@ -1282,12 +1388,41 @@ msgstr "Tip:"
 msgid "las ofertas con foto y un descuento de al menos 50%% se reservan mucho más rápido."
 msgstr "offers with a photo and a discount of at least 50%% get reserved much faster."
 
-#: scr/templates/stores/detalle_tienda.html:16
+#: scr/templates/products/opinar.html:17
 #, python-format
-msgid "%(n)s opinión"
-msgid_plural "%(n)s opiniones"
-msgstr[0] "%(n)s review"
-msgstr[1] "%(n)s reviews"
+msgid "en %(comercio)s"
+msgstr "at %(comercio)s"
+
+#: scr/templates/products/opinar.html:18
+#, python-format
+msgid "retirado el %(fecha)s"
+msgstr "picked up on %(fecha)s"
+
+#: scr/templates/products/opinar.html:28
+#, python-format
+msgid "¿Qué tal la atención y el retiro en %(comercio)s?"
+msgstr "How were the service and pickup at %(comercio)s?"
+
+#: scr/templates/products/opinar.html:34
+#, python-format
+msgid "¿Y el producto, %(producto)s?"
+msgstr "And the product, %(producto)s?"
+
+#: scr/templates/products/opinar.html:39
+msgid "Contá tu experiencia (opcional)"
+msgstr "Tell us about your experience (optional)"
+
+#: scr/templates/products/opinar.html:40
+msgid "¿Qué te gustó? ¿Qué se podría mejorar?"
+msgstr "What did you like? What could be better?"
+
+#: scr/templates/products/opinar.html:41
+msgid "Tu nombre y tu opinión se van a ver en la página del comercio. El comercio puede responderte."
+msgstr "Your name and review will be shown on the store's page. The store can reply to you."
+
+#: scr/templates/products/opinar.html:45
+msgid "Publicar opinión"
+msgstr "Publish review"
 
 #: scr/templates/stores/detalle_tienda.html:23
 #, python-format
@@ -1297,10 +1432,6 @@ msgstr "Available offers (%(n)s)"
 #: scr/templates/stores/detalle_tienda.html:28
 msgid "Este comercio no tiene ofertas activas ahora. ¡Volvé más tarde!"
 msgstr "This store has no active offers right now. Check back later!"
-
-#: scr/templates/stores/detalle_tienda.html:34
-msgid "Opiniones de clientes"
-msgstr "Customer reviews"
 
 #: scr/templates/stores/detalle_tienda.html:40
 msgid "de 5"
@@ -1318,20 +1449,15 @@ msgstr[1] "%(n)s reviews from people who picked up"
 msgid "%(n)s opiniones de %(p)s estrellas"
 msgstr "%(n)s reviews of %(p)s stars"
 
-#: scr/templates/stores/detalle_tienda.html:64
-#, python-format
-msgid "Retiró: %(titulo)s"
-msgstr "Picked up: %(titulo)s"
-
-#: scr/templates/stores/detalle_tienda.html:70
+#: scr/templates/stores/detalle_tienda.html:61
 msgid "← Más nuevas"
 msgstr "← Newer"
 
-#: scr/templates/stores/detalle_tienda.html:71
+#: scr/templates/stores/detalle_tienda.html:62
 msgid "Más viejas →"
 msgstr "Older →"
 
-#: scr/templates/stores/detalle_tienda.html:77
+#: scr/templates/stores/detalle_tienda.html:68
 msgid "Todavía no tiene opiniones. Las pueden dejar quienes retiran una reserva en este comercio."
 msgstr "No reviews yet. People who pick up a reservation at this store can leave one."
 
@@ -1646,9 +1772,13 @@ msgstr "Tell the store how many people it would help and when you can pick it up
 msgid "Mensaje para el comercio"
 msgstr "Message for the store"
 
-#: scr/bd_lup/products/forms.py:96
-msgid "Elegí de 1 a 5 estrellas."
-msgstr "Choose from 1 to 5 stars."
+#: scr/bd_lup/products/forms.py:101
+msgid "Calificá al comercio con 1 a 5 estrellas."
+msgstr "Rate the store from 1 to 5 stars."
+
+#: scr/bd_lup/products/forms.py:105
+msgid "Calificá el producto con 1 a 5 estrellas."
+msgstr "Rate the product from 1 to 5 stars."
 
 #: scr/bd_lup/products/models.py:38
 msgid "Disponible"
@@ -1739,177 +1869,205 @@ msgstr "Picked up"
 msgid "Cancelada"
 msgstr "Cancelled"
 
-#: scr/bd_lup/products/models.py:159
+#: scr/bd_lup/products/models.py:144
+msgid "retirada el"
+msgstr "picked up on"
+
+#: scr/bd_lup/products/models.py:167
 msgid "Pendiente"
 msgstr "Pending"
 
-#: scr/bd_lup/products/models.py:160
+#: scr/bd_lup/products/models.py:168
 msgid "Aprobada"
 msgstr "Approved"
 
-#: scr/bd_lup/products/models.py:161
+#: scr/bd_lup/products/models.py:169
 msgid "Rechazada"
 msgstr "Rejected"
 
-#: scr/bd_lup/products/models.py:176
+#: scr/bd_lup/products/models.py:184
 msgid "solicitud de donación"
 msgstr "donation request"
 
-#: scr/bd_lup/products/models.py:177
+#: scr/bd_lup/products/models.py:185
 msgid "solicitudes de donación"
 msgstr "donation requests"
 
-#: scr/bd_lup/products/models.py:198
+#: scr/bd_lup/products/models.py:208
+msgid "estrellas al comercio"
+msgstr "store stars"
+
+#: scr/bd_lup/products/models.py:211
+msgid "estrellas al producto"
+msgstr "product stars"
+
+#: scr/bd_lup/products/models.py:214
+msgid "comentario"
+msgstr "comment"
+
+#: scr/bd_lup/products/models.py:215
+msgid "respuesta del comercio"
+msgstr "store reply"
+
+#: scr/bd_lup/products/models.py:222
 msgid "calificación"
 msgstr "rating"
 
-#: scr/bd_lup/products/models.py:199
+#: scr/bd_lup/products/models.py:223
 msgid "calificaciones"
 msgstr "ratings"
 
-#: scr/bd_lup/products/views.py:31
+#: scr/bd_lup/products/views.py:33
 msgid "Esta sección es exclusiva para comercios."
 msgstr "This section is only for stores."
 
-#: scr/bd_lup/products/views.py:32
+#: scr/bd_lup/products/views.py:34
 msgid "Solo los consumidores pueden reservar ofertas."
 msgstr "Only consumers can reserve offers."
 
-#: scr/bd_lup/products/views.py:34
+#: scr/bd_lup/products/views.py:36
 msgid "Solo las organizaciones registradas pueden solicitar donaciones."
 msgstr "Only registered organizations can request donations."
 
-#: scr/bd_lup/products/views.py:156
+#: scr/bd_lup/products/views.py:162
 #, python-format
 msgid "¡Reserva confirmada! Mostrá el código %(codigo)s en %(comercio)s para retirarla."
 msgstr "Reservation confirmed! Show the code %(codigo)s at %(comercio)s to pick it up."
 
-#: scr/bd_lup/products/views.py:176
+#: scr/bd_lup/products/views.py:182
 msgid "Reserva cancelada. Las unidades volvieron a estar disponibles."
 msgstr "Reservation cancelled. The units are available again."
 
-#: scr/bd_lup/products/views.py:196
+#: scr/bd_lup/products/views.py:211
 #, python-format
 msgid "¡Gracias! Tu opinión sobre %(comercio)s ya está publicada."
 msgstr "Thank you! Your review of %(comercio)s is now published."
 
-#: scr/bd_lup/products/views.py:198
-msgid "Elegí de 1 a 5 estrellas para calificar."
-msgstr "Choose from 1 to 5 stars to rate."
+#: scr/bd_lup/products/views.py:236
+msgid "Tu respuesta quedó publicada."
+msgstr "Your reply was published."
 
-#: scr/bd_lup/products/views.py:211
+#: scr/bd_lup/products/views.py:236
+msgid "Borraste tu respuesta."
+msgstr "You deleted your reply."
+
+#: scr/bd_lup/products/views.py:238
+msgid "La respuesta puede tener hasta 500 caracteres."
+msgstr "The reply can be up to 500 characters long."
+
+#: scr/bd_lup/products/views.py:252
 msgid "Esta donación ya no está disponible."
 msgstr "This donation is no longer available."
 
-#: scr/bd_lup/products/views.py:214
+#: scr/bd_lup/products/views.py:255
 msgid "Ya enviaste una solicitud por este producto."
 msgstr "You already sent a request for this product."
 
-#: scr/bd_lup/products/views.py:223
+#: scr/bd_lup/products/views.py:264
 #, python-format
 msgid "Tu solicitud por \"%(titulo)s\" fue enviada a %(comercio)s."
 msgstr "Your request for \"%(titulo)s\" was sent to %(comercio)s."
 
-#: scr/bd_lup/products/views.py:225
+#: scr/bd_lup/products/views.py:266
 msgid "Escribí un mensaje para el comercio."
 msgstr "Write a message for the store."
 
-#: scr/bd_lup/products/views.py:237
+#: scr/bd_lup/products/views.py:278
 msgid "Completá los datos de tu comercio antes de publicar."
 msgstr "Complete your store details before posting."
 
-#: scr/bd_lup/products/views.py:245
+#: scr/bd_lup/products/views.py:286
 msgid "¡Excedente publicado! Ya aparece en el catálogo."
 msgstr "Surplus posted! It now appears in the catalog."
 
-#: scr/bd_lup/products/views.py:259
+#: scr/bd_lup/products/views.py:300
 msgid "Publicación actualizada."
 msgstr "Listing updated."
 
-#: scr/bd_lup/products/views.py:269
+#: scr/bd_lup/products/views.py:310
 msgid "Publicación eliminada."
 msgstr "Listing deleted."
 
-#: scr/bd_lup/products/views.py:275
+#: scr/bd_lup/products/views.py:316
 #, python-format
 msgid "\"%(titulo)s\" quedó marcado como vendido y ya no aparece en el catálogo."
 msgstr "\"%(titulo)s\" was marked as sold and no longer appears in the catalog."
 
-#: scr/bd_lup/products/views.py:276
+#: scr/bd_lup/products/views.py:317
 #, python-format
 msgid "\"%(titulo)s\" quedó como no disponible. Podés volver a publicarlo cuando quieras."
 msgstr "\"%(titulo)s\" is now unavailable. You can publish it again whenever you want."
 
-#: scr/bd_lup/products/views.py:277
+#: scr/bd_lup/products/views.py:318
 #, python-format
 msgid "\"%(titulo)s\" volvió a estar publicado en el catálogo."
 msgstr "\"%(titulo)s\" is back in the catalog."
 
-#: scr/bd_lup/products/views.py:288
+#: scr/bd_lup/products/views.py:329
 msgid "No se puede cambiar el estado de esta publicación."
 msgstr "The status of this listing can't be changed."
 
-#: scr/bd_lup/products/views.py:290
+#: scr/bd_lup/products/views.py:331
 msgid "No le queda stock. Editá la publicación para cargar unidades y volver a publicarla."
 msgstr "It's out of stock. Edit the listing to add units and publish it again."
 
-#: scr/bd_lup/products/views.py:293
+#: scr/bd_lup/products/views.py:334
 msgid "La fecha límite de retiro ya pasó. Actualizala para volver a publicarla."
 msgstr "The pickup deadline has passed. Update it to publish the listing again."
 
-#: scr/bd_lup/products/views.py:310
+#: scr/bd_lup/products/views.py:351
 #, python-format
 msgid "No encontramos una reserva con el código \"%(codigo)s\"."
 msgstr "We couldn't find a reservation with the code \"%(codigo)s\"."
 
-#: scr/bd_lup/products/views.py:312
+#: scr/bd_lup/products/views.py:353
 #, python-format
 msgid "La reserva %(codigo)s ya está %(estado)s."
 msgstr "Reservation %(codigo)s is already %(estado)s."
 
-#: scr/bd_lup/products/views.py:317
+#: scr/bd_lup/products/views.py:357
 #, python-format
 msgid "Retiro confirmado: %(cantidad)s × %(producto)s para %(cliente)s."
 msgstr "Pickup confirmed: %(cantidad)s × %(producto)s for %(cliente)s."
 
-#: scr/bd_lup/products/views.py:338
+#: scr/bd_lup/products/views.py:378
 msgid "Este producto ya no está disponible para donar (sin stock, vencido o ya donado)."
 msgstr "This product is no longer available to donate (out of stock, expired or already donated)."
 
-#: scr/bd_lup/products/views.py:347
+#: scr/bd_lup/products/views.py:387
 #, python-format
 msgid "Donación aprobada para %(org)s. ¡Gracias!"
 msgstr "Donation approved for %(org)s. Thank you!"
 
-#: scr/bd_lup/products/views.py:351
+#: scr/bd_lup/products/views.py:391
 msgid "Solicitud rechazada."
 msgstr "Request rejected."
 
-#: scr/bd_lup/products/views.py:430
+#: scr/bd_lup/products/views.py:478
 msgid "Completá los datos de tu comercio para ver tus estadísticas."
 msgstr "Complete your store details to see your statistics."
 
-#: scr/bd_lup/products/views.py:484
+#: scr/bd_lup/products/views.py:532
 msgid "7 días"
 msgstr "7 days"
 
-#: scr/bd_lup/products/views.py:484
+#: scr/bd_lup/products/views.py:532
 msgid "30 días"
 msgstr "30 days"
 
-#: scr/bd_lup/products/views.py:484
+#: scr/bd_lup/products/views.py:532
 msgid "90 días"
 msgstr "90 days"
 
-#: scr/bd_lup/products/views.py:521
+#: scr/bd_lup/products/views.py:569
 msgid "Ubicación inválida."
 msgstr "Invalid location."
 
-#: scr/bd_lup/products/views.py:547
+#: scr/bd_lup/products/views.py:595
 msgid "Escribí una dirección."
 msgstr "Type an address."
 
-#: scr/bd_lup/products/views.py:550
+#: scr/bd_lup/products/views.py:598
 msgid "No encontramos esa dirección. Probá agregando la ciudad."
 msgstr "We couldn't find that address. Try adding the city."
 

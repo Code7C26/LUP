@@ -6,7 +6,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from . import notificaciones
-from .models import Reserva, SolicitudDonacion
+from .models import Calificacion, Reserva, SolicitudDonacion
 
 
 @receiver(post_save, sender=Reserva)
@@ -15,9 +15,18 @@ def aviso_reserva(sender, instance, created, update_fields=None, **kwargs):
         notificaciones.avisar_nueva_reserva(instance)
     elif instance.estado == Reserva.CANCELADA and update_fields and 'estado' in update_fields:
         notificaciones.avisar_reserva_cancelada(instance)
+    elif instance.estado == Reserva.RETIRADA and update_fields and 'retirada_en' in update_fields:
+        # El comercio confirmó el retiro: le preguntamos al cliente cómo le fue
+        notificaciones.pedir_opinion(instance)
 
 
 @receiver(post_save, sender=SolicitudDonacion)
 def aviso_solicitud(sender, instance, created, **kwargs):
     if created:
         notificaciones.avisar_solicitud_donacion(instance)
+
+
+@receiver(post_save, sender=Calificacion)
+def aviso_opinion(sender, instance, created, **kwargs):
+    if created:
+        notificaciones.avisar_nueva_opinion(instance)

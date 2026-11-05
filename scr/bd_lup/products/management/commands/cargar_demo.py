@@ -146,9 +146,15 @@ class Command(BaseCommand):
                 Reserva.objects.filter(pk=reserva.pk).update(
                     creada_en=timezone.make_aware(datetime.combine(fecha, time(19, 15)))
                 )
+                if reserva.estado == Reserva.RETIRADA:
+                    Reserva.objects.filter(pk=reserva.pk).update(
+                        retirada_en=timezone.make_aware(datetime.combine(fecha, time(20, 0)))
+                    )
                 if reserva.estado == Reserva.RETIRADA and k % 4 != 3:
                     puntaje, comentario = opiniones[(k + n) % len(opiniones)]
-                    Calificacion.objects.create(
-                        reserva=reserva, tienda=tienda, consumidor=cliente, puntaje=puntaje, comentario=comentario,
-                    )
+                    # bulk_create: no manda avisos por email (son opiniones de ejemplo)
+                    Calificacion.objects.bulk_create([Calificacion(
+                        reserva=reserva, tienda=tienda, producto=producto, consumidor=cliente,
+                        puntaje=puntaje, puntaje_producto=max(puntaje - (k % 2), 1), comentario=comentario,
+                    )])
             n += 1

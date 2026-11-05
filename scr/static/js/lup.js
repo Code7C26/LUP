@@ -641,6 +641,28 @@
         });
     }
 
+    /* ---------- "¿Cómo te fue?" después de retirar una reserva ---------- */
+    const avisoOpinion = $('[data-pedir-opinion]');
+    if (avisoOpinion) {
+        const clave = 'lup-opinion-omitida-' + avisoOpinion.dataset.pedirOpinion;
+        let omitida = false;
+        try { omitida = !!localStorage.getItem(clave); } catch (e) { /* sin storage */ }
+        const avisoUbicacion = $('[data-pedir-ubicacion]');
+        const mostrar = () => {
+            // En el celular no se pisan los dos avisos: primero el de ubicación
+            if (avisoUbicacion && !avisoUbicacion.hidden && window.innerWidth < 768) {
+                setTimeout(mostrar, 1500);
+                return;
+            }
+            avisoOpinion.hidden = false;
+        };
+        if (!omitida) setTimeout(mostrar, 1400);
+        $('[data-cerrar-opinion]', avisoOpinion).addEventListener('click', () => {
+            avisoOpinion.hidden = true;
+            try { localStorage.setItem(clave, '1'); } catch (e) { /* sin storage */ }
+        });
+    }
+
     /* ---------- Confirmaciones ---------- */
     document.addEventListener('submit', (ev) => {
         const msg = ev.target.dataset && ev.target.dataset.confirmar;

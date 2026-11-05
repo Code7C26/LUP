@@ -88,3 +88,30 @@ def avisar_solicitud_donacion(solicitud):
         {'solicitud': solicitud, 'tienda': tienda, 'producto': solicitud.producto, 'organizacion': solicitud.organizacion},
         _destinatario(tienda),
     )
+
+
+def pedir_opinion(reserva):
+    """Email al consumidor cuando el comercio confirma el retiro: "¿Cómo te fue?"."""
+    cliente = reserva.consumidor
+    if not cliente.email:
+        return
+    _programar(
+        f'¿Cómo te fue con {reserva.producto.titulo}?',
+        'pedir_opinion',
+        {'reserva': reserva, 'tienda': reserva.producto.comercio, 'producto': reserva.producto, 'cliente': cliente,
+         'url_opinar': settings.SITIO_URL + reverse('calificar_reserva', args=[reserva.pk])},
+        cliente.email,
+    )
+
+
+def avisar_nueva_opinion(calificacion):
+    """Email al comercio cuando recibe una opinión nueva."""
+    tienda = calificacion.tienda
+    _programar(
+        f'Nueva opinión: {calificacion.puntaje}★ de {calificacion.consumidor.first_name or calificacion.consumidor.username}',
+        'nueva_opinion',
+        {'calificacion': calificacion, 'tienda': tienda, 'producto': calificacion.reserva.producto,
+         'cliente': calificacion.consumidor,
+         'estrellas': range(calificacion.puntaje), 'vacias': range(5 - calificacion.puntaje)},
+        _destinatario(tienda),
+    )
