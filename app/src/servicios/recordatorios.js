@@ -93,6 +93,17 @@ export async function cancelarRecordatorio(reservaId) {
   }
 }
 
+// Al cerrar sesión: se cancelan todos los avisos de retiro (las reservas eran de esa cuenta)
+export async function cancelarTodosLosRecordatorios() {
+  try {
+    const mapa = await leer();
+    await Promise.all(Object.values(mapa).map((id) => Notifications.cancelScheduledNotificationAsync(id).catch(() => {})));
+    await SecureStore.deleteItemAsync(CLAVE);
+  } catch {
+    // nada
+  }
+}
+
 // "a las 17:30" para mostrar en pantalla
 export function textoHora(fechaHora) {
   return `${String(fechaHora.getHours()).padStart(2, '0')}:${String(fechaHora.getMinutes()).padStart(2, '0')}`;

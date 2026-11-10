@@ -32,6 +32,13 @@ function alternar(id) {
   SecureStore.setItemAsync(CLAVE, JSON.stringify(favoritos)).catch(() => {});
 }
 
+// Al cerrar sesión (contexto/Sesion.js)
+export function borrarFavoritos() {
+  favoritos = [];
+  avisar();
+  SecureStore.deleteItemAsync(CLAVE).catch(() => {});
+}
+
 function suscribirse(oyente) {
   oyentes.add(oyente);
   return () => oyentes.delete(oyente);

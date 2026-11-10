@@ -641,6 +641,93 @@
         });
     }
 
+    /* ---------- Búsquedas recientes (las últimas 6, guardadas en este navegador) ---------- */
+    // Al hacer foco en un buscador vacío (inicio, ofertas, comercios) aparecen debajo; al tocar una, se busca.
+    const CLAVE_BUSQUEDAS = 'lup-busquedas';
+    const leerBusquedas = () => {
+        try {
+            const lista = JSON.parse(localStorage.getItem(CLAVE_BUSQUEDAS) || '[]');
+            return Array.isArray(lista) ? lista : [];
+        } catch (e) { return []; }
+    };
+    const guardarBusquedas = (lista) => { try { localStorage.setItem(CLAVE_BUSQUEDAS, JSON.stringify(lista)); } catch (e) { /* sin storage */ } };
+    const recordarBusqueda = (texto) => {
+        const limpio = (texto || '').trim();
+        if (limpio.length < 3) return;
+        const sinRepetir = leerBusquedas().filter((r) => r.toLowerCase() !== limpio.toLowerCase());
+        guardarBusquedas([limpio, ...sinRepetir].slice(0, 6));
+    };
+
+    const buscadores = $$('input[type="search"][name="q"]');
+    // Lo que se buscó para llegar a esta página (por ejemplo, desde el buscador del inicio)
+    if (buscadores.length) recordarBusqueda(new URLSearchParams(location.search).get('q'));
+
+    buscadores.forEach((input) => {
+        const form = input.form;
+        const contenedor = input.closest('.buscador, .hero-busqueda');
+        if (!form || !contenedor) return;
+        const caja = document.createElement('div');
+        caja.className = 'busquedas-recientes';
+        caja.hidden = true;
+        contenedor.appendChild(caja);
+
+        const pintar = () => {
+            const lista = leerBusquedas();
+            if (input.value.trim() || !lista.length) { caja.hidden = true; return; }
+            caja.innerHTML = '';
+            const titulo = document.createElement('div');
+            titulo.className = 'busquedas-recientes-titulo';
+            titulo.innerHTML = '<span><i class="bi bi-clock-history"></i> ' + T('Búsquedas recientes') + '</span>'
+                + '<button type="button" data-borrar-busquedas>' + T('Borrar') + '</button>';
+            const chips = document.createElement('div');
+            chips.className = 'busquedas-recientes-lista';
+            lista.forEach((texto) => {
+                const chip = document.createElement('span');
+                chip.className = 'chip-reciente';
+                const buscar = document.createElement('button');
+                buscar.type = 'button';
+                buscar.dataset.buscar = texto;
+                buscar.textContent = texto; // textContent: lo que escribió la persona nunca se interpreta como HTML
+                const quitar = document.createElement('button');
+                quitar.type = 'button';
+                quitar.dataset.quitar = texto;
+                quitar.setAttribute('aria-label', T('Quitar %s').replace('%s', texto));
+                quitar.innerHTML = '<i class="bi bi-x"></i>';
+                chip.append(buscar, quitar);
+                chips.appendChild(chip);
+            });
+            caja.append(titulo, chips);
+            caja.hidden = false;
+        };
+
+        input.addEventListener('focus', pintar);
+        input.addEventListener('input', pintar);
+        input.addEventListener('blur', () => { caja.hidden = true; });
+        input.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') caja.hidden = true; });
+        // "change" salta al terminar de escribir (Enter o al salir del buscador): así no se guarda cada letra
+        input.addEventListener('change', () => recordarBusqueda(input.value));
+        form.addEventListener('submit', () => recordarBusqueda(input.value));
+
+        caja.addEventListener('mousedown', (ev) => ev.preventDefault()); // que el buscador no pierda el foco
+        caja.addEventListener('click', (ev) => {
+            const boton = ev.target.closest('button');
+            if (!boton) return;
+            if (boton.hasAttribute('data-borrar-busquedas')) {
+                guardarBusquedas([]);
+            } else if (boton.dataset.quitar !== undefined) {
+                guardarBusquedas(leerBusquedas().filter((r) => r !== boton.dataset.quitar));
+            } else if (boton.dataset.buscar !== undefined) {
+                input.value = boton.dataset.buscar;
+                caja.hidden = true;
+                recordarBusqueda(input.value);
+                // El catálogo filtra en vivo (escucha "submit"); los demás buscadores van a otra página
+                if (form.requestSubmit) form.requestSubmit(); else form.submit();
+                return;
+            }
+            pintar();
+        });
+    });
+
     /* ---------- "¿Cómo te fue?" después de retirar una reserva ---------- */
     const avisoOpinion = $('[data-pedir-opinion]');
     if (avisoOpinion) {

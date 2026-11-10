@@ -1,113 +1,204 @@
-// Bienvenida, IGUAL AL MOCKUP (páginas 4, 6 y 10 del PDF):
-// el logo arriba y una tarjeta verde claro con el rol en el centro de arriba,
-// "Omitir" a la derecha y los puntitos abajo. Se pasa deslizando.
-// Sale la primera vez que se entra con cada rol. Desde Perfil se puede volver a ver ("VerBienvenida").
-import { useRef, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+// Bienvenida: sale apenas se entra (al iniciar sesión, crear la cuenta o tocar "Omitir") y desde Perfil
+// con "Ver la bienvenida" ("VerBienvenida"). Pantalla completa en el verde de la marca, simple:
+// 3 pantallas por rol con un ícono, un título y una frase corta, que se pasan deslizando o con "Siguiente".
+// Al invitado, la última pantalla lo invita a crear su cuenta gratis.
+import { useEffect, useRef, useState } from 'react';
+import { AccessibilityInfo, Animated, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import Boton from '../componentes/Boton';
 import Icono from '../componentes/Icono';
-import Logo from '../componentes/Logo';
-import { useBienvenida } from '../contexto/Bienvenida';
+import { claveBienvenida, useBienvenida } from '../contexto/Bienvenida';
 import { useSesion } from '../contexto/Sesion';
-import { espacio, fuentes, tamanos, useTema } from '../tema';
+import { espacio, fuentes } from '../tema';
 
-const ROLES = {
-  consumidor: { titulo: 'Consumidor', icono: 'cart-outline' },
-  organizacion: { titulo: 'Fundación', icono: 'heart-outline' },
-  comercio: { titulo: 'Comercio', icono: 'storefront-outline' },
-};
+// Colores de la marca (iguales en modo claro y oscuro, como la intro de la Portada)
+const VERDE_OSCURO = '#073425';
+const VERDE_MEDIO = '#0F4A35';
+const VERDE_HOJA = '#71A24D';
+const VERDE_CLARO = '#B6D1A1';
+const TEXTO_SUAVE = '#D5E6C8';
 
-// Una idea por pantalla: ícono, título corto y una frase
+// Una idea por pantalla: ícono, título y una frase corta
 const PANTALLAS = {
   consumidor: [
-    { icono: 'location-outline', titulo: 'Ofertas cerca tuyo', texto: 'Comida rica de los comercios de tu barrio, con descuento.' },
-    { icono: 'bag-check-outline', titulo: 'Reservá en un toque', texto: 'Pagás cuando retirás, mostrando tu código.' },
-    { icono: 'leaf-outline', titulo: 'Rescatá comida', texto: 'Cada reserva es comida que no termina en la basura.' },
+    { icono: 'location-outline', titulo: 'Ofertas cerca tuyo', texto: 'Comida rica de tu barrio, con descuento.' },
+    { icono: 'bag-check-outline', titulo: 'Reservá y retirá', texto: 'Pagás en el local con tu código.' },
+    { icono: 'leaf-outline', titulo: 'Salvá comida', texto: 'Cada reserva es comida que no se tira.' },
   ],
   organizacion: [
-    { icono: 'heart-outline', titulo: 'Donaciones cerca', texto: 'Los comercios publican alimentos para donar.' },
-    { icono: 'paper-plane-outline', titulo: 'Pedí lo que necesitás', texto: 'Contale al comercio para quién es.' },
-    { icono: 'checkmark-done-outline', titulo: 'Seguí tus pedidos', texto: 'Mirá cuáles aceptaron y pasá a retirarlos.' },
+    { icono: 'heart-outline', titulo: 'Donaciones cerca', texto: 'Comercios de la zona que donan alimentos.' },
+    { icono: 'paper-plane-outline', titulo: 'Pedí lo que necesitás', texto: 'Contales para cuántas personas es.' },
+    { icono: 'checkmark-done-outline', titulo: 'Retirá y listo', texto: 'Seguí cada pedido desde la app.' },
   ],
   comercio: [
-    { icono: 'camera-outline', titulo: 'Publicá en un minuto', texto: 'Foto, precio con descuento y listo.' },
-    { icono: 'cash-outline', titulo: 'Vendé lo que sobra', texto: 'Recuperá ingresos en lugar de tirar comida.' },
-    { icono: 'qr-code-outline', titulo: 'Confirmá el retiro', texto: 'Escaneá el código del cliente al entregar.' },
+    { icono: 'camera-outline', titulo: 'Publicá en un minuto', texto: 'Una foto, el precio y listo.' },
+    { icono: 'cash-outline', titulo: 'Vendé lo que sobra', texto: 'En vez de tirarlo.' },
+    { icono: 'qr-code-outline', titulo: 'Entregá con un código', texto: 'El cliente lo muestra y confirmás.' },
   ],
 };
 
+// Ícono en un círculo verde claro que flota suave
+function Ilustracion({ icono, moverse }) {
+  const flotar = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!moverse) return undefined;
+    const animacion = Animated.loop(
+      Animated.sequence([
+        Animated.timing(flotar, { toValue: 1, duration: 1600, useNativeDriver: true }),
+        Animated.timing(flotar, { toValue: 0, duration: 1600, useNativeDriver: true }),
+      ])
+    );
+    animacion.start();
+    return () => animacion.stop();
+  }, [flotar, moverse]);
+
+  const subir = flotar.interpolate({ inputRange: [0, 1], outputRange: [0, -8] });
+
+  return (
+    <Animated.View style={[estilos.circulo, { transform: [{ translateY: subir }] }]}>
+      <Icono nombre={icono} tamano={64} color={VERDE_OSCURO} />
+    </Animated.View>
+  );
+}
+
+// Botón grande verde claro (el de la acción principal de la bienvenida)
+function BotonClaro({ texto, onPress }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      style={({ pressed }) => [estilos.botonClaro, pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] }]}
+    >
+      <Text style={estilos.textoBotonClaro}>{texto}</Text>
+    </Pressable>
+  );
+}
+
 export default function Bienvenida({ navigation, route }) {
-  const { colores } = useTema();
   const { width } = useWindowDimensions();
   const { top, bottom } = useSafeAreaInsets();
   const { marcarVista } = useBienvenida();
   const { usuario } = useSesion();
   const lista = useRef(null);
+  const scrollX = useRef(new Animated.Value(0)).current;
+  const [pagina, setPagina] = useState(0);
+  const [moverse, setMoverse] = useState(true);
 
   const rol = route?.params?.rol || usuario?.rol || 'consumidor';
-  const datosRol = ROLES[rol] || ROLES.consumidor;
   const pantallas = PANTALLAS[rol] || PANTALLAS.consumidor;
-  const [pagina, setPagina] = useState(0);
   const ultima = pagina === pantallas.length - 1;
-  const ancho = width - espacio(4); // la tarjeta tiene 16 de margen a cada lado
+  const desdePerfil = route?.name === 'VerBienvenida';
+
+  // Si el celular tiene "reducir movimiento", el ícono no flota
+  useEffect(() => {
+    AccessibilityInfo.isReduceMotionEnabled()
+      .then((reducir) => setMoverse(!reducir))
+      .catch(() => {});
+  }, []);
 
   function terminar() {
-    if (route?.name === 'VerBienvenida') return navigation.goBack(); // se abrió desde Perfil
-    marcarVista(rol); // la navegación pasa sola a las pestañas
+    marcarVista(claveBienvenida(usuario)); // al entrar, la navegación pasa sola a las pestañas
+    if (desdePerfil) navigation.goBack();
+  }
+
+  // Invitado: "Crear mi cuenta gratis" o "Ya tengo cuenta"
+  function irA(pantalla) {
+    if (desdePerfil) return navigation.replace(pantalla);
+    // Abajo quedan las pestañas, así al cerrar el registro se vuelve a la app
+    navigation.reset({ index: 1, routes: [{ name: 'Pestanas' }, { name: pantalla }] });
+    marcarVista(claveBienvenida(usuario));
+  }
+
+  // Las animaciones siguen al dedo; la página actual se actualiza al pasar la mitad
+  const alDeslizar = useRef(
+    Animated.event([{ nativeEvent: { contentOffset: { x: scrollX } } }], {
+      useNativeDriver: true,
+      listener: (e) => setPagina(Math.round(e.nativeEvent.contentOffset.x / e.nativeEvent.layoutMeasurement.width)),
+    })
+  ).current;
+
+  function siguiente() {
+    const nueva = Math.min(pagina + 1, pantallas.length - 1);
+    lista.current?.scrollTo({ x: nueva * width, animated: true });
+    setPagina(nueva);
   }
 
   return (
-    <View style={[estilos.pantalla, { backgroundColor: colores.fondo, paddingTop: top + espacio(3), paddingBottom: bottom + espacio(3) }]}>
-      <Logo ancho={96} />
+    <View style={[estilos.pantalla, { paddingTop: top + espacio(1.5), paddingBottom: bottom + espacio(2) }]}>
+      <StatusBar style="light" />
+      {/* Círculos de fondo */}
+      <View style={[estilos.mancha, { width: width * 1.1, height: width * 1.1, top: -width * 0.45, right: -width * 0.45 }]} />
+      <View style={[estilos.mancha, estilos.manchaHoja, { width: width * 0.9, height: width * 0.9, bottom: -width * 0.35, left: -width * 0.4 }]} />
 
-      <View style={[estilos.tarjeta, { backgroundColor: colores.verdeClaro }]}>
-        {/* Arriba: el rol en el centro y "Omitir" a la derecha */}
-        <View style={estilos.arriba}>
-          <View style={[estilos.rol, { backgroundColor: colores.verdeProfundo }]}>
-            <Icono nombre={datosRol.icono} tamano={15} color={colores.sobreVerdeProfundo} />
-            <Text style={[estilos.textoRol, { color: colores.sobreVerdeProfundo }]}>{datosRol.titulo}</Text>
-          </View>
-          <Pressable onPress={terminar} hitSlop={10} accessibilityRole="button" style={estilos.omitir}>
-            <Text style={estilos.textoOmitir}>Omitir</Text>
-          </Pressable>
-        </View>
+      {/* Arriba a la derecha, "Omitir" */}
+      <Pressable onPress={terminar} hitSlop={10} accessibilityRole="button" style={estilos.omitir}>
+        <Text style={estilos.textoOmitir}>Omitir</Text>
+      </Pressable>
 
-        {/* Las 3 pantallas, se pasan deslizando */}
-        <FlatList
-          ref={lista}
-          data={pantallas}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          keyExtractor={(p) => p.titulo}
-          getItemLayout={(_, index) => ({ length: ancho, offset: ancho * index, index })}
-          onMomentumScrollEnd={(e) => setPagina(Math.round(e.nativeEvent.contentOffset.x / ancho))}
-          renderItem={({ item }) => (
-            <View style={[estilos.pagina, { width: ancho }]}>
-              <View style={[estilos.circulo, { backgroundColor: colores.fondo }]}>
-                <Icono nombre={item.icono} tamano={52} color={colores.verdeProfundo} />
-              </View>
-              <Text style={[estilos.titulo, { color: colores.verdeProfundo }]}>{item.titulo}</Text>
-              <Text style={[estilos.texto, { color: colores.texto }]}>{item.texto}</Text>
+      {/* Las 3 pantallas */}
+      <Animated.ScrollView
+        ref={lista}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        style={{ flex: 1, marginHorizontal: -espacio(3) }}
+        scrollEventThrottle={16}
+        onScroll={alDeslizar}
+      >
+        {pantallas.map((p, i) => {
+          const rango = [(i - 1) * width, i * width, (i + 1) * width];
+          const escala = scrollX.interpolate({ inputRange: rango, outputRange: [0.7, 1, 0.7], extrapolate: 'clamp' });
+          const opacidad = scrollX.interpolate({ inputRange: rango, outputRange: [0, 1, 0], extrapolate: 'clamp' });
+          const correr = scrollX.interpolate({ inputRange: rango, outputRange: [width * 0.3, 0, -width * 0.3], extrapolate: 'clamp' });
+          return (
+            <View key={p.titulo} style={[estilos.pagina, { width }]} accessible accessibilityLabel={`${p.titulo}. ${p.texto}`}>
+              <Animated.View style={{ opacity: opacidad, transform: [{ scale: escala }] }}>
+                <Ilustracion icono={p.icono} moverse={moverse && i === pagina} />
+              </Animated.View>
+              <Animated.View style={[estilos.textos, { opacity: opacidad, transform: [{ translateX: correr }] }]}>
+                <Text style={estilos.titulo}>{p.titulo}</Text>
+                <Text style={estilos.texto}>{p.texto}</Text>
+              </Animated.View>
             </View>
-          )}
-        />
+          );
+        })}
+      </Animated.ScrollView>
 
-        {ultima ? (
-          <Boton texto="Empezar" chico onPress={terminar} estilo={estilos.empezar} />
-        ) : null}
-
-        {/* Puntitos (el de la pantalla actual, con borde) */}
-        <View style={estilos.puntos} accessibilityLabel={`Pantalla ${pagina + 1} de ${pantallas.length}`}>
-          {pantallas.map((p, i) => (
-            <View
+      {/* Puntitos: el actual más grande y claro */}
+      <View style={estilos.puntos} accessibilityLabel={`Pantalla ${pagina + 1} de ${pantallas.length}`}>
+        {pantallas.map((p, i) => {
+          const rango = [(i - 1) * width, i * width, (i + 1) * width];
+          return (
+            <Animated.View
               key={p.titulo}
-              style={[estilos.punto, { backgroundColor: '#FFFFFF' }, i === pagina && { borderWidth: 1.5, borderColor: colores.verdeProfundo }]}
+              style={[
+                estilos.punto,
+                {
+                  opacity: scrollX.interpolate({ inputRange: rango, outputRange: [0.35, 1, 0.35], extrapolate: 'clamp' }),
+                  transform: [{ scale: scrollX.interpolate({ inputRange: rango, outputRange: [1, 1.5, 1], extrapolate: 'clamp' }) }],
+                },
+              ]}
             />
-          ))}
-        </View>
+          );
+        })}
+      </View>
+
+      {/* Abajo: "Siguiente", y en la última "Empezar" (o crear la cuenta, si es invitado) */}
+      <View style={estilos.abajo}>
+        {!ultima ? (
+          <BotonClaro texto="Siguiente" onPress={siguiente} />
+        ) : usuario ? (
+          <BotonClaro texto="Empezar" onPress={terminar} />
+        ) : (
+          <>
+            <BotonClaro texto="Crear mi cuenta gratis" onPress={() => irA('Registro')} />
+            <Text onPress={() => irA('Login')} accessibilityRole="link" style={estilos.link}>
+              Ya tengo cuenta
+            </Text>
+          </>
+        )}
       </View>
     </View>
   );
@@ -116,84 +207,95 @@ export default function Bienvenida({ navigation, route }) {
 const estilos = StyleSheet.create({
   pantalla: {
     flex: 1,
-    paddingHorizontal: espacio(2),
-    gap: espacio(2.5),
-  },
-  tarjeta: {
-    flex: 1,
-    borderRadius: 28,
+    backgroundColor: VERDE_OSCURO,
+    paddingHorizontal: espacio(3),
     overflow: 'hidden',
   },
-  arriba: {
-    alignItems: 'center',
-    paddingTop: espacio(2),
+  mancha: {
+    position: 'absolute',
+    borderRadius: 9999,
+    backgroundColor: VERDE_MEDIO,
   },
-  rol: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: espacio(1.5),
-    height: 30,
-    borderRadius: 8,
-  },
-  textoRol: {
-    fontFamily: fuentes.negrita,
-    fontSize: 13,
+  manchaHoja: {
+    backgroundColor: VERDE_HOJA,
+    opacity: 0.16,
   },
   omitir: {
-    position: 'absolute',
-    top: espacio(1),
-    right: espacio(1),
-    backgroundColor: 'rgba(255,255,255,0.45)',
-    paddingHorizontal: espacio(1.25),
-    paddingVertical: 3,
+    alignSelf: 'flex-end',
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
+    paddingHorizontal: espacio(1.5),
+    paddingVertical: 5,
     borderRadius: 999,
   },
   textoOmitir: {
-    color: '#FAFAFA',
+    color: '#FFFFFF',
     fontFamily: fuentes.negrita,
-    fontSize: 12,
+    fontSize: 13,
   },
   pagina: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: espacio(4),
-    gap: espacio(1.5),
+    paddingHorizontal: espacio(5),
+    gap: espacio(4),
   },
   circulo: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: VERDE_CLARO,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: espacio(1),
+  },
+  textos: {
+    alignItems: 'center',
+    gap: espacio(1),
   },
   titulo: {
+    color: '#FFFFFF',
     fontFamily: fuentes.marca,
-    fontSize: 22,
+    fontSize: 26,
     textAlign: 'center',
   },
   texto: {
+    color: TEXTO_SUAVE,
     fontFamily: fuentes.normal,
-    fontSize: tamanos.normal,
-    lineHeight: 21,
+    fontSize: 16,
+    lineHeight: 22,
     textAlign: 'center',
-  },
-  empezar: {
-    alignSelf: 'center',
-    paddingHorizontal: espacio(4),
-    marginBottom: espacio(1.5),
   },
   puntos: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 7,
-    paddingBottom: espacio(2.5),
+    gap: 10,
+    marginVertical: espacio(2),
   },
   punto: {
-    width: 9,
-    height: 9,
-    borderRadius: 5,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: VERDE_CLARO,
+  },
+  abajo: {
+    gap: espacio(1.5),
+  },
+  botonClaro: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 54,
+    borderRadius: 999,
+    backgroundColor: VERDE_CLARO,
+  },
+  textoBotonClaro: {
+    color: VERDE_OSCURO,
+    fontFamily: fuentes.boton,
+    fontSize: 16,
+  },
+  link: {
+    color: '#FFFFFF',
+    fontFamily: fuentes.negrita,
+    fontSize: 14,
+    textAlign: 'center',
+    textDecorationLine: 'underline',
   },
 });

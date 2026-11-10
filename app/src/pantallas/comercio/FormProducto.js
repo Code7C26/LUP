@@ -13,6 +13,7 @@ import Boton from '../../componentes/Boton';
 import Campo from '../../componentes/Campo';
 import Cargando from '../../componentes/Cargando';
 import MensajeError from '../../componentes/MensajeError';
+import PublicarDeNuevo from '../../componentes/PublicarDeNuevo';
 import { espacio, fuentes, radio, tamanos, useTema } from '../../tema';
 import { textoError } from '../../utilidades';
 import { Opciones } from '../Registro';
@@ -81,11 +82,19 @@ export default function FormProducto({ navigation, route }) {
   const [errorGeneral, setErrorGeneral] = useState('');
   const [cargando, setCargando] = useState(Boolean(id || copiarDe));
   const [enviando, setEnviando] = useState(false);
+  const [anteriores, setAnteriores] = useState([]); // para "¿Lo mismo de siempre?" (solo en uno nuevo)
+
+  // Producto nuevo: se traen los anteriores para ofrecer cargar de nuevo el último o el más vendido
+  useEffect(() => {
+    if (id || copiarDe) return;
+    api('/mis-productos/').then(setAnteriores).catch(() => {});
+  }, [id, copiarDe]);
 
   // Al editar (o al "Publicar de nuevo"), se cargan los datos del producto
   useEffect(() => {
     const origen = id || copiarDe;
     if (!origen) return;
+    setCargando(true);
     (async () => {
       try {
         const p = await api(`/mis-productos/${origen}/`);
@@ -212,6 +221,14 @@ export default function FormProducto({ navigation, route }) {
             {id ? 'Editar Producto' : copiarDe ? 'Publicar de nuevo' : 'Nuevo Producto'}
           </Text>
         </View>
+
+        {!id && !copiarDe ? (
+          <PublicarDeNuevo
+            productos={anteriores}
+            compacto
+            alElegir={(p) => navigation.setParams({ copiarDe: p.id })} // carga sus datos con la fecha de hoy
+          />
+        ) : null}
 
         {/* Foto: el cuadro gris; al tocarlo se elige cámara o galería */}
         <Pressable

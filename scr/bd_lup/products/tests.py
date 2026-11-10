@@ -91,6 +91,21 @@ class FlujoLupTests(TestCase):
         self.assertEqual(self.producto.estado, Producto.DISPONIBLE)
         self.assertEqual(self.producto.stock, 4)
 
+    def test_api_mis_productos_cuenta_los_vendidos(self):
+        # Para "Publicar de nuevo": se suman las unidades reservadas, menos las canceladas
+        Reserva.objects.create(consumidor=self.consumidor, producto=self.producto, cantidad=2,
+                               precio_total=Decimal('2400'), estado=Reserva.RETIRADA)
+        Reserva.objects.create(consumidor=self.consumidor, producto=self.producto, cantidad=1,
+                               precio_total=Decimal('1200'))
+        Reserva.objects.create(consumidor=self.consumidor, producto=self.producto, cantidad=4,
+                               precio_total=Decimal('4800'), estado=Reserva.CANCELADA)
+        self.client.force_login(self.comercio)
+        self.assertEqual(self.client.get('/api/mis-productos/').json()[0]['vendidos'], 3)
+        self.assertEqual(self.client.get(f'/api/mis-productos/{self.producto.pk}/').json()['vendidos'], 3)
+        r = self.client.post(f'/api/mis-productos/{self.producto.pk}/estado/', {'estado': 'PAUSADO'},
+                             content_type='application/json')
+        self.assertEqual(r.json()['vendidos'], 3)
+
     def test_api_organizacion_pide_una_donacion(self):
         # Solo las organizaciones ven las donaciones
         self.client.force_login(self.consumidor)
