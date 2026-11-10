@@ -1,0 +1,13 @@
+¿CÓMO TE FUE?
+
+¡Gracias por rescatar comida, {{ cliente.first_name|default:cliente.username }}!
+Retiraste {{ reserva.cantidad }} × {{ producto.titulo }} en {{ tienda.nombre_fantasia }}.
+
+Contanos cómo fue tu experiencia: calificá al comercio y al producto y, si querés, dejá un comentario.
+Tu opinión ayuda a otras personas a elegir y al comercio a mejorar.
+
+Dejar mi opinión: {{ url_opinar }}
+
+— Lüp
+Configurar avisos: {{ url_avisos }}
+Dejar de recibir avisos: {{ url_baja }}

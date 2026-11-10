@@ -1,0 +1,12 @@
+NUEVA DONACIÓN DISPONIBLE
+
+{{ tienda.nombre_fantasia }} publicó {{ producto.titulo }} para donar.
+Dónde: {{ tienda.direccion }}
+Unidades: {{ producto.stock }}
+Disponible hasta: {{ producto.fecha_vencimiento|date:"l j \d\e F" }}
+
+Pedir la donación: {{ url_producto }}
+
+— Lüp
+Configurar avisos: {{ url_avisos }}
+Dejar de recibir avisos: {{ url_baja }}

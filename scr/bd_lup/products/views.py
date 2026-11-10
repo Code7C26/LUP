@@ -19,8 +19,10 @@ from scr.bd_lup.stores.ubicacion import (
 from scr.bd_lup.users.decorators import rol_requerido
 from scr.bd_lup.users.models import Usuario
 
-from .forms import CalificacionForm, ProductoForm, ReservaForm, SolicitudDonacionForm
-from .models import Calificacion, Producto, Reserva, SolicitudDonacion, resumen_calificaciones
+from .forms import CalificacionForm, ProductoForm, RespuestaForm, ReservaForm, SolicitudDonacionForm
+from .models import (
+    Calificacion, Producto, Reserva, SolicitudDonacion, resumen_calificaciones, resumen_producto,
+)
 
 ORDENES = {
     'recientes': '-creado_en',
@@ -121,6 +123,11 @@ def detalle_producto(request, pk):
             contexto['ya_solicitada'] = producto.solicitudes_donacion.filter(organizacion=usuario).exists()
         elif usuario.es_comercio and producto.comercio == _tienda_de(usuario):
             contexto['es_propio'] = True
+            contexto['pendientes'] = producto.reservas.filter(estado=Reserva.PENDIENTE).count()
+    contexto['calificacion_producto'] = resumen_producto(producto)
+    contexto['opiniones_producto'] = producto.calificaciones.filter(
+        puntaje_producto__isnull=False
+    ).select_related('consumidor', 'tienda')[:6]
     contexto['relacionados'] = (
         Producto.objects.visibles().filter(comercio=producto.comercio).exclude(pk=producto.pk).con_calificacion()[:3]
     )
@@ -178,25 +185,64 @@ def cancelar_reserva(request, pk):
 
 
 @solo_consumidores
-@require_POST
 def calificar_reserva(request, pk):
-    """El consumidor califica al comercio (1 a 5 estrellas) después de retirar. Puede cambiarla luego."""
+    """Página "¿Cómo te fue?": el consumidor califica comercio y producto después de retirar.
+
+    Solo se puede opinar sobre reservas propias y retiradas (compras reales). Se puede editar después.
+    """
     reserva = get_object_or_404(
         Reserva.objects.select_related('producto__comercio'),
         pk=pk, consumidor=request.user, estado=Reserva.RETIRADA,
     )
     existente = Calificacion.objects.filter(reserva=reserva).first()
-    form = CalificacionForm(request.POST, instance=existente)
+    inicial = {}
+    if request.GET.get('estrellas') in ('1', '2', '3', '4', '5') and not existente:
+        inicial['puntaje'] = int(request.GET['estrellas'])  # tocó una estrella en el aviso "¿Cómo te fue?"
+    form = CalificacionForm(request.POST or None, instance=existente, initial=inicial)
+    if request.method == 'POST':
+        if form.is_valid():
+            calificacion = form.save(commit=False)
+            calificacion.reserva = reserva
+            calificacion.tienda = reserva.producto.comercio
+            calificacion.producto = reserva.producto
+            calificacion.consumidor = request.user
+            calificacion.save()
+            messages.success(
+                request,
+                _('¡Gracias! Tu opinión sobre %(comercio)s ya está publicada.') % {'comercio': reserva.producto.comercio},
+            )
+            if request.POST.get('volver') == 'panel':
+                return redirect('panel')
+            return redirect('detalle_producto', pk=reserva.producto.pk)
+        if request.POST.get('volver') == 'panel':
+            for error in list(form.errors.values())[:1]:
+                messages.error(request, error[0])
+            return redirect('panel')
+    return render(request, 'products/opinar.html', {'reserva': reserva, 'form': form, 'existente': existente})
+
+
+@solo_comercios
+@require_POST
+def responder_opinion(request, pk):
+    """El comercio responde públicamente una opinión sobre su local (o borra su respuesta)."""
+    from django.utils import timezone
+
+    calificacion = get_object_or_404(Calificacion, pk=pk, tienda__usuario=request.user)
+    form = RespuestaForm(request.POST)
     if form.is_valid():
-        calificacion = form.save(commit=False)
-        calificacion.reserva = reserva
-        calificacion.tienda = reserva.producto.comercio
-        calificacion.consumidor = request.user
-        calificacion.save()
-        messages.success(request, _('¡Gracias! Tu opinión sobre %(comercio)s ya está publicada.') % {'comercio': reserva.producto.comercio})
+        texto = ' '.join(form.cleaned_data['respuesta'].split())
+        es_nueva = bool(texto) and texto != calificacion.respuesta
+        calificacion.respuesta = texto
+        calificacion.respondida_en = timezone.now() if texto else None
+        calificacion.save(update_fields=['respuesta', 'respondida_en'])
+        if es_nueva:
+            from . import notificaciones
+            notificaciones.avisar_respuesta_opinion(calificacion)
+        messages.success(request, _('Tu respuesta quedó publicada.') if texto else _('Borraste tu respuesta.'))
     else:
-        messages.error(request, _('Elegí de 1 a 5 estrellas para calificar.'))
-    return redirect('panel')
+        messages.error(request, _('La respuesta puede tener hasta 500 caracteres.'))
+    from django.urls import reverse
+    return redirect(reverse('panel') + '#opiniones')
 
 
 # ==========================================
@@ -296,6 +342,8 @@ def cambiar_estado_producto(request, pk):
         producto.estado = nuevo
         producto.save(update_fields=['estado', 'actualizado_en'])
         messages.success(request, MENSAJES_ESTADO[nuevo] % {'titulo': producto.titulo})
+    if request.POST.get('volver') == 'producto':
+        return redirect('detalle_producto', pk=pk)
     return redirect('panel')
 
 
@@ -311,8 +359,7 @@ def confirmar_retiro(request):
     elif reserva.estado != Reserva.PENDIENTE:
         messages.warning(request, _('La reserva %(codigo)s ya está %(estado)s.') % {'codigo': codigo, 'estado': reserva.get_estado_display().lower()})
     else:
-        reserva.estado = Reserva.RETIRADA
-        reserva.save(update_fields=['estado'])
+        reserva.marcar_retirada()
         messages.success(
             request, _('Retiro confirmado: %(cantidad)s × %(producto)s para %(cliente)s.')
             % {'cantidad': reserva.cantidad, 'producto': reserva.producto, 'cliente': reserva.consumidor.nombre_visible}
@@ -341,9 +388,10 @@ def responder_donacion(request, pk, accion):
             solicitud.save(update_fields=['estado'])
             producto.estado = Producto.DONADO
             producto.save(update_fields=['estado', 'actualizado_en'])
-            producto.solicitudes_donacion.filter(estado=SolicitudDonacion.PENDIENTE).update(
-                estado=SolicitudDonacion.RECHAZADA
-            )
+            # Los demás pedidos de este producto quedan rechazados (y cada organización recibe el aviso)
+            for otra in producto.solicitudes_donacion.filter(estado=SolicitudDonacion.PENDIENTE):
+                otra.estado = SolicitudDonacion.RECHAZADA
+                otra.save(update_fields=['estado'])
         messages.success(request, _('Donación aprobada para %(org)s. ¡Gracias!') % {'org': solicitud.organizacion.nombre_visible})
     else:
         solicitud.estado = SolicitudDonacion.RECHAZADA
@@ -362,7 +410,12 @@ def panel(request):
 
     if usuario.es_comercio:
         tienda = _tienda_de(usuario)
-        productos = Producto.objects.filter(comercio=tienda) if tienda else Producto.objects.none()
+        productos = (
+            Producto.objects.filter(comercio=tienda).annotate(
+                pendientes=Count('reservas', filter=Q(reservas__estado=Reserva.PENDIENTE))
+            )
+            if tienda else Producto.objects.none()
+        )
         reservas = Reserva.objects.filter(producto__comercio=tienda).select_related('producto', 'consumidor')
         retiradas = reservas.filter(estado=Reserva.RETIRADA)
         contexto = {
@@ -373,6 +426,14 @@ def panel(request):
                 producto__comercio=tienda, estado=SolicitudDonacion.PENDIENTE
             ).select_related('producto', 'organizacion'),
             'calificaciones': resumen_calificaciones(tienda) if tienda else {'promedio': None, 'cantidad': 0},
+            'opiniones_recientes': (
+                Calificacion.objects.filter(tienda=tienda).select_related('consumidor', 'producto', 'tienda')[:5]
+                if tienda else []
+            ),
+            'sin_responder': (
+                Calificacion.objects.filter(tienda=tienda, respuesta='').exclude(comentario='').count()
+                if tienda else 0
+            ),
             'stats': {
                 'activas': productos.visibles().count(),
                 'pendientes': reservas.filter(estado=Reserva.PENDIENTE).count(),

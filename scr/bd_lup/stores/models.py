@@ -32,10 +32,6 @@ class Tienda(models.Model):
     )
     latitud = models.FloatField(blank=True, null=True)
     longitud = models.FloatField(blank=True, null=True)
-    notificaciones_email = models.BooleanField(
-        _('recibir avisos por email'), default=True,
-        help_text=_('Te avisamos cuando alguien reserva, cancela o pide una donación.'),
-    )
     fecha_registro = models.DateTimeField(auto_now_add=True)
 
     class Meta:

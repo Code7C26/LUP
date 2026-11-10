@@ -42,8 +42,13 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--forzar', action='store_true', help='Cargar aunque DEBUG esté desactivado.')
 
-    @transaction.atomic
     def handle(self, *args, **options):
+        # Datos de ejemplo: sin mandar emails
+        from scr.bd_lup.products import notificaciones
+        with notificaciones.silenciadas(), transaction.atomic():
+            self._cargar(*args, **options)
+
+    def _cargar(self, *args, **options):
         # Son datos inventados: nunca deberían aparecer en la página publicada
         if not settings.DEBUG and not options['forzar']:
             raise CommandError(
@@ -146,9 +151,15 @@ class Command(BaseCommand):
                 Reserva.objects.filter(pk=reserva.pk).update(
                     creada_en=timezone.make_aware(datetime.combine(fecha, time(19, 15)))
                 )
+                if reserva.estado == Reserva.RETIRADA:
+                    Reserva.objects.filter(pk=reserva.pk).update(
+                        retirada_en=timezone.make_aware(datetime.combine(fecha, time(20, 0)))
+                    )
                 if reserva.estado == Reserva.RETIRADA and k % 4 != 3:
                     puntaje, comentario = opiniones[(k + n) % len(opiniones)]
-                    Calificacion.objects.create(
-                        reserva=reserva, tienda=tienda, consumidor=cliente, puntaje=puntaje, comentario=comentario,
-                    )
+                    # bulk_create: no manda avisos por email (son opiniones de ejemplo)
+                    Calificacion.objects.bulk_create([Calificacion(
+                        reserva=reserva, tienda=tienda, producto=producto, consumidor=cliente,
+                        puntaje=puntaje, puntaje_producto=max(puntaje - (k % 2), 1), comentario=comentario,
+                    )])
             n += 1

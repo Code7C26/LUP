@@ -10,4 +10,6 @@ Stock que queda: {{ producto.stock }}
 Cuando el cliente pase por el local, pedile el código y confirmalo desde tu panel:
 {{ url_panel }}
 
-— Lüp · Podés desactivar estos avisos desde "Mis datos".
+— Lüp
+Configurar avisos: {{ url_avisos }}
+Dejar de recibir avisos: {{ url_baja }}

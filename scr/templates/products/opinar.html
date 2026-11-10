@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load i18n lup_tags %}
+
+{% block title %}{% translate "¿Cómo te fue?" %} · Lüp{% endblock %}
+
+{% block content %}
+<div class="container pt-4" style="max-width: 640px;">
+    <a href="{% url 'panel' %}" class="small text-decoration-none"><i class="bi bi-arrow-left me-1"></i>{% translate "Volver a mi panel" %}</a>
+
+    <div class="tarjeta mt-2">
+        <div class="d-flex align-items-center gap-3 mb-3">
+            {% if reserva.producto.imagen %}<img src="{{ reserva.producto.imagen.url }}" class="mini-foto" alt="">{% else %}<div class="mini-foto">{{ reserva.producto.categoria|emoji_categoria }}</div>{% endif %}
+            <div class="min-w-0">
+                <span class="eyebrow mb-0">{% if existente %}{% translate "Editar mi opinión" %}{% else %}{% translate "¿Cómo te fue?" %}{% endif %}</span>
+                <h1 class="h4 mb-0 text-truncate">{{ reserva.cantidad }} × {{ reserva.producto.titulo }}</h1>
+                <p class="small text-muted-lup mb-0">
+                    {% blocktranslate with comercio=reserva.producto.comercio.nombre_fantasia %}en {{ comercio }}{% endblocktranslate %}
+                    {% if reserva.retirada_en %}· {% blocktranslate with fecha=reserva.retirada_en|date:"d/m" %}retirado el {{ fecha }}{% endblocktranslate %}{% endif %}
+                </p>
+            </div>
+        </div>
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% for error in form.non_field_errors %}<div class="alert alert-danger rounded-4 small py-2">{{ error }}</div>{% endfor %}
+
+            <div class="opinar-bloque">
+                {% blocktranslate with comercio=reserva.producto.comercio.nombre_fantasia asvar t_comercio %}¿Qué tal la atención y el retiro en {{ comercio }}?{% endblocktranslate %}
+                {% include 'includes/_selector_estrellas.html' with nombre='puntaje' valor=form.puntaje.value prefijo='op' titulo=t_comercio %}
+                {% for error in form.puntaje.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+
+            <div class="opinar-bloque">
+                {% blocktranslate with producto=reserva.producto.titulo asvar t_producto %}¿Y el producto, {{ producto }}?{% endblocktranslate %}
+                {% include 'includes/_selector_estrellas.html' with nombre='puntaje_producto' valor=form.puntaje_producto.value prefijo='op' titulo=t_producto %}
+                {% for error in form.puntaje_producto.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+
+            <label class="form-label" for="id_comentario">{% translate "Contá tu experiencia (opcional)" %}</label>
+            <textarea name="comentario" id="id_comentario" class="form-control" rows="3" maxlength="500" placeholder="{% translate '¿Qué te gustó? ¿Qué se podría mejorar?' %}">{{ form.comentario.value|default:'' }}</textarea>
+            <div class="form-text">{% translate "Tu nombre y tu opinión se van a ver en la página del comercio. El comercio puede responderte." %}</div>
+
+            <div class="d-flex justify-content-end gap-2 border-top pt-3 mt-3">
+                <a href="{% url 'panel' %}" class="btn btn-light">{% translate "Ahora no" %}</a>
+                <button type="submit" class="btn btn-lup">{% if existente %}{% translate "Guardar cambios" %}{% else %}{% translate "Publicar opinión" %}{% endif %}</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

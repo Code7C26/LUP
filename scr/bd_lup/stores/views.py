@@ -17,7 +17,7 @@ def detalle_tienda(request, pk):
     for puntaje in tienda.calificaciones.values_list('puntaje', flat=True):
         conteo[puntaje] += 1
     opiniones = Paginator(
-        tienda.calificaciones.select_related('consumidor', 'reserva__producto'), 6
+        tienda.calificaciones.select_related('consumidor', 'producto', 'tienda'), 6
     ).get_page(request.GET.get('opiniones'))
     return render(request, 'stores/detalle_tienda.html', {
         'tienda': tienda,

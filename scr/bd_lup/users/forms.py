@@ -209,7 +209,7 @@ class PerfilUsuarioForm(EstiloBootstrapMixin, forms.ModelForm):
 
     class Meta:
         model = Usuario
-        fields = ('foto', 'first_name', 'last_name', 'email', 'telefono', 'ciudad')
+        fields = ('foto', 'first_name', 'last_name', 'email', 'telefono', 'ciudad', 'avisos_email')
         labels = {'first_name': _('Nombre'), 'last_name': _('Apellido')}
         widgets = {'foto': forms.FileInput(attrs={'accept': 'image/jpeg,image/png,image/webp'})}
 
@@ -257,7 +257,7 @@ class TiendaForm(EstiloBootstrapMixin, forms.ModelForm):
         model = Tienda
         fields = (
             'nombre_fantasia', 'rubro', 'descripcion', 'direccion', 'horario_atencion',
-            'latitud', 'longitud', 'notificaciones_email',
+            'latitud', 'longitud',
         )
         widgets = {
             'descripcion': forms.Textarea(attrs={'rows': 3}),

@@ -13,6 +13,7 @@ urlpatterns = [
     path('<int:pk>/estado/', views.cambiar_estado_producto, name='cambiar_estado_producto'),
     path('reservas/<int:pk>/cancelar/', views.cancelar_reserva, name='cancelar_reserva'),
     path('reservas/<int:pk>/calificar/', views.calificar_reserva, name='calificar_reserva'),
+    path('opiniones/<int:pk>/responder/', views.responder_opinion, name='responder_opinion'),
     path('reservas/confirmar-retiro/', views.confirmar_retiro, name='confirmar_retiro'),
     path(
         'donaciones/<int:pk>/<str:accion>/',

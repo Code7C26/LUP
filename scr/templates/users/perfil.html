@@ -61,20 +61,38 @@
                     </div>
                 </div>
 
-                <div class="form-seccion">{% translate "Avisos" %}</div>
-                {% include 'includes/_campo.html' with campo=form_perfil.notificaciones_email clase='mb-1' %}
-                <p class="form-text mt-0 mb-2">{% translate "Llegan a" %} <strong>{{ user.email }}</strong>{% translate ": nuevas reservas, cancelaciones y pedidos de donación." %}</p>
             {% endif %}
         {% endif %}
 
         <div class="form-seccion">{% translate "Datos personales" %}</div>
         <div class="row">
             {% for campo in form_usuario %}
-                {% if campo.name != 'foto' and campo.name != 'quitar_foto' %}
+                {% if campo.name != 'foto' and campo.name != 'quitar_foto' and campo.name != 'avisos_email' %}
                     {% include 'includes/_campo.html' with campo=campo clase='col-md-6 mb-3' %}
                 {% endif %}
             {% endfor %}
         </div>
+        {# ---------- Avisos por email (todos los usuarios) ---------- #}
+        <div class="form-seccion" id="avisos">{% translate "Avisos por email" %}</div>
+        {% include 'includes/_campo.html' with campo=form_usuario.avisos_email clase='mb-1' %}
+        <p class="form-text mt-0 mb-1">{% translate "Te escribimos a" %} <strong>{{ user.email }}</strong> {% translate "cuando:" %}</p>
+        <ul class="lista-avisos form-text mb-3">
+            {% if user.es_comercio %}
+                <li>{% translate "alguien reserva o cancela una reserva" %}</li>
+                <li>{% translate "un producto se queda sin stock" %}</li>
+                <li>{% translate "una organización te pide una donación" %}</li>
+                <li>{% translate "un cliente deja una opinión" %}</li>
+            {% elif user.es_organizacion %}
+                <li>{% translate "un comercio aprueba o rechaza tu pedido de donación" %}</li>
+                <li>{% translate "se publica una donación nueva" %}</li>
+            {% else %}
+                <li>{% translate "reservás (con tu código de retiro) o cancelás" %}</li>
+                <li>{% translate "es el último día para retirar una reserva" %}</li>
+                <li>{% translate "retirás, para preguntarte cómo te fue" %}</li>
+                <li>{% translate "un comercio responde tu opinión" %}</li>
+            {% endif %}
+        </ul>
+
         <p class="small text-muted-lup">{% translate "Usuario:" %} <strong>{{ user.username }}</strong> {% translate "· Tipo de cuenta:" %} <span class="chip-rol {{ user.rol }}">{{ user.get_rol_display }}</span></p>
 
         <div class="text-end border-top pt-3"><button type="submit" class="btn btn-lup">{% translate "Guardar cambios" %}</button></div>

@@ -1,0 +1,14 @@
+{% extends 'emails/_base.html' %}
+{% block color_etiqueta %}#b5721a{% endblock %}
+{% block etiqueta %}Nueva donación disponible{% endblock %}
+{% block encabezado %}{{ tienda.nombre_fantasia }} publicó {{ producto.titulo }} para donar{% endblock %}
+{% block cuerpo %}
+{% if producto.descripcion %}<p style="font-size:14px;line-height:1.6;margin:0 0 12px;">{{ producto.descripcion|truncatechars:220 }}</p>{% endif %}
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="font-size:14px;line-height:1.6;">
+    <tr><td style="color:#5c6b62;padding:4px 0;">Dónde</td><td align="right">{{ tienda.direccion }}</td></tr>
+    <tr><td style="color:#5c6b62;padding:4px 0;">Unidades</td><td align="right">{{ producto.stock }}</td></tr>
+    <tr><td style="color:#5c6b62;padding:4px 0;">Disponible hasta</td><td align="right">{{ producto.fecha_vencimiento|date:"l j \d\e F" }}</td></tr>
+</table>
+{% endblock %}
+{% block url_boton %}{{ url_producto }}{% endblock %}
+{% block boton %}Pedir la donación{% endblock %}

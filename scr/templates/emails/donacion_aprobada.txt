@@ -1,0 +1,14 @@
+¡DONACIÓN APROBADA!
+
+{{ tienda.nombre_fantasia }} aprobó tu pedido de {{ producto.titulo }}.
+
+Dónde retirar: {{ tienda.nombre_fantasia }} · {{ tienda.direccion }}
+Horario: {{ tienda.horario_atencion }}
+Cantidad: {{ producto.stock }} unidad{{ producto.stock|pluralize:"es" }}
+Cómo llegar: {{ url_como_llegar }}
+
+Tus donaciones: {{ url_panel }}
+
+— Lüp
+Configurar avisos: {{ url_avisos }}
+Dejar de recibir avisos: {{ url_baja }}

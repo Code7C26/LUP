@@ -12,10 +12,11 @@
             {% block cuerpo %}{% endblock %}
         </td></tr>
         <tr><td style="padding:8px 24px 28px;">
-            <a href="{{ url_panel }}" style="display:inline-block;background:#71A24D;color:#ffffff;text-decoration:none;font-weight:bold;padding:12px 22px;border-radius:999px;">{% block boton %}Ir a mi panel{% endblock %}</a>
+            <a href="{% block url_boton %}{{ url_panel }}{% endblock %}" style="display:inline-block;background:#71A24D;color:#ffffff;text-decoration:none;font-weight:bold;padding:12px 22px;border-radius:999px;">{% block boton %}Ir a mi panel{% endblock %}</a>
         </td></tr>
         <tr><td style="padding:16px 24px;background:#F7F5EE;font-size:12px;color:#5c6b62;line-height:1.5;">
-            Recibís este aviso porque {{ tienda.nombre_fantasia }} está en Lüp. Podés desactivar los avisos por email desde <strong>Mis datos</strong>.
+            {% block pie %}Recibís este aviso porque tenés una cuenta en Lüp.{% endblock %}<br>
+            <a href="{{ url_avisos }}" style="color:#5c6b62;">Configurar avisos</a> · <a href="{{ url_baja }}" style="color:#5c6b62;">Dejar de recibir avisos</a>
         </td></tr>
     </table>
 </td></tr>

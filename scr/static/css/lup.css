@@ -839,6 +839,52 @@ h1, h2, h3, h4, h5, .h1, .h2, .h3, .h4, .h5 { color: var(--lup-titulo); font-wei
 .btn-link-lup { border: 0; background: none; padding: 0; color: var(--lup-verde-2); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
 .btn-link-lup:hover { color: var(--lup-titulo); }
 
+/* ---------- Opiniones (comercio y producto) ---------- */
+.estrellas-sm { font-size: .7rem; }
+.chip-verificada {
+    font-size: .68rem; font-weight: 600; color: var(--lup-verde-2);
+    background: var(--lup-menta); border-radius: 999px; padding: .1rem .5rem; white-space: nowrap;
+}
+.respuesta-comercio {
+    margin-top: .35rem; padding: .55rem .8rem;
+    border-left: 3px solid var(--lup-verde); border-radius: 0 10px 10px 0;
+    background: var(--lup-menta);
+}
+.respuesta-comercio strong { color: var(--lup-titulo); }
+.opinion details summary { cursor: pointer; width: fit-content; }
+.campo-estrellas { border: 0; margin: 0; padding: 0; }
+.campo-estrellas-titulo { float: none; width: auto; font-size: .78rem; font-weight: 600; color: var(--lup-gris); margin-bottom: .1rem; }
+.opinar-bloque { padding: .9rem 0; border-bottom: 1px solid var(--lup-borde); margin-bottom: 1rem; }
+.opinar-bloque .campo-estrellas-titulo { font-size: .95rem; color: var(--lup-titulo); margin-bottom: .35rem; }
+.opinar-bloque .selector-estrellas label { font-size: 2rem; }
+
+/* Aviso "¿Cómo te fue?" después de retirar */
+.pedir-opinion {
+    position: fixed; z-index: 1079; right: 1rem; bottom: 1rem; width: min(400px, calc(100vw - 2rem));
+    display: flex; gap: .9rem; align-items: flex-start;
+    background: var(--lup-superficie); color: var(--lup-texto);
+    border: 1px solid var(--lup-borde); border-radius: 20px; box-shadow: var(--lup-sombra-hover);
+    padding: 1rem 1rem 1rem 1.1rem; animation: aparecer .3s ease;
+}
+.pedir-opinion[hidden] { display: none; }
+.pedir-opinion .mini-foto { width: 48px; height: 48px; font-size: 1.4rem; }
+.pedir-opinion .estrellas-rapidas { display: flex; gap: .1rem; margin: .35rem 0 .1rem; }
+.pedir-opinion .estrellas-rapidas a { font-size: 1.5rem; line-height: 1; color: var(--lup-borde); text-decoration: none; transition: color .12s ease, transform .12s ease; }
+.pedir-opinion .estrellas-rapidas:hover a { color: var(--lup-estrella); }
+.pedir-opinion .estrellas-rapidas a:hover ~ a { color: var(--lup-borde); }
+.pedir-opinion .estrellas-rapidas a:hover { transform: scale(1.12); }
+
+/* Estado de una publicación (vendido, no disponible...) */
+.estado.estado-disponible { background: var(--lup-menta); color: var(--lup-verde-2); }
+.estado.estado-vendido { background: var(--lup-azul-claro); color: var(--lup-azul-texto); }
+.estado.estado-no_disponible { background: var(--lup-ambar-claro); color: var(--lup-ambar-texto); }
+.estado.estado-donado { background: var(--lup-ambar-claro); color: var(--lup-ambar-texto); }
+.estado.estado-vencido { background: #fbe3e3; color: #a23030; }
+[data-bs-theme="dark"] .estado.estado-vencido { background: #3d1e1e; color: #f1a0a0; }
+
+.lista-avisos { padding-left: 1.1rem; }
+.lista-avisos li { margin-bottom: .1rem; }
+
 /* ---------- Detalle de producto ---------- */
 .detalle-foto {
     border-radius: 28px; overflow: hidden;

@@ -1,0 +1,11 @@
+RECORDATORIO: hoy es el último día para retirar {{ producto.titulo }}.
+
+Pasá por {{ tienda.nombre_fantasia }} ({{ tienda.direccion }}) en el horario {{ tienda.horario_atencion }}.
+Tu código: {{ reserva.codigo_retiro }}
+Cómo llegar: {{ url_como_llegar }}
+
+¿No llegás? Cancelala desde tu panel para que no se desperdicie: {{ url_panel }}
+
+— Lüp
+Configurar avisos: {{ url_avisos }}
+Dejar de recibir avisos: {{ url_baja }}

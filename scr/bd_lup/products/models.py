@@ -98,6 +98,21 @@ class Producto(models.Model):
         return self.fecha_vencimiento == localdate()
 
     @property
+    def estado_visible(self):
+        """Estado como lo ve la gente: disponible, vendido, no_disponible, donado o vencido."""
+        if self.estado == self.AGOTADO:
+            return 'vendido'
+        if self.estado == self.PAUSADO:
+            return 'no_disponible'
+        if self.estado == self.DONADO:
+            return 'donado'
+        if self.fecha_vencimiento < localdate():
+            return 'vencido'
+        if self.stock <= 0:
+            return 'vendido'
+        return 'disponible'
+
+    @property
     def esta_disponible(self):
         return (
             self.estado == self.DISPONIBLE
@@ -141,12 +156,21 @@ class Reserva(models.Model):
     codigo_retiro = models.CharField(max_length=10, unique=True, default=generar_codigo_retiro)
     estado = models.CharField(max_length=20, choices=ESTADOS, default=PENDIENTE)
     creada_en = models.DateTimeField(auto_now_add=True)
+    retirada_en = models.DateTimeField(_('retirada el'), null=True, blank=True)
+    recordatorio_enviado = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['-creada_en']
 
     def __str__(self):
         return f'Reserva {self.codigo_retiro} - {self.producto}'
+
+    def marcar_retirada(self):
+        """El comercio confirmó el retiro (web o app). Dispara el pedido de opinión al cliente."""
+        from django.utils import timezone
+        self.estado = self.RETIRADA
+        self.retirada_en = timezone.now()
+        self.save(update_fields=['estado', 'retirada_en'])
 
 
 class SolicitudDonacion(models.Model):
@@ -181,15 +205,31 @@ class SolicitudDonacion(models.Model):
 
 
 class Calificacion(models.Model):
-    """Opinión de un consumidor sobre un comercio, después de retirar su reserva (1 a 5 estrellas)."""
+    """Opinión de un consumidor después de retirar su reserva.
+
+    Califica al comercio (puntaje) y al producto (puntaje_producto) de 1 a 5 estrellas,
+    con un comentario opcional. El comercio puede responder públicamente.
+    Solo quien retiró la reserva puede opinar: así todas las opiniones son de compras reales.
+    """
 
     reserva = models.OneToOneField(Reserva, on_delete=models.CASCADE, related_name='calificacion')
     tienda = models.ForeignKey(Tienda, on_delete=models.CASCADE, related_name='calificaciones')
+    producto = models.ForeignKey(
+        'Producto', on_delete=models.CASCADE, related_name='calificaciones', null=True, blank=True
+    )
     consumidor = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='calificaciones'
     )
-    puntaje = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
-    comentario = models.TextField(blank=True, max_length=500)
+    puntaje = models.PositiveSmallIntegerField(
+        _('estrellas al comercio'), validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    puntaje_producto = models.PositiveSmallIntegerField(
+        _('estrellas al producto'), null=True, blank=True,
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+    )
+    comentario = models.TextField(_('comentario'), blank=True, max_length=500)
+    respuesta = models.TextField(_('respuesta del comercio'), blank=True, max_length=500)
+    respondida_en = models.DateTimeField(null=True, blank=True)
     creada_en = models.DateTimeField(auto_now_add=True)
     actualizada_en = models.DateTimeField(auto_now=True)
 
@@ -206,3 +246,10 @@ def resumen_calificaciones(tienda):
     """{'promedio': 4.5, 'cantidad': 12} del comercio (promedio None si todavía no tiene)."""
     datos = tienda.calificaciones.aggregate(promedio=Avg('puntaje'), cantidad=Count('pk'))
     return datos
+
+
+def resumen_producto(producto):
+    """Promedio de estrellas que recibió el producto (solo opiniones que lo calificaron)."""
+    return producto.calificaciones.filter(puntaje_producto__isnull=False).aggregate(
+        promedio=Avg('puntaje_producto'), cantidad=Count('pk')
+    )

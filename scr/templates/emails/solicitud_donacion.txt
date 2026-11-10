@@ -7,4 +7,6 @@ Mensaje: "{{ solicitud.mensaje }}"
 {% endif %}
 Aprobalo o rechazalo desde tu panel: {{ url_panel }}
 
-— Lüp · Podés desactivar estos avisos desde "Mis datos".
+— Lüp
+Configurar avisos: {{ url_avisos }}
+Dejar de recibir avisos: {{ url_baja }}

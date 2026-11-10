@@ -1,0 +1,16 @@
+{% load humanize %}RESERVA CONFIRMADA
+
+Reservaste {{ reserva.cantidad }} × {{ producto.titulo }}.
+
+Tu código de retiro: {{ reserva.codigo_retiro }}
+Dónde: {{ tienda.nombre_fantasia }} · {{ tienda.direccion }}
+Horario de retiro: {{ tienda.horario_atencion }}
+Retirá hasta: {{ producto.fecha_vencimiento|date:"l j \d\e F" }}
+Total a pagar en el local: ${{ reserva.precio_total|floatformat:"-2"|intcomma }}
+
+Cómo llegar: {{ url_como_llegar }}
+Si no podés ir, cancelala desde tu panel así otra persona la puede rescatar: {{ url_panel }}
+
+— Lüp
+Configurar avisos: {{ url_avisos }}
+Dejar de recibir avisos: {{ url_baja }}

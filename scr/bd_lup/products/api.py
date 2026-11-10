@@ -123,7 +123,10 @@ class ReservaSerializer(serializers.ModelSerializer):
 
     def get_calificacion(self, reserva):
         c = Calificacion.objects.filter(reserva=reserva).first()
-        return {'puntaje': c.puntaje, 'comentario': c.comentario} if c else None
+        if not c:
+            return None
+        return {'puntaje': c.puntaje, 'comentario': c.comentario,
+                'puntaje_producto': c.puntaje_producto, 'respuesta': c.respuesta}
 
 
 @api_view(['POST'])
@@ -266,8 +269,7 @@ def confirmar_retiro(request):
         return Response({'error': f'No encontramos una reserva con el código "{codigo}".'}, status=404)
     if reserva.estado != Reserva.PENDIENTE:
         return Response({'error': f'Esa reserva ya está {reserva.get_estado_display().lower()}.'}, status=400)
-    reserva.estado = Reserva.RETIRADA
-    reserva.save(update_fields=['estado'])
+    reserva.marcar_retirada()
     return Response({
         'mensaje': f'Retiro confirmado: {reserva.cantidad} × {reserva.producto.titulo} '
                    f'para {reserva.consumidor.nombre_visible}.',
@@ -320,9 +322,10 @@ def responder_solicitud(request, pk, accion):
             solicitud.save(update_fields=['estado'])
             producto.estado = Producto.DONADO
             producto.save(update_fields=['estado', 'actualizado_en'])
-            producto.solicitudes_donacion.filter(estado=SolicitudDonacion.PENDIENTE).update(
-                estado=SolicitudDonacion.RECHAZADA
-            )
+            # Los demás pedidos de este producto quedan rechazados (y cada organización recibe el aviso)
+            for otra in producto.solicitudes_donacion.filter(estado=SolicitudDonacion.PENDIENTE):
+                otra.estado = SolicitudDonacion.RECHAZADA
+                otra.save(update_fields=['estado'])
     else:
         solicitud.estado = SolicitudDonacion.RECHAZADA
         solicitud.save(update_fields=['estado'])
@@ -405,9 +408,16 @@ def calificar_reserva(request, pk):
     if not 1 <= puntaje <= 5:
         return Response({'puntaje': ['Elegí de 1 a 5 estrellas.']}, status=400)
     comentario = str(request.data.get('comentario', '')).strip()[:500]
-    Calificacion.objects.update_or_create(
-        reserva=reserva,
-        defaults={'tienda': reserva.producto.comercio, 'consumidor': request.user,
-                  'puntaje': puntaje, 'comentario': comentario},
-    )
+    datos = {'tienda': reserva.producto.comercio, 'producto': reserva.producto, 'consumidor': request.user,
+             'puntaje': puntaje, 'comentario': comentario}
+    # Opcional: estrellas al producto ({"puntaje_producto": 4})
+    if request.data.get('puntaje_producto') not in (None, ''):
+        try:
+            puntaje_producto = int(request.data.get('puntaje_producto'))
+        except (TypeError, ValueError):
+            puntaje_producto = 0
+        if not 1 <= puntaje_producto <= 5:
+            return Response({'puntaje_producto': ['Elegí de 1 a 5 estrellas.']}, status=400)
+        datos['puntaje_producto'] = puntaje_producto
+    Calificacion.objects.update_or_create(reserva=reserva, defaults=datos)
     return Response(ReservaSerializer(reserva).data)

@@ -1,0 +1,3 @@
+{% load i18n %}{% comment %}
+Etiqueta con el estado de una publicación (solo si no está disponible, salvo siempre=True).
+{% endcomment %}{% with e=p.estado_visible %}{% if e != 'disponible' or siempre %}<span class="estado estado-{{ e }} ms-1">{% if e == 'vendido' %}{% translate "Vendido" %}{% elif e == 'no_disponible' %}{% translate "No disponible" %}{% elif e == 'donado' %}{% translate "Donado" %}{% elif e == 'vencido' %}{% translate "Vencido" %}{% else %}{% translate "Disponible" %}{% endif %}</span>{% endif %}{% endwith %}

@@ -119,6 +119,22 @@
     {% block content %}{% endblock %}
 </main>
 
+{# "¿Cómo te fue?": después de retirar una reserva, se le pide la opinión al cliente #}
+{% with r=opinion_pendiente %}{% if r %}
+<div class="pedir-opinion" data-pedir-opinion="{{ r.pk }}" role="dialog" aria-labelledby="pedir-opinion-titulo" hidden>
+    {% if r.producto.imagen %}<img src="{{ r.producto.imagen.url }}" class="mini-foto" alt="">{% else %}<div class="mini-foto" aria-hidden="true">{{ r.producto.categoria|emoji_categoria }}</div>{% endif %}
+    <div class="flex-grow-1 min-w-0">
+        <p class="fw-semibold mb-0" id="pedir-opinion-titulo">{% translate "¿Cómo te fue?" %}</p>
+        <p class="small text-muted-lup mb-0 text-truncate">{% blocktranslate with producto=r.producto.titulo comercio=r.producto.comercio.nombre_fantasia %}{{ producto }} en {{ comercio }}{% endblocktranslate %}</p>
+        <div class="estrellas-rapidas" aria-label="{% translate 'Calificar al comercio' %}">
+            {% for n in "12345" %}<a href="{% url 'calificar_reserva' r.pk %}?estrellas={{ n }}" title="{% blocktranslate count c=n|add:0 %}{{ c }} estrella{% plural %}{{ c }} estrellas{% endblocktranslate %}"><i class="bi bi-star-fill"></i></a>{% endfor %}
+        </div>
+        <a href="{% url 'calificar_reserva' r.pk %}" class="small fw-semibold text-decoration-none">{% translate "Dejar mi opinión" %} <i class="bi bi-arrow-right"></i></a>
+    </div>
+    <button type="button" class="btn-close btn-sm" data-cerrar-opinion aria-label="{% translate 'Ahora no' %}"></button>
+</div>
+{% endif %}{% endwith %}
+
 {# Pedido de ubicación al cliente (lo muestra lup.js en inicio, ofertas y comercios) #}
 <div class="pedir-ubicacion" data-pedir-ubicacion role="dialog" aria-labelledby="pedir-ubicacion-titulo" aria-describedby="pedir-ubicacion-texto" hidden>
     <div class="pedir-ubicacion-icono" aria-hidden="true"><i class="bi bi-geo-alt-fill"></i></div>
