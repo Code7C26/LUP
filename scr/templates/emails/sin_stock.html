@@ -1,0 +1,9 @@
+{% extends 'emails/_base.html' %}
+{% block etiqueta %}Sin stock{% endblock %}
+{% block encabezado %}¡Se agotó {{ producto.titulo }}! 🎉{% endblock %}
+{% block cuerpo %}
+<p style="font-size:14px;line-height:1.6;margin:0 0 12px;">Tus clientes reservaron todas las unidades, así que la oferta ya no aparece en el catálogo.</p>
+<p style="font-size:14px;line-height:1.6;color:#5c6b62;margin:0;">Si te quedaron más, editá la publicación y cargá el stock nuevo para volver a publicarla.</p>
+{% endblock %}
+{% block url_boton %}{{ url_editar }}{% endblock %}
+{% block boton %}Cargar más stock{% endblock %}

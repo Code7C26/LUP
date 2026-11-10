@@ -182,10 +182,25 @@ Copiá el ejemplo y completalo:
 cp .env.ejemplo .env
 ```
 
-### Avisos por Gmail a los comercios
+### Avisos por Gmail para todos los usuarios
 
-Cada comercio recibe un email cuando alguien **reserva**, **cancela** o **pide una donación** de sus productos
-(desde la web o desde la app). Cada comercio puede apagarlos en *Mis datos → Avisos*.
+| Quién | Recibe un email cuando… |
+|---|---|
+| **Todos** | crean su cuenta (bienvenida) |
+| **Consumidor** | reserva (con el código de retiro y "Cómo llegar"), cancela, es el último día para retirar, el comercio confirma el retiro ("¿Cómo te fue?") y el comercio responde su opinión |
+| **Comercio** | alguien reserva o cancela, un producto se queda sin stock, una organización pide una donación y un cliente deja una opinión |
+| **Organización** | le aprueban o rechazan un pedido de donación y se publica una donación nueva |
+
+Funcionan igual desde la web y desde la app. Cada persona puede apagarlos en *Mis datos → Avisos por email*
+o con el link **"Dejar de recibir avisos"** que va al pie de cada email.
+
+El recordatorio del último día se manda con un comando que conviene programar una vez por día (por ejemplo a las 9):
+
+```bash
+python manage.py enviar_recordatorios
+```
+
+(En el hosting: una tarea programada/cron `0 9 * * *`. En Windows: Programador de tareas.)
 
 1. Usá una cuenta de Gmail para el proyecto (ej: `lup.avisos@gmail.com`) con la **verificación en 2 pasos** activada.
 2. Entrá a https://myaccount.google.com/apppasswords y creá una **contraseña de aplicación** (16 letras).

@@ -98,6 +98,21 @@ class Producto(models.Model):
         return self.fecha_vencimiento == localdate()
 
     @property
+    def estado_visible(self):
+        """Estado como lo ve la gente: disponible, vendido, no_disponible, donado o vencido."""
+        if self.estado == self.AGOTADO:
+            return 'vendido'
+        if self.estado == self.PAUSADO:
+            return 'no_disponible'
+        if self.estado == self.DONADO:
+            return 'donado'
+        if self.fecha_vencimiento < localdate():
+            return 'vencido'
+        if self.stock <= 0:
+            return 'vendido'
+        return 'disponible'
+
+    @property
     def esta_disponible(self):
         return (
             self.estado == self.DISPONIBLE
@@ -142,6 +157,7 @@ class Reserva(models.Model):
     estado = models.CharField(max_length=20, choices=ESTADOS, default=PENDIENTE)
     creada_en = models.DateTimeField(auto_now_add=True)
     retirada_en = models.DateTimeField(_('retirada el'), null=True, blank=True)
+    recordatorio_enviado = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['-creada_en']

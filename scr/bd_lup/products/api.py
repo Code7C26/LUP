@@ -308,9 +308,10 @@ def responder_solicitud(request, pk, accion):
             solicitud.save(update_fields=['estado'])
             producto.estado = Producto.DONADO
             producto.save(update_fields=['estado', 'actualizado_en'])
-            producto.solicitudes_donacion.filter(estado=SolicitudDonacion.PENDIENTE).update(
-                estado=SolicitudDonacion.RECHAZADA
-            )
+            # Los demás pedidos de este producto quedan rechazados (y cada organización recibe el aviso)
+            for otra in producto.solicitudes_donacion.filter(estado=SolicitudDonacion.PENDIENTE):
+                otra.estado = SolicitudDonacion.RECHAZADA
+                otra.save(update_fields=['estado'])
     else:
         solicitud.estado = SolicitudDonacion.RECHAZADA
         solicitud.save(update_fields=['estado'])

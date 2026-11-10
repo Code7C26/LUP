@@ -1,0 +1,20 @@
+¡Hola, {{ nombre }}! Ya sos parte de Lüp.
+
+Gracias por sumarte a la comunidad que le da una segunda oportunidad a la comida.
+{% if usuario.rol == 'consumidor' %}
+1. Buscá ofertas cerca tuyo.
+2. Reservá y recibí tu código de retiro.
+3. Retirá en el local, mostrá el código y pagá menos.
+{% elif usuario.rol == 'comercio' %}
+1. Completá la ubicación de tu local en "Mis datos".
+2. Publicá tus excedentes del día con descuento.
+3. Te avisamos por email cada vez que alguien reserve.
+{% else %}
+1. Mirá las ofertas marcadas como donables.
+2. Pedí la donación con un mensaje para el comercio.
+3. Te avisamos cuando la aprueben y cuando haya donaciones nuevas.
+{% endif %}
+Empezar: {{ url_panel }}
+
+— Lüp
+Configurar avisos: {{ url_avisos }}

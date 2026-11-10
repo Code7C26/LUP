@@ -1,0 +1,9 @@
+{% extends 'emails/_base.html' %}
+{% block color_etiqueta %}#5c6b62{% endblock %}
+{% block etiqueta %}Pedido de donación{% endblock %}
+{% block encabezado %}Tu pedido de {{ producto.titulo }} no pudo concretarse{% endblock %}
+{% block cuerpo %}
+<p style="font-size:14px;line-height:1.6;margin:0;">{{ tienda.nombre_fantasia }} no pudo darte esta donación (puede que ya la haya entregado a otra organización). ¡No te desanimes! Todos los días se publican nuevas.</p>
+{% endblock %}
+{% block url_boton %}{{ url_donaciones }}{% endblock %}
+{% block boton %}Ver donaciones disponibles{% endblock %}

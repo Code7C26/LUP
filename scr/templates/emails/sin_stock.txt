@@ -1,0 +1,8 @@
+¡SE AGOTÓ {{ producto.titulo }}!
+
+Tus clientes reservaron todas las unidades, así que la oferta ya no aparece en el catálogo.
+Si te quedaron más, cargá el stock nuevo para volver a publicarla: {{ url_editar }}
+
+— Lüp
+Configurar avisos: {{ url_avisos }}
+Dejar de recibir avisos: {{ url_baja }}

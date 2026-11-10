@@ -6,4 +6,6 @@ NUEVA OPINIÓN sobre {{ tienda.nombre_fantasia }}
 {% endif %}
 Podés responderle públicamente desde tu panel: {{ url_panel }}
 
-— Lüp · Podés desactivar estos avisos desde "Mis datos".
+— Lüp
+Configurar avisos: {{ url_avisos }}
+Dejar de recibir avisos: {{ url_baja }}

@@ -31,7 +31,7 @@
             {% if producto.calif_cantidad %}<a href="{% url 'detalle_tienda' producto.comercio.pk %}#opiniones" class="calif-mini ms-2 text-decoration-none" title="{% translate 'Opiniones del comercio' %}"><i class="bi bi-star-fill"></i> {{ producto.calif_promedio|promedio }} <span class="text-muted-lup fw-normal">({{ producto.calif_cantidad }})</span></a>{% endif %}
             <h1 class="h2 mt-1 mb-2">{{ producto.titulo }}</h1>
             <span class="estado {{ producto.estado|lower }}">{{ producto.get_categoria_display }}</span>
-            {% if not producto.esta_disponible %}<span class="estado vencido ms-1">{% translate "No disponible" %}</span>{% endif %}
+            {% include 'includes/_estado_producto.html' with p=producto %}
 
             <div class="d-flex align-items-end gap-3 my-4">
                 <span class="precio" style="font-size: 2.4rem;">${{ producto.precio_descuento|floatformat:"-2"|intcomma }}</span>
@@ -50,9 +50,29 @@
                 {% include 'includes/_mapa_comercio.html' with tienda=producto.comercio %}
             </div>
 
-            {% if not producto.esta_disponible %}
-                <div class="alert alert-warning rounded-4">{% translate "Esta oferta ya no está disponible." %} <a href="{% url 'catalogo' %}">{% translate "Ver otras ofertas" %}</a></div>
+            {% if es_propio %}
+                {# El comercio dueño ve el estado y lo puede cambiar desde acá #}
+                <div class="tarjeta p-4">
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                        <span class="me-auto fw-semibold"><i class="bi bi-person-badge me-1"></i>{% translate "Esta es tu publicación" %}</span>
+                        {% include 'includes/_estado_producto.html' with p=producto siempre=True %}
+                    </div>
+                    {% if pendientes %}<p class="small text-muted-lup mb-3"><i class="bi bi-info-circle me-1"></i>{% blocktranslate count n=pendientes %}Tiene {{ n }} reserva pendiente de retiro.{% plural %}Tiene {{ n }} reservas pendientes de retiro.{% endblocktranslate %}</p>{% endif %}
+                    <div class="d-flex flex-wrap gap-2">
+                        {% include 'includes/_acciones_estado.html' with p=producto pendientes=pendientes botones=True %}
+                        <a href="{% url 'editar_excedente' producto.pk %}" class="btn btn-lup-outline btn-sm"><i class="bi bi-pencil me-1"></i>{% translate "Editar" %}</a>
+                        <a href="{% url 'eliminar_excedente' producto.pk %}" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash me-1"></i>{% translate "Eliminar" %}</a>
+                    </div>
+                </div>
 
+            {% elif not producto.esta_disponible %}
+                <div class="alert alert-warning rounded-4">
+                    {% if producto.estado_visible == 'vendido' %}{% translate "Esta oferta ya se vendió." %}
+                    {% elif producto.estado_visible == 'no_disponible' %}{% translate "El comercio marcó esta oferta como no disponible por ahora." %}
+                    {% elif producto.estado_visible == 'donado' %}{% translate "Esta oferta ya fue donada a una organización." %}
+                    {% else %}{% translate "Esta oferta ya no está disponible." %}{% endif %}
+                    <a href="{% url 'catalogo' %}">{% translate "Ver otras ofertas" %}</a>
+                </div>
             {% elif form_reserva %}
                 <form method="post" action="{% url 'reservar' producto.pk %}" class="tarjeta p-4 needs-validation" novalidate>
                     {% csrf_token %}
@@ -85,13 +105,6 @@
                         <button type="submit" class="btn btn-ambar w-100">{% translate "Enviar solicitud al comercio" %}</button>
                     </form>
                 {% endif %}
-
-            {% elif es_propio %}
-                <div class="tarjeta p-4 d-flex flex-wrap gap-2 align-items-center">
-                    <span class="me-auto fw-semibold"><i class="bi bi-person-badge me-1"></i>{% translate "Esta es tu publicación" %}</span>
-                    <a href="{% url 'editar_excedente' producto.pk %}" class="btn btn-lup-outline btn-sm"><i class="bi bi-pencil me-1"></i>{% translate "Editar" %}</a>
-                    <a href="{% url 'eliminar_excedente' producto.pk %}" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash me-1"></i>{% translate "Eliminar" %}</a>
-                </div>
 
             {% elif not user.is_authenticated %}
                 <div class="tarjeta p-4 text-center">

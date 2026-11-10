@@ -27,6 +27,10 @@ class Usuario(AbstractUser):
     rol = models.CharField(max_length=20, choices=ROLES, default=CONSUMIDOR)
     telefono = models.CharField(_('teléfono'), max_length=20, blank=True)
     ciudad = models.CharField(max_length=100, blank=True)
+    avisos_email = models.BooleanField(
+        _('recibir avisos por email'), default=True,
+        help_text=_('Reservas, retiros, opiniones y donaciones. Podés desactivarlos cuando quieras.'),
+    )
     foto = models.ImageField(
         'foto de perfil', upload_to=ruta_foto_perfil, null=True, blank=True,
         help_text=_('Para comercios y organizaciones puede ser el logo.'),

@@ -1,0 +1,15 @@
+{% extends 'emails/_base.html' %}
+{% block etiqueta %}Bienvenida{% endblock %}
+{% block encabezado %}¡Hola, {{ nombre }}! Ya sos parte de Lüp 🌱{% endblock %}
+{% block cuerpo %}
+<p style="font-size:15px;line-height:1.6;margin:0 0 12px;">Gracias por sumarte a la comunidad que le da una segunda oportunidad a la comida.</p>
+{% if usuario.rol == 'consumidor' %}
+<p style="font-size:14px;line-height:1.7;color:#5c6b62;margin:0;">1. Buscá ofertas cerca tuyo.<br>2. Reservá y recibí tu código de retiro.<br>3. Retirá en el local, mostrá el código y pagá menos.</p>
+{% elif usuario.rol == 'comercio' %}
+<p style="font-size:14px;line-height:1.7;color:#5c6b62;margin:0;">1. Completá la ubicación de tu local en <strong>Mis datos</strong>.<br>2. Publicá tus excedentes del día con descuento.<br>3. Te avisamos por email cada vez que alguien reserve.</p>
+{% else %}
+<p style="font-size:14px;line-height:1.7;color:#5c6b62;margin:0;">1. Mirá las ofertas marcadas como <strong>donables</strong>.<br>2. Pedí la donación con un mensaje para el comercio.<br>3. Te avisamos por email cuando la aprueben y cuando haya donaciones nuevas.</p>
+{% endif %}
+{% endblock %}
+{% block boton %}Empezar{% endblock %}
+{% block pie %}Te escribimos porque creaste una cuenta en Lüp.{% endblock %}

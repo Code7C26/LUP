@@ -1,0 +1,10 @@
+PEDIDO DE DONACIÓN
+
+Tu pedido de {{ producto.titulo }} a {{ tienda.nombre_fantasia }} no pudo concretarse
+(puede que ya la hayan entregado a otra organización). Todos los días se publican nuevas.
+
+Ver donaciones disponibles: {{ url_donaciones }}
+
+— Lüp
+Configurar avisos: {{ url_avisos }}
+Dejar de recibir avisos: {{ url_baja }}

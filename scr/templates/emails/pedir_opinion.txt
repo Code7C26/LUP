@@ -8,4 +8,6 @@ Tu opinión ayuda a otras personas a elegir y al comercio a mejorar.
 
 Dejar mi opinión: {{ url_opinar }}
 
-— Lüp · Solo te mandamos este email una vez por compra.
+— Lüp
+Configurar avisos: {{ url_avisos }}
+Dejar de recibir avisos: {{ url_baja }}

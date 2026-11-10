@@ -42,8 +42,13 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--forzar', action='store_true', help='Cargar aunque DEBUG esté desactivado.')
 
-    @transaction.atomic
     def handle(self, *args, **options):
+        # Datos de ejemplo: sin mandar emails
+        from scr.bd_lup.products import notificaciones
+        with notificaciones.silenciadas(), transaction.atomic():
+            self._cargar(*args, **options)
+
+    def _cargar(self, *args, **options):
         # Son datos inventados: nunca deberían aparecer en la página publicada
         if not settings.DEBUG and not options['forzar']:
             raise CommandError(

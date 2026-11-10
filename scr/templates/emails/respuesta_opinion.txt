@@ -1,0 +1,11 @@
+{{ tienda.nombre_fantasia|upper }} RESPONDIÓ TU OPINIÓN
+{% if calificacion.comentario %}
+Vos escribiste: "{{ calificacion.comentario }}"
+{% endif %}
+{{ tienda.nombre_fantasia }}: {{ calificacion.respuesta }}
+
+Ver en Lüp: {{ url_ver }}
+
+— Lüp
+Configurar avisos: {{ url_avisos }}
+Dejar de recibir avisos: {{ url_baja }}

@@ -61,7 +61,10 @@ def registro(request, rol):
     form = Formulario(request.data)
     if not form.is_valid():
         return Response(form.errors, status=400)
-    return Response(datos_sesion(form.save()), status=201)
+    usuario = form.save()
+    from scr.bd_lup.products import notificaciones
+    notificaciones.bienvenida(usuario)
+    return Response(datos_sesion(usuario), status=201)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

@@ -1,0 +1,9 @@
+{% extends 'emails/_base.html' %}
+{% block color_etiqueta %}#a23030{% endblock %}
+{% block etiqueta %}Reserva cancelada{% endblock %}
+{% block encabezado %}Cancelaste tu reserva de {{ producto.titulo }}{% endblock %}
+{% block cuerpo %}
+<p style="font-size:14px;line-height:1.6;margin:0;">El código <strong style="font-family:Consolas,monospace;letter-spacing:2px;">{{ reserva.codigo_retiro }}</strong> ya no es válido. ¡Gracias por avisar! Así otra persona puede rescatar esa comida.</p>
+{% endblock %}
+{% block url_boton %}{{ sitio_url }}/productos/{% endblock %}
+{% block boton %}Ver otras ofertas{% endblock %}

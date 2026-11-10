@@ -119,13 +119,7 @@
                             <div class="dropdown">
                                 <button type="button" class="min-mas" data-bs-toggle="dropdown" aria-expanded="false" title="{% translate 'Cambiar estado' %}" aria-label="{% blocktranslate with titulo=p.titulo %}Cambiar estado de {{ titulo }}{% endblocktranslate %}"><i class="bi bi-three-dots-vertical"></i></button>
                                 <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 p-2">
-                                    {% if p.estado == 'DISPONIBLE' %}
-                                        <li><form method="post" action="{% url 'cambiar_estado_producto' p.pk %}">{% csrf_token %}<input type="hidden" name="estado" value="AGOTADO"><button class="dropdown-item rounded-3"><i class="bi bi-bag-check me-2"></i>{% translate "Marcar como vendido" %}</button></form></li>
-                                        <li><form method="post" action="{% url 'cambiar_estado_producto' p.pk %}">{% csrf_token %}<input type="hidden" name="estado" value="PAUSADO"><button class="dropdown-item rounded-3"><i class="bi bi-pause-circle me-2"></i>{% translate "Marcar como no disponible" %}</button></form></li>
-                                    {% else %}
-                                        <li><form method="post" action="{% url 'cambiar_estado_producto' p.pk %}">{% csrf_token %}<input type="hidden" name="estado" value="DISPONIBLE"><button class="dropdown-item rounded-3"><i class="bi bi-arrow-counterclockwise me-2"></i>{% translate "Volver a publicar" %}</button></form></li>
-                                        {% if p.estado == 'PAUSADO' %}<li><form method="post" action="{% url 'cambiar_estado_producto' p.pk %}">{% csrf_token %}<input type="hidden" name="estado" value="AGOTADO"><button class="dropdown-item rounded-3"><i class="bi bi-bag-check me-2"></i>{% translate "Marcar como vendido" %}</button></form></li>{% endif %}
-                                    {% endif %}
+                                    {% include 'includes/_acciones_estado.html' with p=p pendientes=p.pendientes %}
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item rounded-3 text-danger" href="{% url 'eliminar_excedente' p.pk %}"><i class="bi bi-trash me-2"></i>{% translate "Eliminar" %}</a></li>
                                 </ul>

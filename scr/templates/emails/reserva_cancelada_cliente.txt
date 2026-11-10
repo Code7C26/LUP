@@ -1,0 +1,10 @@
+RESERVA CANCELADA
+
+Cancelaste tu reserva de {{ reserva.cantidad }} × {{ producto.titulo }} en {{ tienda.nombre_fantasia }}.
+El código {{ reserva.codigo_retiro }} ya no es válido. ¡Gracias por avisar!
+
+Ver otras ofertas: {{ sitio_url }}/productos/
+
+— Lüp
+Configurar avisos: {{ url_avisos }}
+Dejar de recibir avisos: {{ url_baja }}

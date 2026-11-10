@@ -123,6 +123,7 @@ def detalle_producto(request, pk):
             contexto['ya_solicitada'] = producto.solicitudes_donacion.filter(organizacion=usuario).exists()
         elif usuario.es_comercio and producto.comercio == _tienda_de(usuario):
             contexto['es_propio'] = True
+            contexto['pendientes'] = producto.reservas.filter(estado=Reserva.PENDIENTE).count()
     contexto['calificacion_producto'] = resumen_producto(producto)
     contexto['opiniones_producto'] = producto.calificaciones.filter(
         puntaje_producto__isnull=False
@@ -230,9 +231,13 @@ def responder_opinion(request, pk):
     form = RespuestaForm(request.POST)
     if form.is_valid():
         texto = ' '.join(form.cleaned_data['respuesta'].split())
+        es_nueva = bool(texto) and texto != calificacion.respuesta
         calificacion.respuesta = texto
         calificacion.respondida_en = timezone.now() if texto else None
         calificacion.save(update_fields=['respuesta', 'respondida_en'])
+        if es_nueva:
+            from . import notificaciones
+            notificaciones.avisar_respuesta_opinion(calificacion)
         messages.success(request, _('Tu respuesta quedó publicada.') if texto else _('Borraste tu respuesta.'))
     else:
         messages.error(request, _('La respuesta puede tener hasta 500 caracteres.'))
@@ -337,6 +342,8 @@ def cambiar_estado_producto(request, pk):
         producto.estado = nuevo
         producto.save(update_fields=['estado', 'actualizado_en'])
         messages.success(request, MENSAJES_ESTADO[nuevo] % {'titulo': producto.titulo})
+    if request.POST.get('volver') == 'producto':
+        return redirect('detalle_producto', pk=pk)
     return redirect('panel')
 
 
@@ -381,9 +388,10 @@ def responder_donacion(request, pk, accion):
             solicitud.save(update_fields=['estado'])
             producto.estado = Producto.DONADO
             producto.save(update_fields=['estado', 'actualizado_en'])
-            producto.solicitudes_donacion.filter(estado=SolicitudDonacion.PENDIENTE).update(
-                estado=SolicitudDonacion.RECHAZADA
-            )
+            # Los demás pedidos de este producto quedan rechazados (y cada organización recibe el aviso)
+            for otra in producto.solicitudes_donacion.filter(estado=SolicitudDonacion.PENDIENTE):
+                otra.estado = SolicitudDonacion.RECHAZADA
+                otra.save(update_fields=['estado'])
         messages.success(request, _('Donación aprobada para %(org)s. ¡Gracias!') % {'org': solicitud.organizacion.nombre_visible})
     else:
         solicitud.estado = SolicitudDonacion.RECHAZADA
@@ -402,7 +410,12 @@ def panel(request):
 
     if usuario.es_comercio:
         tienda = _tienda_de(usuario)
-        productos = Producto.objects.filter(comercio=tienda) if tienda else Producto.objects.none()
+        productos = (
+            Producto.objects.filter(comercio=tienda).annotate(
+                pendientes=Count('reservas', filter=Q(reservas__estado=Reserva.PENDIENTE))
+            )
+            if tienda else Producto.objects.none()
+        )
         reservas = Reserva.objects.filter(producto__comercio=tienda).select_related('producto', 'consumidor')
         retiradas = reservas.filter(estado=Reserva.RETIRADA)
         contexto = {

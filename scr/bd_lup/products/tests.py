@@ -243,6 +243,9 @@ from django.test import override_settings  # noqa: E402
 class AvisosEmailTests(FlujoLupTests.__bases__[0]):
     setUp = FlujoLupTests.setUp
 
+    def para(self, email):
+        return [m for m in mail.outbox if m.to == [email]]
+
     def reservar_web(self, cantidad=2):
         self.client.force_login(self.consumidor)
         with self.captureOnCommitCallbacks(execute=True):
@@ -251,8 +254,8 @@ class AvisosEmailTests(FlujoLupTests.__bases__[0]):
 
     def test_nueva_reserva_avisa_al_comercio(self):
         reserva = self.reservar_web()
-        self.assertEqual(len(mail.outbox), 1)
-        aviso = mail.outbox[0]
+        self.assertEqual(len(self.para('p@lup.test')), 1)
+        aviso = self.para('p@lup.test')[0]
         self.assertEqual(aviso.to, ['p@lup.test'])
         self.assertIn('Nueva reserva: 2 × Medialunas', aviso.subject)
         self.assertIn(reserva.codigo_retiro, aviso.body)
@@ -265,16 +268,15 @@ class AvisosEmailTests(FlujoLupTests.__bases__[0]):
         reserva = self.reservar_web()
         with self.captureOnCommitCallbacks(execute=True):
             self.client.post(reverse('cancelar_reserva', args=[reserva.pk]))
-        self.assertEqual(len(mail.outbox), 2)
-        self.assertIn('Reserva cancelada', mail.outbox[1].subject)
+        self.assertIn('Reserva cancelada', self.para('p@lup.test')[-1].subject)
+        self.assertIn('Cancelaste tu reserva', self.para('c@lup.test')[-1].subject)
 
     def test_retiro_confirmado_le_pide_la_opinion_al_cliente(self):
         reserva = self.reservar_web()
         self.client.force_login(self.comercio)
         with self.captureOnCommitCallbacks(execute=True):
             self.client.post(reverse('confirmar_retiro'), {'codigo': reserva.codigo_retiro})
-        self.assertEqual(len(mail.outbox), 2)
-        pedido = mail.outbox[1]
+        pedido = self.para('c@lup.test')[-1]
         self.assertEqual(pedido.to, ['c@lup.test'])
         self.assertIn('¿Cómo te fue', pedido.subject)
         self.assertIn(f'https://lup.test/productos/reservas/{reserva.pk}/calificar/', pedido.body)
@@ -285,22 +287,24 @@ class AvisosEmailTests(FlujoLupTests.__bases__[0]):
         self.client.force_login(self.org)
         with self.captureOnCommitCallbacks(execute=True):
             self.client.post(reverse('solicitar_donacion', args=[self.producto.pk]), {'mensaje': 'Para 40 chicos'})
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertIn('Pedido de donación: Medialunas', mail.outbox[0].subject)
-        self.assertIn('Para 40 chicos', mail.outbox[0].body)
+        aviso = self.para('p@lup.test')[0]
+        self.assertIn('Pedido de donación: Medialunas', aviso.subject)
+        self.assertIn('Para 40 chicos', aviso.body)
 
     def test_reserva_desde_la_app_tambien_avisa(self):
         self.client.force_login(self.consumidor)
         with self.captureOnCommitCallbacks(execute=True):
             r = self.client.post(reverse('api_reservar', args=[self.producto.pk]), {'cantidad': 1})
         self.assertEqual(r.status_code, 201)
-        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(len(self.para('p@lup.test')), 1)
+        self.assertEqual(len(self.para('c@lup.test')), 1)
 
     def test_comercio_puede_desactivar_los_avisos(self):
-        self.tienda.notificaciones_email = False
-        self.tienda.save()
+        self.comercio.avisos_email = False
+        self.comercio.save()
         self.reservar_web()
-        self.assertEqual(len(mail.outbox), 0)
+        self.assertEqual(len(self.para('p@lup.test')), 0)
+        self.assertEqual(len(self.para('c@lup.test')), 1)  # el cliente sí recibe su confirmación
 
     def test_si_gmail_falla_la_reserva_igual_se_hace(self):
         with mock.patch('django.core.mail.EmailMultiAlternatives.send', side_effect=OSError('sin internet')):
@@ -379,7 +383,7 @@ class UbicacionTests(FlujoLupTests.__bases__[0]):
         datos = {
             'u-first_name': '', 'u-last_name': '', 'u-email': 'p@lup.test', 'u-telefono': '', 'u-ciudad': '',
             'p-nombre_fantasia': 'Panadería Sol', 'p-rubro': 'panaderia', 'p-descripcion': '',
-            'p-direccion': 'Belgrano 1', 'p-horario_atencion': '18 a 20 hs', 'p-notificaciones_email': 'on',
+            'p-direccion': 'Belgrano 1', 'p-horario_atencion': '18 a 20 hs',
             'p-latitud': '', 'p-longitud': '',
         }
         datos.update(extra)
@@ -396,10 +400,9 @@ class UbicacionTests(FlujoLupTests.__bases__[0]):
     def test_comercio_puede_apagar_los_avisos(self):
         self.client.force_login(self.comercio)
         datos = self.datos_perfil_comercio()
-        del datos['p-notificaciones_email']
-        self.client.post(reverse('perfil'), datos)
-        self.tienda.refresh_from_db()
-        self.assertFalse(self.tienda.notificaciones_email)
+        self.client.post(reverse('perfil'), datos)  # sin u-avisos_email = casilla destildada
+        self.comercio.refresh_from_db()
+        self.assertFalse(self.comercio.avisos_email)
 
     @override_settings(GOOGLE_MAPS_API_KEY='CLAVE-TEST')
     def test_con_clave_ubica_el_comercio_por_su_direccion(self):
@@ -851,3 +854,164 @@ class OpinionesTests(FlujoLupTests.__bases__[0]):
         r = self.client.post(reverse('api_calificar_reserva', args=[reserva.pk]),
                              {'puntaje': 4, 'puntaje_producto': 9}, content_type='application/json')
         self.assertEqual(r.status_code, 400)
+
+
+class EstadoEnPaginaDelProductoTests(FlujoLupTests.__bases__[0]):
+    """#93: el estado se ve en la página del producto y el dueño lo cambia desde ahí."""
+    setUp = FlujoLupTests.setUp
+
+    def test_visitante_ve_por_que_no_esta_disponible(self):
+        self.producto.estado = Producto.AGOTADO
+        self.producto.save()
+        r = self.client.get(reverse('detalle_producto', args=[self.producto.pk]))
+        self.assertContains(r, 'Esta oferta ya se vendió.')
+        self.assertContains(r, 'estado-vendido')
+        self.producto.estado = Producto.PAUSADO
+        self.producto.save()
+        r = self.client.get(reverse('detalle_producto', args=[self.producto.pk]))
+        self.assertContains(r, 'El comercio marcó esta oferta como no disponible por ahora.')
+        self.assertNotContains(r, 'Reservar ahora')
+
+    def test_dueno_cambia_el_estado_desde_el_producto(self):
+        self.client.force_login(self.comercio)
+        r = self.client.get(reverse('detalle_producto', args=[self.producto.pk]))
+        self.assertContains(r, 'Marcar como vendido')
+        r = self.client.post(reverse('cambiar_estado_producto', args=[self.producto.pk]), {'estado': 'PAUSADO', 'volver': 'producto'})
+        self.assertRedirects(r, reverse('detalle_producto', args=[self.producto.pk]))
+        r = self.client.get(reverse('detalle_producto', args=[self.producto.pk]))
+        self.assertContains(r, 'Volver a publicar')
+
+    def test_aviso_si_hay_reservas_pendientes(self):
+        Reserva.objects.create(consumidor=self.consumidor, producto=self.producto, cantidad=1, precio_total=1)
+        self.client.force_login(self.comercio)
+        r = self.client.get(reverse('detalle_producto', args=[self.producto.pk]))
+        self.assertContains(r, 'Tiene 1 reserva pendiente de retiro.')
+        self.assertContains(r, 'data-confirmar="Tenés 1 reserva pendiente de este producto.')
+        self.assertContains(self.client.get(reverse('panel')), 'data-confirmar="Tenés 1 reserva pendiente')
+
+
+# ==========================================================
+# #100 · Avisos por email para todos los usuarios
+# ==========================================================
+
+@override_settings(EMAIL_EN_SEGUNDO_PLANO=False, SITIO_URL='https://lup.test')
+class AvisosTodosTests(FlujoLupTests.__bases__[0]):
+    setUp = FlujoLupTests.setUp
+
+    def para(self, email):
+        return [m for m in mail.outbox if m.to == [email]]
+
+    def ultimo(self, email):
+        mensajes = self.para(email)
+        self.assertTrue(mensajes, f'No llegó ningún email a {email}')
+        return mensajes[-1]
+
+    def test_cliente_recibe_la_confirmacion_con_el_codigo(self):
+        self.client.force_login(self.consumidor)
+        with self.captureOnCommitCallbacks(execute=True):
+            self.client.post(reverse('reservar', args=[self.producto.pk]), {'cantidad': 1})
+        reserva = Reserva.objects.get()
+        aviso = self.ultimo('c@lup.test')
+        self.assertIn(reserva.codigo_retiro, aviso.subject)
+        self.assertIn('Belgrano 1', aviso.body)
+        self.assertIn('google.com/maps/dir', aviso.body)
+        self.assertIn('https://lup.test/usuarios/avisos/baja/', aviso.body)
+        self.assertIn('List-Unsubscribe', aviso.extra_headers)
+
+    def test_comercio_recibe_aviso_de_sin_stock(self):
+        self.client.force_login(self.consumidor)
+        with self.captureOnCommitCallbacks(execute=True):
+            self.client.post(reverse('reservar', args=[self.producto.pk]), {'cantidad': 5})  # todo el stock
+        self.assertIn('¡Se agotó Medialunas!', [m.subject for m in self.para('p@lup.test')])
+
+    def test_recordatorio_el_ultimo_dia(self):
+        from io import StringIO
+
+        from django.core.management import call_command
+        Reserva.objects.create(consumidor=self.consumidor, producto=self.producto, cantidad=1, precio_total=1)
+        Producto.objects.filter(pk=self.producto.pk).update(fecha_vencimiento=localdate())
+        mail.outbox.clear()
+        with self.captureOnCommitCallbacks(execute=True):
+            call_command('enviar_recordatorios', stdout=StringIO())
+        self.assertIn('Hoy es el último día para retirar Medialunas', self.ultimo('c@lup.test').subject)
+        # No se repite
+        with self.captureOnCommitCallbacks(execute=True):
+            call_command('enviar_recordatorios', stdout=StringIO())
+        self.assertEqual(len(self.para('c@lup.test')), 1)
+
+    def test_cliente_recibe_la_respuesta_a_su_opinion(self):
+        from .models import Calificacion
+        reserva = Reserva.objects.create(consumidor=self.consumidor, producto=self.producto, cantidad=1, precio_total=1)
+        reserva.marcar_retirada()
+        c = Calificacion.objects.create(reserva=reserva, tienda=self.tienda, producto=self.producto,
+                                        consumidor=self.consumidor, puntaje=4, comentario='Rico')
+        self.client.force_login(self.comercio)
+        with self.captureOnCommitCallbacks(execute=True):
+            self.client.post(reverse('responder_opinion', args=[c.pk]), {'respuesta': '¡Gracias!'})
+        aviso = self.ultimo('c@lup.test')
+        self.assertIn('respondió tu opinión', aviso.subject)
+        self.assertIn('¡Gracias!', aviso.body)
+        # Guardar la misma respuesta otra vez no manda otro email
+        cantidad = len(self.para('c@lup.test'))
+        with self.captureOnCommitCallbacks(execute=True):
+            self.client.post(reverse('responder_opinion', args=[c.pk]), {'respuesta': '¡Gracias!'})
+        self.assertEqual(len(self.para('c@lup.test')), cantidad)
+
+    def test_organizaciones_donacion_aprobada_rechazada_y_nueva(self):
+        otra = Usuario.objects.create_user('org2', 'o2@lup.test', 'Clave#2026', rol=Usuario.ORGANIZACION)
+        for org in (self.org, otra):
+            SolicitudDonacion.objects.create(producto=self.producto, organizacion=org, mensaje='x')
+        self.client.force_login(self.comercio)
+        primera = SolicitudDonacion.objects.get(organizacion=self.org)
+        with self.captureOnCommitCallbacks(execute=True):
+            self.client.post(reverse('responder_donacion', args=[primera.pk, 'aprobar']))
+        self.assertIn('aprobó tu pedido', self.ultimo('o@lup.test').subject)
+        self.assertIn('no pudo concretarse', self.ultimo('o2@lup.test').subject)
+        # Un comercio publica algo donable: les llega a las organizaciones
+        mail.outbox.clear()
+        with self.captureOnCommitCallbacks(execute=True):
+            Producto.objects.create(
+                comercio=self.tienda, titulo='Pan del día', descripcion='x', precio_original=Decimal('100'),
+                precio_descuento=Decimal('40'), stock=4, fecha_vencimiento=localdate(), es_donacion=True,
+            )
+        self.assertIn('Nueva donación disponible: Pan del día', self.ultimo('o@lup.test').subject)
+        self.assertIn('Nueva donación disponible: Pan del día', self.ultimo('o2@lup.test').subject)
+
+    def test_bienvenida_al_registrarse(self):
+        with self.captureOnCommitCallbacks(execute=True):
+            self.client.post(reverse('registro', args=['consumidor']), {
+                'username': 'nueva', 'first_name': 'Nueva', 'last_name': 'Persona', 'email': 'nueva@lup.test',
+                'password1': 'ClaveSegura#2026', 'password2': 'ClaveSegura#2026', 'acepta_terminos': 'on',
+            })
+        self.assertIn('Bienvenido/a a Lüp', self.ultimo('nueva@lup.test').subject)
+
+    def test_quien_apaga_los_avisos_no_los_recibe(self):
+        self.consumidor.avisos_email = False
+        self.consumidor.save()
+        self.client.force_login(self.consumidor)
+        with self.captureOnCommitCallbacks(execute=True):
+            self.client.post(reverse('reservar', args=[self.producto.pk]), {'cantidad': 1})
+        self.assertEqual(self.para('c@lup.test'), [])
+        self.assertEqual(len(self.para('p@lup.test')), 1)
+
+    def test_baja_con_un_clic_desde_el_email(self):
+        from .notificaciones import token_baja
+        url = reverse('baja_avisos', args=[token_baja(self.consumidor)])
+        r = self.client.get(url)  # abrir el link no cambia nada
+        self.assertContains(r, '¿Dejar de recibir avisos por email?')
+        self.consumidor.refresh_from_db()
+        self.assertTrue(self.consumidor.avisos_email)
+        r = self.client.post(url, {'accion': 'desactivar'})
+        self.assertContains(r, 'no vas a recibir más avisos')
+        self.consumidor.refresh_from_db()
+        self.assertFalse(self.consumidor.avisos_email)
+        self.client.post(url, {'accion': 'activar'})
+        self.consumidor.refresh_from_db()
+        self.assertTrue(self.consumidor.avisos_email)
+        self.assertEqual(self.client.get(reverse('baja_avisos', args=['token-trucho'])).status_code, 404)
+
+    def test_preferencia_en_mis_datos_para_cualquier_rol(self):
+        self.client.force_login(self.org)
+        r = self.client.get(reverse('perfil'))
+        self.assertContains(r, 'Avisos por email')
+        self.assertContains(r, 'se publica una donación nueva')

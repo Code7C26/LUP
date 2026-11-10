@@ -92,6 +92,8 @@ def registro_view(request, rol):
     form = FormClass(request.POST or None)
     if request.method == 'POST' and form.is_valid():
         usuario = form.save()
+        from scr.bd_lup.products import notificaciones
+        notificaciones.bienvenida(usuario)
         login(request, usuario, backend='scr.bd_lup.users.backends.UsuarioOEmailBackend')
         messages.success(request, _('¡Bienvenido/a a Lüp, %(nombre)s! Tu cuenta fue creada.') % {'nombre': usuario.nombre_visible})
         return redirect('panel')
@@ -128,3 +130,20 @@ def perfil_view(request):
             return redirect('perfil')
 
     return render(request, 'users/perfil.html', {'form_usuario': form_usuario, 'form_perfil': form_perfil})
+
+
+def baja_avisos(request, token):
+    """Link "Dejar de recibir avisos" de los emails. Funciona sin iniciar sesión.
+
+    Con GET solo se muestra la página (los programas de correo abren los links solos);
+    el cambio se hace al tocar el botón (POST).
+    """
+    from scr.bd_lup.products.notificaciones import usuario_de_token
+
+    usuario = usuario_de_token(token)
+    if usuario is None:
+        raise Http404(_('El link no es válido.'))
+    if request.method == 'POST':
+        usuario.avisos_email = request.POST.get('accion') == 'activar'
+        usuario.save(update_fields=['avisos_email'])
+    return render(request, 'users/baja_avisos.html', {'usuario_baja': usuario, 'token': token})

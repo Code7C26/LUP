@@ -842,6 +842,17 @@ h1, h2, h3, h4, h5, .h1, .h2, .h3, .h4, .h5 { color: var(--lup-titulo); font-wei
 .pedir-opinion .estrellas-rapidas a:hover ~ a { color: var(--lup-borde); }
 .pedir-opinion .estrellas-rapidas a:hover { transform: scale(1.12); }
 
+/* Estado de una publicación (vendido, no disponible...) */
+.estado.estado-disponible { background: var(--lup-menta); color: var(--lup-verde-2); }
+.estado.estado-vendido { background: var(--lup-azul-claro); color: var(--lup-azul-texto); }
+.estado.estado-no_disponible { background: var(--lup-ambar-claro); color: var(--lup-ambar-texto); }
+.estado.estado-donado { background: var(--lup-ambar-claro); color: var(--lup-ambar-texto); }
+.estado.estado-vencido { background: #fbe3e3; color: #a23030; }
+[data-bs-theme="dark"] .estado.estado-vencido { background: #3d1e1e; color: #f1a0a0; }
+
+.lista-avisos { padding-left: 1.1rem; }
+.lista-avisos li { margin-bottom: .1rem; }
+
 /* ---------- Detalle de producto ---------- */
 .detalle-foto {
     border-radius: 28px; overflow: hidden;
