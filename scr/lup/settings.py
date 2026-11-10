@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'scr.bd_lup.users.apps.UsersConfig',
     'scr.bd_lup.stores.apps.StoresConfig',
     'scr.bd_lup.products.apps.ProductsConfig',
+    'scr.bd_lup.soporte.apps.SoporteConfig',
 ]
 
 MIDDLEWARE = [
@@ -84,6 +85,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'scr.bd_lup.products.context_processors.google_maps',
                 'scr.bd_lup.products.context_processors.opinion_pendiente',
+                'scr.bd_lup.soporte.context_processors.soporte',
             ],
         },
     },
@@ -174,6 +176,14 @@ SITIO_URL = os.environ.get('SITIO_URL', 'http://127.0.0.1:8000').rstrip('/')
 # Con una clave se usa la API oficial para los mapas y para ubicar comercios por su dirección.
 # Sin clave, los mapas y los links "Cómo llegar" funcionan igual con Google Maps básico.
 GOOGLE_MAPS_API_KEY = os.environ.get('GOOGLE_MAPS_API_KEY', '').strip()
+
+
+# Asistente de soporte con IA (soporte/asistente.py)
+# Con ANTHROPIC_API_KEY responde Claude; sin clave, responde con preguntas frecuentes.
+ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '').strip()
+SOPORTE_MODELO = os.environ.get('SOPORTE_MODELO', 'claude-haiku-5-5').strip()
+# A dónde llegan los pedidos de "Hablar con una persona"
+SOPORTE_EMAIL = os.environ.get('SOPORTE_EMAIL', '').strip() or GMAIL_USUARIO
 
 
 # Modelo de usuario personalizado

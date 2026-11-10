@@ -4,6 +4,8 @@
    Clave = texto original en español · Valor = traducción.
    ========================================================== */
 window.LUP_I18N = {
+    'Escribiendo…': 'Typing…',
+    'No pudimos conectarnos. Revisá tu conexión y probá de nuevo.': 'We couldn\'t connect. Check your connection and try again.',
     '<strong>Guardá los cambios</strong> para confirmarla.': '<strong>Save your changes</strong> to confirm it.',
     'A %s de vos': '%s from you',
     'Así verán los consumidores tu publicación.': 'This is how consumers will see your listing.',

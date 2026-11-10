@@ -26,6 +26,7 @@ urlpatterns = [
     path('cerca/', product_views.home_cerca, name='home_cerca'),
     path('ubicacion/buscar/', product_views.buscar_direccion, name='buscar_direccion'),
     path('usuarios/', include('scr.bd_lup.users.urls')),
+    path('ayuda/', include('scr.bd_lup.soporte.urls')),  # chat de soporte
     
     # API: comercios 
     path('api/comercios/', stores_api.comercios, name='api_comercios'),

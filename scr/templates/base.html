@@ -156,6 +156,9 @@
     <button type="button" class="btn-close btn-sm" data-rechazar-ubicacion aria-label="{% translate 'Cerrar' %}"></button>
 </div>
 
+{# Chat de ayuda con IA (soporte/) #}
+{% include 'includes/_chat_soporte.html' %}
+
 {% block footer %}
 <footer class="footer-lup">
     <div class="container">
@@ -191,6 +194,7 @@
                 <h6>{% translate "Soporte al usuario" %}</h6>
                 <p class="small mb-2">{% translate "¿Tenés alguna duda o problema? Escribinos o llamanos." %}</p>
                 <ul class="list-unstyled small d-grid gap-2 mb-0">
+                    <li><a href="#chat-ayuda"><i class="bi bi-chat-dots me-1"></i>{% translate "Chat de ayuda" %}</a></li>
                     <li><a href="https://wa.me/5493547620629" target="_blank" rel="noopener"><i class="bi bi-whatsapp me-1"></i>{% translate "WhatsApp" %}</a></li>
                     <li><a href="tel:+5493547620629"><i class="bi bi-telephone me-1"></i>+54 9 3547 62-0629</a></li>
                 </ul>

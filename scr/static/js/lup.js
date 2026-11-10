@@ -750,6 +750,155 @@
         });
     }
 
+    /* ---------- Chat de ayuda (soporte con IA) ---------- */
+    const chat = $('[data-chat]');
+    if (chat) {
+        const panel = $('.chat-panel', chat);
+        const lista = $('[data-chat-mensajes]', chat);
+        const form = $('[data-chat-form]', chat);
+        const campo = $('textarea[name="texto"]', form);
+        const botonEnviar = $('.chat-enviar', form);
+        const sugerencias = $('[data-chat-sugerencias]', chat);
+        const formPersona = $('[data-chat-persona]', chat);
+        const csrf = $('input[name="csrfmiddlewaretoken"]', form).value;
+        const bienvenida = lista.innerHTML;
+        const CLAVE = 'lup-chat';
+
+        // La charla sigue al cambiar de página (se guarda solo en esta pestaña)
+        let estado = { usuario: chat.dataset.usuario, id: null, mensajes: [], abierto: false };
+        try {
+            const guardado = JSON.parse(sessionStorage.getItem(CLAVE) || 'null');
+            if (guardado && guardado.usuario === chat.dataset.usuario) estado = guardado;
+        } catch (e) { /* sin storage: la charla empieza de cero en cada página */ }
+        const guardar = () => { try { sessionStorage.setItem(CLAVE, JSON.stringify(estado)); } catch (e) { /* nada */ } };
+
+        // Texto seguro con un poco de formato: **negrita**, links y saltos de línea
+        const formatear = (texto) => {
+            const div = document.createElement('div');
+            div.textContent = texto;
+            return div.innerHTML
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/(https?:\/\/[^\s<]+[^\s<.,;:!?)])/g, '<a href="$1" target="_blank" rel="noopener">$1</a>')
+                .replace(/\n/g, '<br>');
+        };
+        const agregar = (rol, texto, extra) => {
+            const el = document.createElement('div');
+            el.className = 'chat-msg ' + rol + (extra ? ' ' + extra : '');
+            el.innerHTML = formatear(texto);
+            lista.appendChild(el);
+            lista.scrollTop = lista.scrollHeight;
+            return el;
+        };
+        const pintar = () => {
+            lista.innerHTML = bienvenida;
+            estado.mensajes.forEach((m) => agregar(m.rol, m.texto, m.error ? 'error' : ''));
+            sugerencias.hidden = estado.mensajes.length > 0;
+        };
+
+        const abrir = (abrirlo) => {
+            estado.abierto = abrirlo;
+            panel.hidden = !abrirlo;
+            chat.classList.toggle('abierto', abrirlo);
+            $$('[data-chat-abrir]').forEach((b) => b.setAttribute('aria-expanded', abrirlo ? 'true' : 'false'));
+            if (abrirlo) { lista.scrollTop = lista.scrollHeight; campo.focus(); } else { $('.chat-boton', chat).focus(); }
+            guardar();
+        };
+
+        let ocupado = false;
+        const pedir = async (url, cuerpo) => {
+            const r = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+                body: JSON.stringify(Object.assign({ conversacion: estado.id, pagina: location.pathname }, cuerpo)),
+                credentials: 'same-origin',
+            });
+            let datos = {};
+            try { datos = await r.json(); } catch (e) { /* respuesta vacía */ }
+            if (!r.ok) throw new Error(datos.error || T('No pudimos conectarnos. Revisá tu conexión y probá de nuevo.'));
+            return datos;
+        };
+
+        const enviar = async (texto) => {
+            texto = texto.trim();
+            if (!texto || ocupado) return;
+            ocupado = true; botonEnviar.disabled = true;
+            sugerencias.hidden = true;
+            formPersona.hidden = true; form.hidden = false;
+            agregar('usuario', texto);
+            estado.mensajes.push({ rol: 'usuario', texto });
+            guardar();
+            const escribiendo = agregar('asistente', '');
+            escribiendo.innerHTML = '<span class="chat-escribiendo" aria-label="' + T('Escribiendo…') + '"><span></span><span></span><span></span></span>';
+            try {
+                const datos = await pedir(chat.dataset.urlMensaje, { texto });
+                estado.id = datos.conversacion;
+                escribiendo.innerHTML = formatear(datos.respuesta);
+                estado.mensajes.push({ rol: 'asistente', texto: datos.respuesta });
+            } catch (err) {
+                escribiendo.classList.add('error');
+                escribiendo.innerHTML = formatear(err.message);
+                estado.mensajes.push({ rol: 'asistente', texto: err.message, error: true });
+            }
+            lista.scrollTop = lista.scrollHeight;
+            guardar();
+            ocupado = false; botonEnviar.disabled = false;
+            campo.focus();
+        };
+
+        $$('[data-chat-abrir]').forEach((b) => b.addEventListener('click', () => {
+            abrir(true);
+            if (b.dataset.chatPregunta && !estado.mensajes.length) enviar(b.dataset.chatPregunta);
+        }));
+        $('[data-chat-cerrar]', chat).addEventListener('click', () => abrir(false));
+        document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && !panel.hidden) abrir(false); });
+        $('[data-chat-reiniciar]', chat).addEventListener('click', () => {
+            estado = { usuario: chat.dataset.usuario, id: null, mensajes: [], abierto: true };
+            formPersona.hidden = true; form.hidden = false;
+            pintar(); guardar(); campo.focus();
+        });
+        $$('[data-chat-sugerencia]', chat).forEach((b) => b.addEventListener('click', () => enviar(b.textContent)));
+
+        form.addEventListener('submit', (ev) => { ev.preventDefault(); const t = campo.value; campo.value = ''; campo.style.height = ''; enviar(t); });
+        campo.addEventListener('keydown', (ev) => {
+            if (ev.key === 'Enter' && !ev.shiftKey && !ev.isComposing) { ev.preventDefault(); form.requestSubmit(); }
+        });
+        campo.addEventListener('input', () => { campo.style.height = 'auto'; campo.style.height = Math.min(campo.scrollHeight, 120) + 'px'; });
+
+        // "Hablar con una persona"
+        const abrirPersona = (mostrar) => {
+            formPersona.hidden = !mostrar; form.hidden = mostrar; sugerencias.hidden = mostrar || estado.mensajes.length > 0;
+            if (mostrar) ($('input', formPersona) || $('textarea', formPersona)).focus();
+        };
+        $('[data-chat-persona-abrir]', chat).addEventListener('click', () => abrirPersona(true));
+        $('[data-chat-persona-cancelar]', chat).addEventListener('click', () => { abrirPersona(false); campo.focus(); });
+        formPersona.addEventListener('submit', async (ev) => {
+            ev.preventDefault();
+            const email = $('input[name="email"]', formPersona);
+            if (email && !email.checkValidity()) { email.classList.add('is-invalid'); email.focus(); return; }
+            const boton = $('button:not([type="button"])', formPersona);
+            boton.disabled = true;
+            const detalle = $('textarea', formPersona).value.trim();
+            try {
+                const datos = await pedir(chat.dataset.urlPersona, { email: email ? email.value.trim() : '', detalle });
+                if (datos.conversacion) estado.id = datos.conversacion;
+                if (detalle) { agregar('usuario', detalle); estado.mensajes.push({ rol: 'usuario', texto: detalle }); }
+                agregar('asistente', datos.respuesta);
+                estado.mensajes.push({ rol: 'asistente', texto: datos.respuesta });
+                $('textarea', formPersona).value = '';
+                abrirPersona(false);
+            } catch (err) {
+                agregar('asistente', err.message, 'error');
+            }
+            boton.disabled = false;
+            guardar();
+        });
+        // También desde la conversación: un link "Hablar con una persona" en el pie
+        $$('a[href="#chat-ayuda"]').forEach((a) => a.addEventListener('click', (ev) => { ev.preventDefault(); abrir(true); }));
+
+        pintar();
+        if (estado.abierto) { panel.hidden = false; chat.classList.add('abierto'); lista.scrollTop = lista.scrollHeight; }
+    }
+
     /* ---------- Confirmaciones ---------- */
     document.addEventListener('submit', (ev) => {
         const msg = ev.target.dataset && ev.target.dataset.confirmar;

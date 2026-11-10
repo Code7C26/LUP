@@ -67,6 +67,7 @@ Nuestro objetivo es transformar alimentos próximos a vencer en oportunidades, g
 - Carga automática de información.
 - Recomendación de descuentos.
 - Indicadores ambientales.
+- **Chat de ayuda con IA ("Lü")**: responde dudas y problemas de los usuarios en toda la página.
 
 ---
 
@@ -232,6 +233,26 @@ GOOGLE_MAPS_API_KEY=tu_clave
 > Los navegadores solo comparten la ubicación en `localhost` o en sitios con **https**.
 
 Con la clave, además, quien no quiera compartir su ubicación puede **escribir su dirección o barrio**.
+
+---
+
+## <img src="jpg/doc_assets/icon_hoja.png" width="40"> Chat de ayuda con IA
+
+En todas las páginas hay un botón **Ayuda** (abajo a la derecha) que abre un chat con **Lü**, el asistente de Lüp.
+Conoce cómo funciona la página para cada tipo de cuenta y, si la persona inició sesión, sus reservas pendientes
+(o las ofertas y retiros de su comercio) para dar respuestas concretas. Responde en español o inglés según la página.
+
+- Funciona con **Claude** (API de Anthropic). Agregá al `.env`:
+
+```
+ANTHROPIC_API_KEY=tu_clave
+SOPORTE_EMAIL=email_del_equipo@gmail.com
+```
+
+- Sin clave, el chat igual funciona con **respuestas automáticas** (preguntas frecuentes).
+- **Hablar con una persona**: manda la conversación por email a `SOPORTE_EMAIL` (o a `GMAIL_USUARIO`) para responderle al usuario.
+- Todas las charlas quedan en `/admin` → *Conversaciones de soporte* (se pueden marcar como resueltas).
+- Límites: 800 caracteres por mensaje y 30 mensajes por hora por persona. El modelo se cambia con `SOPORTE_MODELO` (por defecto `claude-haiku-5-5`).
 
 ---
 

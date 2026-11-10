@@ -6,6 +6,9 @@
     <div class="display-1">🥕</div>
     <h1 class="h2">{% translate "Esta página se nos escapó" %}</h1>
     <p class="text-muted-lup">{% translate "No encontramos lo que buscabas. Quizás ya fue rescatado." %}</p>
-    <a href="{% url 'home' %}" class="btn btn-lup mt-2">{% translate "Volver al inicio" %}</a>
+    <div class="d-flex flex-wrap justify-content-center gap-2 mt-2">
+        <a href="{% url 'home' %}" class="btn btn-lup">{% translate "Volver al inicio" %}</a>
+        <button type="button" class="btn btn-lup-outline" data-chat-abrir data-chat-pregunta="{% translate 'Entré a un link y me salió que la página no existe.' %}"><i class="bi bi-chat-dots me-1"></i>{% translate "Pedir ayuda" %}</button>
+    </div>
 </div>
 {% endblock %}

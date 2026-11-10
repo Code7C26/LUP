@@ -1,0 +1,68 @@
+{% load i18n %}
+{# Chat de ayuda. Lo maneja lup.js ("Chat de ayuda"); las respuestas vienen de soporte/views.py #}
+<div class="chat-soporte" data-chat
+     data-url-mensaje="{% url 'soporte_mensaje' %}" data-url-persona="{% url 'soporte_derivar' %}"
+     data-usuario="{% if user.is_authenticated %}{{ user.pk }}{% else %}0{% endif %}">
+    <button type="button" class="chat-boton" data-chat-abrir aria-expanded="false" aria-controls="chat-panel">
+        <i class="bi bi-chat-dots-fill" aria-hidden="true"></i><span>{% translate "Ayuda" %}</span>
+    </button>
+
+    <section class="chat-panel" id="chat-panel" role="dialog" aria-labelledby="chat-titulo" hidden>
+        <header class="chat-header">
+            <div class="chat-avatar" aria-hidden="true">Lü</div>
+            <div class="flex-grow-1 min-w-0">
+                <p class="chat-titulo" id="chat-titulo">{% translate "Ayuda de Lüp" %}</p>
+                <p class="chat-sub">{% if SOPORTE_CON_IA %}<span class="chat-punto"></span>{% translate "Asistente con IA · responde al instante" %}{% else %}{% translate "Respuestas automáticas" %}{% endif %}</p>
+            </div>
+            <button type="button" class="chat-icono" data-chat-reiniciar title="{% translate 'Empezar de nuevo' %}" aria-label="{% translate 'Empezar de nuevo' %}"><i class="bi bi-arrow-counterclockwise"></i></button>
+            <button type="button" class="chat-icono" data-chat-cerrar title="{% translate 'Cerrar' %}" aria-label="{% translate 'Cerrar el chat' %}"><i class="bi bi-x-lg"></i></button>
+        </header>
+
+        <div class="chat-mensajes" data-chat-mensajes aria-live="polite" aria-relevant="additions">
+            <div class="chat-msg asistente">
+                {% if user.is_authenticated %}{% blocktranslate with nombre=user.first_name|default:user.nombre_visible %}¡Hola, {{ nombre }}! Soy Lü, el asistente de Lüp.{% endblocktranslate %}{% else %}{% translate "¡Hola! Soy Lü, el asistente de Lüp." %}{% endif %}
+                {% translate "Contame qué problema tenés o qué querés hacer y te ayudo." %}
+            </div>
+        </div>
+
+        <div class="chat-sugerencias" data-chat-sugerencias>
+            {% if user.is_authenticated and user.es_comercio %}
+                <button type="button" data-chat-sugerencia>{% translate "¿Cómo confirmo un retiro?" %}</button>
+                <button type="button" data-chat-sugerencia>{% translate "¿Cómo marco algo como vendido?" %}</button>
+            {% elif user.is_authenticated and user.es_organizacion %}
+                <button type="button" data-chat-sugerencia>{% translate "¿Cómo pido una donación?" %}</button>
+            {% else %}
+                <button type="button" data-chat-sugerencia>{% translate "¿Cómo cancelo una reserva?" %}</button>
+                <button type="button" data-chat-sugerencia>{% translate "¿Dónde está mi código de retiro?" %}</button>
+            {% endif %}
+            <button type="button" data-chat-sugerencia>{% translate "No me llegan los emails" %}</button>
+            <button type="button" data-chat-sugerencia>{% translate "No funciona la ubicación" %}</button>
+            <button type="button" class="persona" data-chat-persona-abrir><i class="bi bi-person me-1"></i>{% translate "Hablar con una persona" %}</button>
+        </div>
+
+        {# Pasar la consulta al equipo #}
+        <form class="chat-persona" data-chat-persona novalidate hidden>
+            <p class="fw-semibold mb-1">{% translate "Hablar con una persona" %}</p>
+            <p class="small text-muted-lup mb-2">{% translate "Le mandamos esta charla al equipo de Lüp y te respondemos por email." %}</p>
+            {% if not user.is_authenticated or not user.email %}
+                <label class="form-label small mb-1" for="chat-email">{% translate "Tu email" %}</label>
+                <input type="email" class="form-control form-control-sm mb-2" id="chat-email" name="email" maxlength="254" required autocomplete="email">
+            {% endif %}
+            <label class="form-label small mb-1" for="chat-detalle">{% translate "¿Querés agregar algo? (opcional)" %}</label>
+            <textarea class="form-control form-control-sm mb-2" id="chat-detalle" name="detalle" rows="2" maxlength="800"></textarea>
+            <div class="d-flex gap-2 justify-content-end">
+                <button type="button" class="btn btn-min btn-sm" data-chat-persona-cancelar>{% translate "Cancelar" %}</button>
+                <button class="btn btn-lup btn-sm">{% translate "Enviar al equipo" %}</button>
+            </div>
+            <p class="small mt-2 mb-0">{% translate "¿Es urgente?" %} <a href="https://wa.me/5493547620629" target="_blank" rel="noopener"><i class="bi bi-whatsapp"></i> WhatsApp</a></p>
+        </form>
+
+        <form class="chat-form" data-chat-form>
+            {% csrf_token %}
+            <label for="chat-texto" class="visually-hidden">{% translate "Escribí tu consulta" %}</label>
+            <textarea id="chat-texto" name="texto" rows="1" maxlength="800" placeholder="{% translate 'Escribí tu consulta…' %}" required></textarea>
+            <button class="chat-enviar" aria-label="{% translate 'Enviar' %}"><i class="bi bi-send-fill"></i></button>
+        </form>
+        <p class="chat-nota">{% if SOPORTE_CON_IA %}{% translate "Lü usa inteligencia artificial y puede equivocarse." %} {% endif %}{% translate "No compartas contraseñas ni datos de tarjeta." %}</p>
+    </section>
+</div>

@@ -18,9 +18,17 @@ msgstr "This page got away from us"
 msgid "No encontramos lo que buscabas. Quizás ya fue rescatado."
 msgstr "We couldn't find what you were looking for. Maybe it was already rescued."
 
-#: scr/templates/404.html:9
+#: scr/templates/404.html:10
 msgid "Volver al inicio"
 msgstr "Back to home"
+
+#: scr/templates/404.html:11
+msgid "Entré a un link y me salió que la página no existe."
+msgstr "I opened a link and it said the page doesn't exist."
+
+#: scr/templates/404.html:11
+msgid "Pedir ayuda"
+msgstr "Get help"
 
 #: scr/templates/base.html:20
 msgid "Una segunda oportunidad para cada alimento"
@@ -31,7 +39,7 @@ msgid "Lüp, inicio"
 msgstr "Lüp, home"
 
 #: scr/templates/base.html:37
-#: scr/templates/base.html:164
+#: scr/templates/base.html:167
 msgid "Lüp"
 msgstr "Lüp"
 
@@ -44,7 +52,7 @@ msgid "Inicio"
 msgstr "Home"
 
 #: scr/templates/base.html:46
-#: scr/templates/base.html:173
+#: scr/templates/base.html:176
 #: scr/templates/products/catalogo.html:5
 msgid "Ofertas"
 msgstr "Offers"
@@ -56,7 +64,7 @@ msgid "Comercios"
 msgstr "Stores"
 
 #: scr/templates/base.html:48
-#: scr/templates/base.html:175
+#: scr/templates/base.html:178
 msgid "Cómo funciona"
 msgstr "How it works"
 
@@ -107,6 +115,7 @@ msgstr "Sign up"
 
 #: scr/templates/base.html:111
 #: scr/templates/base.html:156
+#: scr/templates/includes/_chat_soporte.html:18
 msgid "Cerrar"
 msgstr "Close"
 
@@ -170,75 +179,79 @@ msgstr "Your address"
 msgid "Buscar"
 msgstr "Search"
 
-#: scr/templates/base.html:165
+#: scr/templates/base.html:168
 msgid "Una segunda oportunidad para cada alimento. Conectamos comercios, consumidores y organizaciones para reducir el desperdicio de comida."
 msgstr "A second chance for every food. We connect stores, consumers and organizations to reduce food waste."
 
-#: scr/templates/base.html:167
+#: scr/templates/base.html:170
 msgid "Lüp en Instagram"
 msgstr "Lüp on Instagram"
 
-#: scr/templates/base.html:167
+#: scr/templates/base.html:170
 msgid "@lupcomidas en Instagram"
 msgstr "@lupcomidas on Instagram"
 
-#: scr/templates/base.html:171
+#: scr/templates/base.html:174
 msgid "Explorar"
 msgstr "Explore"
 
-#: scr/templates/base.html:174
+#: scr/templates/base.html:177
 msgid "Donaciones"
 msgstr "Donations"
 
-#: scr/templates/base.html:179
+#: scr/templates/base.html:182
 msgid "Sumate"
 msgstr "Join us"
 
-#: scr/templates/base.html:181
+#: scr/templates/base.html:184
 msgid "Soy consumidor"
 msgstr "I'm a consumer"
 
-#: scr/templates/base.html:182
+#: scr/templates/base.html:185
 msgid "Tengo un comercio"
 msgstr "I have a store"
 
-#: scr/templates/base.html:183
+#: scr/templates/base.html:186
 msgid "Soy una organización"
 msgstr "I'm an organization"
 
-#: scr/templates/base.html:187
+#: scr/templates/base.html:190
 msgid "Impacto"
 msgstr "Impact"
 
-#: scr/templates/base.html:188
+#: scr/templates/base.html:191
 msgid "🌿 Ambiental"
 msgstr "🌿 Environmental"
 
-#: scr/templates/base.html:188
+#: scr/templates/base.html:191
 msgid "🤝 Social"
 msgstr "🤝 Social"
 
-#: scr/templates/base.html:188
+#: scr/templates/base.html:191
 msgid "💰 Económico"
 msgstr "💰 Economic"
 
-#: scr/templates/base.html:191
+#: scr/templates/base.html:194
 msgid "Soporte al usuario"
 msgstr "User support"
 
-#: scr/templates/base.html:192
+#: scr/templates/base.html:195
 msgid "¿Tenés alguna duda o problema? Escribinos o llamanos."
 msgstr "Got a question or a problem? Message or call us."
 
-#: scr/templates/base.html:194
+#: scr/templates/base.html:197
+msgid "Chat de ayuda"
+msgstr "Help chat"
+
+#: scr/templates/base.html:198
 msgid "WhatsApp"
 msgstr "WhatsApp"
 
-#: scr/templates/base.html:201
+#: scr/templates/base.html:205
 msgid "Más valor. Menos desperdicio."
 msgstr "More value. Less waste."
 
-#: scr/templates/base.html:202
+#: scr/templates/base.html:206
 msgid "Hecho con 💚 en Córdoba, Argentina"
 msgstr "Made with 💚 in Córdoba, Argentina"
 
@@ -476,6 +489,124 @@ msgstr "Publish again"
 msgid "Foto de %(nombre)s"
 msgstr "Photo of %(nombre)s"
 
+#: scr/templates/includes/_chat_soporte.html:7
+msgid "Ayuda"
+msgstr "Help"
+
+#: scr/templates/includes/_chat_soporte.html:14
+msgid "Ayuda de Lüp"
+msgstr "Lüp Help"
+
+#: scr/templates/includes/_chat_soporte.html:15
+msgid "Asistente con IA · responde al instante"
+msgstr "AI assistant · instant answers"
+
+#: scr/templates/includes/_chat_soporte.html:15
+msgid "Respuestas automáticas"
+msgstr "Automatic answers"
+
+#: scr/templates/includes/_chat_soporte.html:17
+#: scr/templates/includes/_chat_soporte.html:17
+msgid "Empezar de nuevo"
+msgstr "Start over"
+
+#: scr/templates/includes/_chat_soporte.html:18
+msgid "Cerrar el chat"
+msgstr "Close the chat"
+
+#: scr/templates/includes/_chat_soporte.html:23
+#, python-format
+msgid "¡Hola, %(nombre)s! Soy Lü, el asistente de Lüp."
+msgstr "Hi, %(nombre)s! I'm Lü, Lüp's assistant."
+
+#: scr/templates/includes/_chat_soporte.html:23
+msgid "¡Hola! Soy Lü, el asistente de Lüp."
+msgstr "Hi! I'm Lü, Lüp's assistant."
+
+#: scr/templates/includes/_chat_soporte.html:24
+msgid "Contame qué problema tenés o qué querés hacer y te ayudo."
+msgstr "Tell me what's wrong or what you'd like to do and I'll help."
+
+#: scr/templates/includes/_chat_soporte.html:30
+msgid "¿Cómo confirmo un retiro?"
+msgstr "How do I confirm a pickup?"
+
+#: scr/templates/includes/_chat_soporte.html:31
+msgid "¿Cómo marco algo como vendido?"
+msgstr "How do I mark something as sold?"
+
+#: scr/templates/includes/_chat_soporte.html:33
+msgid "¿Cómo pido una donación?"
+msgstr "How do I request a donation?"
+
+#: scr/templates/includes/_chat_soporte.html:35
+msgid "¿Cómo cancelo una reserva?"
+msgstr "How do I cancel a reservation?"
+
+#: scr/templates/includes/_chat_soporte.html:36
+msgid "¿Dónde está mi código de retiro?"
+msgstr "Where is my pickup code?"
+
+#: scr/templates/includes/_chat_soporte.html:38
+msgid "No me llegan los emails"
+msgstr "I'm not getting the emails"
+
+#: scr/templates/includes/_chat_soporte.html:39
+msgid "No funciona la ubicación"
+msgstr "Location isn't working"
+
+#: scr/templates/includes/_chat_soporte.html:40
+#: scr/templates/includes/_chat_soporte.html:45
+msgid "Hablar con una persona"
+msgstr "Talk to a person"
+
+#: scr/templates/includes/_chat_soporte.html:46
+msgid "Le mandamos esta charla al equipo de Lüp y te respondemos por email."
+msgstr "We'll send this chat to the Lüp team and reply by email."
+
+#: scr/templates/includes/_chat_soporte.html:48
+msgid "Tu email"
+msgstr "Your email"
+
+#: scr/templates/includes/_chat_soporte.html:51
+msgid "¿Querés agregar algo? (opcional)"
+msgstr "Anything to add? (optional)"
+
+#: scr/templates/includes/_chat_soporte.html:54
+#: scr/templates/panel/consumidor.html:43
+#: scr/templates/products/confirmar_eliminacion.html:15
+msgid "Cancelar"
+msgstr "Cancel"
+
+#: scr/templates/includes/_chat_soporte.html:55
+msgid "Enviar al equipo"
+msgstr "Send to the team"
+
+#: scr/templates/includes/_chat_soporte.html:57
+msgid "¿Es urgente?"
+msgstr "Urgent?"
+
+#: scr/templates/includes/_chat_soporte.html:62
+msgid "Escribí tu consulta"
+msgstr "Type your question"
+
+#: scr/templates/includes/_chat_soporte.html:63
+msgid "Escribí tu consulta…"
+msgstr "Type your question…"
+
+#: scr/templates/includes/_chat_soporte.html:64
+#: scr/templates/includes/_form_calificacion.html:15
+msgid "Enviar"
+msgstr "Send"
+
+#: scr/templates/includes/_chat_soporte.html:66
+msgid "Lü usa inteligencia artificial y puede equivocarse."
+msgstr "Lü uses AI and can make mistakes."
+
+#: scr/templates/includes/_chat_soporte.html:66
+msgid "No compartas contraseñas ni datos de tarjeta."
+msgstr "Don't share passwords or card details."
+
 #: scr/templates/includes/_estado_producto.html:3
 #: scr/bd_lup/products/models.py:39
 msgid "Vendido"
@@ -528,10 +659,6 @@ msgstr "Comment"
 #: scr/templates/includes/_form_calificacion.html:15
 msgid "Actualizar"
 msgstr "Update"
-
-#: scr/templates/includes/_form_calificacion.html:15
-msgid "Enviar"
-msgstr "Send"
 
 #: scr/templates/includes/_home_comercios.html:5
 #: scr/templates/products/catalogo.html:44
@@ -870,12 +997,6 @@ msgstr "Copy"
 #: scr/templates/panel/consumidor.html:42
 msgid "¿Cancelar esta reserva?"
 msgstr "Cancel this reservation?"
-
-#: scr/templates/panel/consumidor.html:43
-#: scr/templates/products/confirmar_eliminacion.html:15
-#: scr/templates/products/form_producto.html:51
-msgid "Cancelar"
-msgstr "Cancel"
 
 #: scr/templates/panel/consumidor.html:49
 msgid "No tenés reservas pendientes."
@@ -2175,6 +2296,60 @@ msgstr "Type an address."
 msgid "No encontramos esa dirección. Probá agregando la ciudad."
 msgstr "We couldn't find that address. Try adding the city."
 
+#: scr/bd_lup/soporte/models.py:13
+msgid "página desde la que escribió"
+msgstr "page they wrote from"
+
+#: scr/bd_lup/soporte/models.py:14
+msgid "pidió hablar con una persona"
+msgstr "asked to talk to a person"
+
+#: scr/bd_lup/soporte/models.py:15
+msgid "email para responderle"
+msgstr "reply-to email"
+
+#: scr/bd_lup/soporte/models.py:16
+msgid "resuelta por el equipo"
+msgstr "resolved by the team"
+
+#: scr/bd_lup/soporte/models.py:22
+msgid "conversación de soporte"
+msgstr "support conversation"
+
+#: scr/bd_lup/soporte/models.py:23
+msgid "conversaciones de soporte"
+msgstr "support conversations"
+
+#: scr/bd_lup/soporte/models.py:33
+msgid "Usuario"
+msgstr "User"
+
+#: scr/bd_lup/soporte/models.py:33
+msgid "Asistente"
+msgstr "Assistant"
+
+#: scr/bd_lup/soporte/views.py:67
+msgid "Escribí tu consulta."
+msgstr "Type your question."
+
+#: scr/bd_lup/soporte/views.py:71
+#: scr/bd_lup/soporte/views.py:146
+msgid "Mandaste muchos mensajes seguidos. Esperá un rato o escribinos por WhatsApp."
+msgstr "You've sent a lot of messages in a row. Wait a bit or message us on WhatsApp."
+
+#: scr/bd_lup/soporte/views.py:137
+msgid "Dejanos un email para poder responderte."
+msgstr "Leave us an email so we can reply."
+
+#: scr/bd_lup/soporte/views.py:141
+msgid "Ese email no parece válido."
+msgstr "That email doesn't look valid."
+
+#: scr/bd_lup/soporte/views.py:173
+#, python-format
+msgid "Listo, le pasamos tu consulta al equipo de Lüp. Te vamos a responder a %(email)s lo antes posible. Si es urgente, escribinos por WhatsApp al %(tel)s."
+msgstr "Done, we've passed your question to the Lüp team. We'll reply to %(email)s as soon as possible. If it's urgent, message us on WhatsApp at %(tel)s."
+
 #: scr/bd_lup/stores/models.py:10
 msgid "Panadería / Confitería"
 msgstr "Bakery / Pastry shop"
@@ -2460,6 +2635,14 @@ msgstr "organization"
 #: scr/bd_lup/users/models.py:89
 msgid "organizaciones"
 msgstr "organizations"
+
+#: scr/bd_lup/users/models.py:107
+msgid "dispositivo para avisos push"
+msgstr "push notification device"
+
+#: scr/bd_lup/users/models.py:108
+msgid "dispositivos para avisos push"
+msgstr "push notification devices"
 
 #: scr/bd_lup/users/views.py:23
 msgid "Rescatá comida rica a precios reducidos en comercios cerca tuyo."
