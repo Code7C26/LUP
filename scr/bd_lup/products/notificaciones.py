@@ -25,6 +25,11 @@ Quién recibe qué:
 Cada persona puede apagar los avisos en "Mis datos" o con el link "Dejar de recibir
 avisos" que va al pie de cada email (Usuario.avisos_email). La bienvenida se manda igual.
 
+NOTIFICACIONES PUSH: los avisos importantes también llegan al celular, aunque la app esté
+cerrada (users/push.py): reservas, cancelaciones, sin stock, donaciones, opiniones y el
+recordatorio de retiro. Son aparte del email: se apagan desde el permiso del celular.
+Al tocarlas, la app abre la pantalla que dice "pantalla".
+
 Los emails se envían cuando todo quedó guardado (transaction.on_commit) y en segundo
 plano: si Gmail falla, la reserva/acción se hace igual y el error queda en el log.
 Se disparan desde signals.py (así funcionan igual desde la web y desde la app).
@@ -37,10 +42,12 @@ from contextvars import ContextVar
 from django.conf import settings
 from django.core import signing
 from django.core.mail import EmailMultiAlternatives
-from django.db import transaction
+from django.db import connection, transaction
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import translation
+
+from scr.bd_lup.users import push
 
 logger = logging.getLogger(__name__)
 
@@ -130,6 +137,32 @@ def _programar(asunto, plantilla, contexto, usuario, obligatorio=False):
     transaction.on_commit(tarea)
 
 
+def _push_en_hilo(tokens, titulo, cuerpo, datos):
+    try:
+        push.enviar_a_tokens(tokens, titulo, cuerpo, datos)
+    finally:
+        connection.close()  # el hilo abrió su propia conexión a la base (para borrar tokens vencidos)
+
+
+def _programar_push(usuarios, titulo, cuerpo, datos=None):
+    """Notificación push a los celulares de esas personas, cuando termina de guardarse todo."""
+    if _silencio.get():
+        return
+
+    def tarea():
+        from scr.bd_lup.users.models import DispositivoPush
+        tokens = list(DispositivoPush.objects.filter(usuario__in=usuarios, usuario__is_active=True)
+                      .values_list('token', flat=True))
+        if not tokens:
+            return
+        if settings.EMAIL_EN_SEGUNDO_PLANO:
+            threading.Thread(target=_push_en_hilo, args=(tokens, titulo, cuerpo, datos), daemon=True).start()
+        else:
+            push.enviar_a_tokens(tokens, titulo, cuerpo, datos)
+
+    transaction.on_commit(tarea)
+
+
 def _nombre(usuario):
     return usuario.first_name or usuario.nombre_visible
 
@@ -166,6 +199,12 @@ def avisar_nueva_reserva(reserva):
         f'Tu reserva en {reserva.producto.comercio}: código {reserva.codigo_retiro}',
         'reserva_confirmada', contexto, reserva.consumidor,
     )
+    _programar_push(
+        [reserva.producto.comercio.usuario], 'Te hicieron una reserva 🛍️',
+        f'{_nombre(reserva.consumidor)} reservó {reserva.cantidad} × {reserva.producto.titulo}. '
+        f'Código {reserva.codigo_retiro}.',
+        {'pantalla': 'ConfirmarRetiro'},
+    )
 
 
 def avisar_reserva_cancelada(reserva):
@@ -178,6 +217,11 @@ def avisar_reserva_cancelada(reserva):
         f'Cancelaste tu reserva de {reserva.producto.titulo}',
         'reserva_cancelada_cliente', contexto, reserva.consumidor,
     )
+    _programar_push(
+        [reserva.producto.comercio.usuario], 'Cancelaron una reserva',
+        f'{_nombre(reserva.consumidor)} canceló {reserva.cantidad} × {reserva.producto.titulo}.',
+        {'pantalla': 'MisProductos'},
+    )
 
 
 def recordar_retiro(reserva):
@@ -185,6 +229,11 @@ def recordar_retiro(reserva):
     _programar(
         f'Hoy es el último día para retirar {reserva.producto.titulo}',
         'recordatorio_retiro', _contexto_reserva(reserva), reserva.consumidor,
+    )
+    _programar_push(
+        [reserva.consumidor], 'Hoy es el último día para retirar ⏰',
+        f'{reserva.producto.titulo} en {reserva.producto.comercio}. Tu código: {reserva.codigo_retiro}.',
+        {'pantalla': 'MisReservas'},
     )
 
 
@@ -196,6 +245,11 @@ def pedir_opinion(reserva):
         {**_contexto_reserva(reserva), 'url_opinar': _url('calificar_reserva', reserva.pk)},
         reserva.consumidor,
     )
+    _programar_push(
+        [reserva.consumidor], f'¿Cómo te fue con {reserva.producto.titulo}?',
+        f'Contale a {reserva.producto.comercio} con unas estrellas.',
+        {'pantalla': 'MisReservas'},
+    )
 
 
 def avisar_sin_stock(producto):
@@ -205,6 +259,11 @@ def avisar_sin_stock(producto):
         'sin_stock',
         {'producto': producto, 'tienda': producto.comercio, 'url_editar': _url('editar_excedente', producto.pk)},
         producto.comercio.usuario,
+    )
+    _programar_push(
+        [producto.comercio.usuario], f'¡Se agotó {producto.titulo}!',
+        'Las reservas se llevaron todo. Si te queda más, publicalo de nuevo.',
+        {'pantalla': 'MisProductos'},
     )
 
 
@@ -223,6 +282,11 @@ def avisar_nueva_opinion(calificacion):
          'url_responder': _url('panel') + '#opiniones'},
         calificacion.tienda.usuario,
     )
+    _programar_push(
+        [calificacion.tienda.usuario], f'Nueva opinión: {calificacion.puntaje}★',
+        f'{_nombre(calificacion.consumidor)} opinó sobre {calificacion.reserva.producto.titulo}.',
+        {'pantalla': 'DetalleComercio', 'id': calificacion.tienda.pk},
+    )
 
 
 def avisar_respuesta_opinion(calificacion):
@@ -233,6 +297,11 @@ def avisar_respuesta_opinion(calificacion):
         {'calificacion': calificacion, 'tienda': calificacion.tienda,
          'url_ver': _url('detalle_tienda', calificacion.tienda.pk) + '#opiniones'},
         calificacion.consumidor,
+    )
+    _programar_push(
+        [calificacion.consumidor], f'{calificacion.tienda} respondió tu opinión',
+        calificacion.respuesta[:120],
+        {'pantalla': 'DetalleComercio', 'id': calificacion.tienda.pk},
     )
 
 
@@ -249,6 +318,11 @@ def avisar_solicitud_donacion(solicitud):
          'organizacion': solicitud.organizacion},
         solicitud.producto.comercio.usuario,
     )
+    _programar_push(
+        [solicitud.producto.comercio.usuario], 'Te pidieron una donación 💚',
+        f'{solicitud.organizacion.nombre_visible} pidió {solicitud.producto.titulo}.',
+        {'pantalla': 'Solicitudes'},
+    )
 
 
 def avisar_respuesta_donacion(solicitud):
@@ -264,6 +338,18 @@ def avisar_respuesta_donacion(solicitud):
          'url_como_llegar': url_como_llegar(tienda), 'url_donaciones': _url('catalogo') + '?donacion=1'},
         solicitud.organizacion,
     )
+    if aprobada:
+        _programar_push(
+            [solicitud.organizacion], '¡Aceptaron tu donación! 🎉',
+            f'{tienda} aprobó tu pedido de {solicitud.producto.titulo}. Pasá a retirarlo.',
+            {'pantalla': 'MisSolicitudes'},
+        )
+    else:
+        _programar_push(
+            [solicitud.organizacion], 'Tu pedido de donación no pudo concretarse',
+            f'{tienda} no pudo darte {solicitud.producto.titulo}. Fijate si hay otras donaciones cerca.',
+            {'pantalla': 'MisSolicitudes'},
+        )
 
 
 def avisar_nueva_donacion(producto):
@@ -277,3 +363,9 @@ def avisar_nueva_donacion(producto):
             {'producto': producto, 'tienda': producto.comercio, 'url_producto': _url('detalle_producto', producto.pk)},
             org,
         )
+    # Push: a todas las organizaciones con la app (aunque tengan los emails apagados)
+    _programar_push(
+        Usuario.objects.filter(rol=Usuario.ORGANIZACION),
+        'Nueva donación disponible 💚', f'{producto.comercio} publicó {producto.titulo} para donar.',
+        {'pantalla': 'DetalleProducto', 'id': producto.pk},
+    )

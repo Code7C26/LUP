@@ -68,6 +68,7 @@ export async function programarRecordatorio({ reservaId, producto, comercio, cod
       content: {
         title: `Retirá tu pedido en ${comercio} 🛍️`,
         body: `${producto} · Retiro: ${horario}. Tu código es ${codigo}.`,
+        data: { pantalla: 'MisReservas' }, // al tocarlo se abre "Mis reservas" (servicios/push.js)
       },
       trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: cuando },
     });

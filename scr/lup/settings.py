@@ -163,6 +163,9 @@ DEFAULT_FROM_EMAIL = f'Lüp <{GMAIL_USUARIO or "avisos@lup.local"}>'
 # Los emails se mandan en segundo plano para que la reserva no espere a Gmail
 EMAIL_EN_SEGUNDO_PLANO = os.environ.get('EMAIL_EN_SEGUNDO_PLANO', '1') == '1'
 
+# Notificaciones push al celular (servicio de Expo, ver users/push.py). PUSH_ACTIVADO=0 las apaga.
+PUSH_ACTIVADO = os.environ.get('PUSH_ACTIVADO', '1') == '1'
+
 # Dirección pública del sitio, para armar los links de los emails
 SITIO_URL = os.environ.get('SITIO_URL', 'http://127.0.0.1:8000').rstrip('/')
 

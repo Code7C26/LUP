@@ -37,7 +37,14 @@
         }
       ],
       "expo-status-bar",
-      "expo-video"
+      "expo-video",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/android-icon-monochrome.png",
+          "color": "#71A24D"
+        }
+      ]
     ]
   }
 }
