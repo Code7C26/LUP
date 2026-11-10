@@ -7,6 +7,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import * as SecureStore from 'expo-secure-store';
 
 import { api, borrarToken, guardarToken, leerToken } from '../api/cliente';
+import { borrarPush, registrarPush } from '../servicios/push';
 import { cancelarTodosLosRecordatorios } from '../servicios/recordatorios';
 import { borrarBienvenidas } from './Bienvenida';
 import { borrarBusquedas } from './Busquedas';
@@ -31,6 +32,7 @@ export function ProveedorSesion({ children }) {
         if (guardado) setUsuario(JSON.parse(guardado)); // se muestra al instante
         const actualizado = await api('/auth/yo/'); // y se actualiza con Django
         await guardarSesion(actualizado);
+        registrarPush(); // por si el celular cambió de token (no se espera: la app abre igual)
       } catch (e) {
         // Si el token ya no sirve, se cierra la sesión.
         // Si solo no hay conexión, se mantiene la sesión guardada.
@@ -56,19 +58,23 @@ export function ProveedorSesion({ children }) {
       throw { rolReal: datos.rol };
     }
     await guardarSesion(datos);
+    registrarPush(); // avisos al celular ("Te hicieron una reserva"): pide permiso y registra el celular
     return datos;
   }
 
   async function registrar(rol, campos) {
     const datos = await api(`/auth/registro/${rol}/`, { metodo: 'POST', datos: campos });
     await guardarSesion(datos);
+    registrarPush();
     return datos;
   }
 
   // Además de la sesión, borra todo lo que esa cuenta dejó guardado en el celular:
   // carrito, favoritos, búsquedas recientes, avisos de retiro y la bienvenida (se vuelve a ver al entrar).
+  // Y deja de mandarle notificaciones push de esta cuenta a este celular.
   // Lo que está en Django (cuenta, reservas, productos) no se toca. La apariencia elegida se mantiene.
   async function cerrarSesion() {
+    await borrarPush(); // primero, mientras la sesión sigue valiendo: así no le llegan más avisos de esta cuenta
     await borrarToken();
     await SecureStore.deleteItemAsync(CLAVE_USUARIO);
     vaciarCarrito();

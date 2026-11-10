@@ -4,6 +4,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from .forms import FORMULARIOS_REGISTRO
+from .models import DispositivoPush
 
 def datos_sesion(usuario):
     token, _ = Token.objects.get_or_create(user=usuario)
@@ -70,3 +71,22 @@ def registro(request, rol):
 @permission_classes([IsAuthenticated])
 def yo(request):
     return Response(datos_perfil(request.user))
+
+
+@api_view(['POST', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def dispositivo_push(request):
+    """El celular avisa adónde mandarle las notificaciones push.
+
+    POST   {"token": "ExponentPushToken[...]"} → al iniciar sesión (o al abrir la app con sesión)
+    DELETE {"token": "ExponentPushToken[...]"} → al cerrar sesión, para que no le lleguen avisos de esa cuenta
+    """
+    token = str(request.data.get('token', '')).strip()
+    if not token.startswith(('ExponentPushToken[', 'ExpoPushToken[')) or len(token) > 200:
+        return Response({'error': 'Token de notificaciones inválido.'}, status=400)
+    if request.method == 'DELETE':
+        DispositivoPush.objects.filter(usuario=request.user, token=token).delete()
+        return Response(status=204)
+    # Si el celular estaba con otra cuenta, pasa a esta
+    _, creado = DispositivoPush.objects.update_or_create(token=token, defaults={'usuario': request.user})
+    return Response({'ok': True}, status=201 if creado else 200)

@@ -35,6 +35,7 @@ urlpatterns = [
     path('api/auth/login/', users_api.login, name='api_login'),
     path('api/auth/registro/<str:rol>/', users_api.registro, name='api_registro'),
     path('api/auth/yo/', users_api.yo, name='api_yo'),
+    path('api/auth/push/', users_api.dispositivo_push, name='api_dispositivo_push'),
 
     # API: consumidor 
     path('api/productos/<int:pk>/reservar/', products_api.reservar, name='api_reservar'),

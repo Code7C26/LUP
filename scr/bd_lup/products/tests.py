@@ -1030,3 +1030,105 @@ class AvisosTodosTests(FlujoLupTests.__bases__[0]):
         r = self.client.get(reverse('perfil'))
         self.assertContains(r, 'Avisos por email')
         self.assertContains(r, 'se publica una donación nueva')
+
+
+# ==========================================
+# Notificaciones push al celular (users/push.py)
+# ==========================================
+
+from scr.bd_lup.users.models import DispositivoPush  # noqa: E402
+
+TOKEN_COMERCIO = 'ExponentPushToken[comercio-1]'
+TOKEN_CLIENTE = 'ExponentPushToken[cliente-1]'
+TOKEN_ORG = 'ExponentPushToken[org-1]'
+
+
+@override_settings(EMAIL_EN_SEGUNDO_PLANO=False, PUSH_ACTIVADO=True, SITIO_URL='https://lup.test')
+class AvisosPushTests(FlujoLupTests.__bases__[0]):
+    def setUp(self):
+        FlujoLupTests.setUp(self)
+        DispositivoPush.objects.create(usuario=self.comercio, token=TOKEN_COMERCIO)
+        DispositivoPush.objects.create(usuario=self.consumidor, token=TOKEN_CLIENTE)
+        DispositivoPush.objects.create(usuario=self.org, token=TOKEN_ORG)
+        # Nunca se llama a Expo de verdad: se guarda lo que se hubiera mandado
+        parche = mock.patch('scr.bd_lup.users.push._mandar_a_expo', side_effect=self._expo)
+        parche.start()
+        self.addCleanup(parche.stop)
+        self.enviados = []
+        self.respuesta_expo = None
+
+    def _expo(self, mensajes):
+        self.enviados += mensajes
+        return self.respuesta_expo or [{'status': 'ok'} for _ in mensajes]
+
+    def para(self, token):
+        return [m for m in self.enviados if m['to'] == token]
+
+    def reservar(self):
+        self.client.force_login(self.consumidor)
+        with self.captureOnCommitCallbacks(execute=True):
+            self.client.post(reverse('reservar', args=[self.producto.pk]), {'cantidad': 2})
+        return Reserva.objects.get(consumidor=self.consumidor)
+
+    def test_nueva_reserva_llega_al_celular_del_comercio(self):
+        reserva = self.reservar()
+        avisos = self.para(TOKEN_COMERCIO)
+        self.assertEqual(len(avisos), 1)
+        self.assertEqual(avisos[0]['title'], 'Te hicieron una reserva 🛍️')
+        self.assertIn('2 × Medialunas', avisos[0]['body'])
+        self.assertIn(reserva.codigo_retiro, avisos[0]['body'])
+        self.assertEqual(avisos[0]['data'], {'pantalla': 'ConfirmarRetiro'})
+        # Al cliente no: acaba de reservar desde la app o la web
+        self.assertEqual(self.para(TOKEN_CLIENTE), [])
+
+    def test_push_llega_aunque_tenga_los_emails_apagados(self):
+        self.comercio.avisos_email = False
+        self.comercio.save()
+        self.reservar()
+        self.assertEqual(len(self.para(TOKEN_COMERCIO)), 1)
+
+    def test_donacion_aceptada_llega_a_la_organizacion(self):
+        self.client.force_login(self.org)
+        with self.captureOnCommitCallbacks(execute=True):
+            self.client.post(f'/api/productos/{self.producto.pk}/solicitar-donacion/',
+                             {'mensaje': 'Para 40 chicos'}, content_type='application/json')
+        self.assertEqual(self.para(TOKEN_COMERCIO)[-1]['title'], 'Te pidieron una donación 💚')
+        solicitud = SolicitudDonacion.objects.get()
+        self.client.force_login(self.comercio)
+        with self.captureOnCommitCallbacks(execute=True):
+            self.client.post(f'/api/solicitudes/{solicitud.pk}/aprobar/')
+        aviso = self.para(TOKEN_ORG)[-1]
+        self.assertEqual(aviso['title'], '¡Aceptaron tu donación! 🎉')
+        self.assertIn('Panadería Sol', aviso['body'])
+        self.assertEqual(aviso['data'], {'pantalla': 'MisSolicitudes'})
+
+    def test_celular_desinstalado_se_borra(self):
+        self.respuesta_expo = [{'status': 'error', 'details': {'error': 'DeviceNotRegistered'}}]
+        self.reservar()
+        self.assertFalse(DispositivoPush.objects.filter(token=TOKEN_COMERCIO).exists())
+
+    def test_si_expo_falla_la_reserva_se_hace_igual(self):
+        with mock.patch('scr.bd_lup.users.push._mandar_a_expo', side_effect=OSError('sin internet')):
+            reserva = self.reservar()
+        self.assertEqual(reserva.cantidad, 2)
+        self.assertTrue(DispositivoPush.objects.filter(token=TOKEN_COMERCIO).exists())
+
+    @override_settings(PUSH_ACTIVADO=False)
+    def test_se_puede_apagar(self):
+        self.reservar()
+        self.assertEqual(self.enviados, [])
+
+    def test_api_registra_y_borra_el_celular(self):
+        url = '/api/auth/push/'
+        token = 'ExponentPushToken[nuevo]'
+        self.assertEqual(self.client.post(url, {'token': token}, content_type='application/json').status_code, 401)
+        self.client.force_login(self.consumidor)
+        self.assertEqual(self.client.post(url, {'token': 'cualquier cosa'}, content_type='application/json').status_code, 400)
+        self.assertEqual(self.client.post(url, {'token': token}, content_type='application/json').status_code, 201)
+        self.assertEqual(self.client.post(url, {'token': token}, content_type='application/json').status_code, 200)
+        # El mismo celular, ahora con otra cuenta: pasa a esa cuenta
+        self.client.force_login(self.org)
+        self.client.post(url, {'token': token}, content_type='application/json')
+        self.assertEqual(DispositivoPush.objects.get(token=token).usuario, self.org)
+        self.assertEqual(self.client.delete(url, {'token': token}, content_type='application/json').status_code, 204)
+        self.assertFalse(DispositivoPush.objects.filter(token=token).exists())

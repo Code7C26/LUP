@@ -6,8 +6,10 @@
 //   los detalles y el formulario de producto, y el login y el registro como ventanas modales
 //   (desde Perfil, o al querer reservar sin sesión).
 // Todas las pantallas navegan con los mismos nombres: navigation.navigate('DetalleProducto', { id })
-import { NavigationContainer } from '@react-navigation/native';
+import { useEffect, useRef, useState } from 'react';
+import { createNavigationContainerRef, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import * as Notifications from 'expo-notifications';
 
 import Aviso from '../componentes/Aviso';
 import Cargando from '../componentes/Cargando';
@@ -23,12 +25,15 @@ import Mapa from '../pantallas/Mapa';
 import Portada from '../pantallas/Portada';
 import Registro from '../pantallas/Registro';
 import RegistroSeleccion from '../pantallas/RegistroSeleccion';
+import { abrirPantallaDelAviso } from '../servicios/push';
 import { useOpcionesStack, useTemaNavegacion } from './opciones';
 import TabsComercio from './TabsComercio';
 import TabsConsumidor from './TabsConsumidor';
 import TabsOrganizacion from './TabsOrganizacion';
 
 const Stack = createNativeStackNavigator();
+// Para abrir pantallas desde afuera de ellas (al tocar una notificación push)
+const navegacion = createNavigationContainerRef();
 
 // Las pestañas según el rol. Sin sesión (invitado) se ve la parte del consumidor.
 function Pestanas() {
@@ -43,6 +48,21 @@ export default function Navegacion() {
   const bienvenida = useBienvenida();
   const tema = useTemaNavegacion();
   const opciones = useOpcionesStack();
+
+  // Al tocar una notificación (también si la app estaba cerrada), se abre la pantalla que dice el aviso.
+  // Se espera a que la navegación esté lista, haya sesión y ya se haya visto la bienvenida.
+  const ultimoAviso = Notifications.useLastNotificationResponse();
+  const [lista, setLista] = useState(false);
+  const avisoAbierto = useRef(null);
+  const listoParaAvisos = lista && usuario && bienvenida.vista(claveBienvenida(usuario));
+  useEffect(() => {
+    const id = ultimoAviso?.notification?.request?.identifier;
+    if (!id || !listoParaAvisos || avisoAbierto.current === id) return;
+    if (abrirPantallaDelAviso(navegacion, ultimoAviso.notification.request.content.data)) {
+      avisoAbierto.current = id;
+      Notifications.clearLastNotificationResponseAsync?.().catch(() => {});
+    }
+  }, [ultimoAviso, listoParaAvisos]);
 
   if (cargando || !bienvenida.cargada) return <Cargando texto="Abriendo Lüp…" />;
 
@@ -62,7 +82,7 @@ export default function Navegacion() {
   );
 
   return (
-    <NavigationContainer theme={tema}>
+    <NavigationContainer ref={navegacion} theme={tema} onReady={() => setLista(true)}>
       <Stack.Navigator screenOptions={opciones}>
         {usuario || invitado ? (
           <>

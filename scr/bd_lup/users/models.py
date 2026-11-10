@@ -90,3 +90,22 @@ class Organizacion(models.Model):
 
     def __str__(self):
         return self.nombre
+
+
+class DispositivoPush(models.Model):
+    """Un celular con la app instalada que recibe notificaciones push (servicio de Expo).
+
+    La app manda su token al iniciar sesión (POST /api/auth/push/) y lo borra al cerrar sesión.
+    Una cuenta puede tener varios celulares; un celular, una sola cuenta a la vez.
+    """
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='dispositivos_push')
+    token = models.CharField(max_length=200, unique=True)  # "ExponentPushToken[xxxx]"
+    creado_en = models.DateTimeField(auto_now_add=True)
+    actualizado_en = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = _('dispositivo para avisos push')
+        verbose_name_plural = _('dispositivos para avisos push')
+
+    def __str__(self):
+        return f'{self.usuario.username}: {self.token[:30]}…'

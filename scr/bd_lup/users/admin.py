@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from .models import Organizacion, Usuario
+from .models import DispositivoPush, Organizacion, Usuario
 
 
 @admin.register(Usuario)
@@ -17,3 +17,9 @@ class OrganizacionAdmin(admin.ModelAdmin):
     list_display = ('nombre', 'tipo', 'cuit', 'personas_asistidas')
     list_filter = ('tipo',)
     search_fields = ('nombre', 'cuit')
+
+
+@admin.register(DispositivoPush)
+class DispositivoPushAdmin(admin.ModelAdmin):
+    list_display = ('usuario', 'token', 'actualizado_en')
+    search_fields = ('usuario__username', 'usuario__email')
