@@ -25,10 +25,12 @@ import * as Location from 'expo-location';
 import { api, urlCompleta } from '../api/cliente';
 import BotonCarrito from '../componentes/BotonCarrito';
 import BotonFavorito from '../componentes/BotonFavorito';
+import Chip from '../componentes/Chip';
 import Esqueleto from '../componentes/Esqueleto';
 import Icono from '../componentes/Icono';
 import Logo from '../componentes/Logo';
 import MensajeError from '../componentes/MensajeError';
+import { useBusquedas } from '../contexto/Busquedas';
 import { useFavoritos } from '../contexto/Favoritos';
 import { espacio, fuentes, useTema } from '../tema';
 import { emojiCategoria, textoDistancia } from '../utilidades';
@@ -94,6 +96,7 @@ function TarjetaComercio({ comercio, foto, onPress }) {
 export default function Inicio({ navigation }) {
   const { colores } = useTema();
   const { favoritos } = useFavoritos();
+  const { recientes } = useBusquedas();
 
   const [comercios, setComercios] = useState([]);
   const [ofertas, setOfertas] = useState([]);
@@ -257,6 +260,25 @@ export default function Inicio({ navigation }) {
         </View>
       </View>
 
+      {/* Búsquedas recientes: al tocar una, el catálogo se abre buscándola */}
+      {recientes.length ? (
+        <View style={estilos.recientes}>
+          <Text style={[estilos.textoRecientes, { color: colores.gris, paddingHorizontal: espacio(2) }]}>
+            Buscaste hace poco
+          </Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={estilos.filaRecientes}>
+            {recientes.map((r) => (
+              <Chip
+                key={r}
+                texto={r}
+                icono="time-outline"
+                onPress={() => navigation?.navigate?.('Catalogo', { q: r, t: Date.now() })}
+              />
+            ))}
+          </ScrollView>
+        </View>
+      ) : null}
+
       <FlatList
         horizontal
         data={comercios}
@@ -381,6 +403,19 @@ const estilos = StyleSheet.create({
     bottom: espacio(1),
   },
   cuerpo: {
+    paddingHorizontal: espacio(2),
+  },
+  recientes: {
+    gap: espacio(0.75),
+    marginTop: -espacio(0.5),
+    marginBottom: espacio(1.5),
+  },
+  textoRecientes: {
+    fontFamily: fuentes.media,
+    fontSize: 12,
+  },
+  filaRecientes: {
+    gap: espacio(1),
     paddingHorizontal: espacio(2),
   },
   filaTitulo: {

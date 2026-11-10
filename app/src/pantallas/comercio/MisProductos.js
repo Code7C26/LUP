@@ -2,8 +2,10 @@
 // arriba el círculo del comercio y "Mi Perfil", el ícono de soporte con su cartelito,
 // "Productos disponibles +" y cada producto con la foto a la izquierda y una tarjeta gris con:
 //   arriba a la derecha: 🚫 "Marcar como producto no disponible" y ✔ "Marcar como vendido/reservado"
-//   (agregado) vendido, donado o vencido: 📄 "Publicar de nuevo" copia el producto con la fecha de hoy
+//   (agregado) 📄 "Duplicar" en todos y, en lo vendido, donado o vencido, el botón verde "Publicar de nuevo":
+//              copian el producto (foto, precios y descripción) con la fecha de hoy
 //   abajo: las etiquetas "Descuento" y "Donaciones" (verdes si aplican), "Editar producto" y "Eliminar"
+// (agregado) Arriba de la lista, "Publicar de nuevo": atajos a lo último publicado y a lo más vendido.
 // Usa GET /api/mis-productos/, POST /api/mis-productos/<id>/estado/ y DELETE /api/mis-productos/<id>/ (paso 30).
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, FlatList, Image, Linking, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
@@ -12,6 +14,7 @@ import { api, urlCompleta } from '../../api/cliente';
 import Esqueleto from '../../componentes/Esqueleto';
 import Icono from '../../componentes/Icono';
 import MensajeError from '../../componentes/MensajeError';
+import PublicarDeNuevo from '../../componentes/PublicarDeNuevo';
 import Vacio from '../../componentes/Vacio';
 import { useSesion } from '../../contexto/Sesion';
 import { espacio, fuentes, sombra, useTema } from '../../tema';
@@ -136,17 +139,15 @@ function FilaMiProducto({ producto, ocupado, alCambiarEstado, alEditar, alElimin
               deshabilitado={ocupado}
             />
           ) : null}
-          {/* Vendido, donado o vencido: "Publicar de nuevo" copia todo con la fecha de hoy */}
-          {!disponible || vencido ? (
-            <BotonRedondo
-              icono="copy-outline"
-              color={colores.sobreVerdeProfundo}
-              fondo={colores.verdeProfundo}
-              etiqueta="Publicar de nuevo"
-              onPress={alCopiar}
-              deshabilitado={ocupado}
-            />
-          ) : null}
+          {/* Duplicar: copia el producto (foto, precios, descripción) con la fecha de hoy */}
+          <BotonRedondo
+            icono="copy-outline"
+            color={colores.texto}
+            fondo="transparent"
+            etiqueta="Duplicar producto"
+            onPress={alCopiar}
+            deshabilitado={ocupado}
+          />
         </View>
 
         <View style={estilos.abajo}>
@@ -155,9 +156,12 @@ function FilaMiProducto({ producto, ocupado, alCambiarEstado, alEditar, alElimin
             <Etiqueta texto="Donaciones" activa={producto.es_donacion} />
           </View>
           <View style={estilos.etiquetas}>
-            {producto.estado !== 'DONADO' ? (
+            {!disponible || vencido ? (
+              // Vendido, donado o vencido: el botón principal es volver a publicarlo (copia con la fecha de hoy)
+              <Pildora texto="Publicar de nuevo" fondo="#4E8A2E" onPress={alCopiar} deshabilitado={ocupado} />
+            ) : (
               <Pildora texto="Editar producto" fondo="#073425" onPress={alEditar} deshabilitado={ocupado} />
-            ) : null}
+            )}
             <Pildora texto="Eliminar" fondo="#E02424" onPress={alEliminar} deshabilitado={ocupado} />
           </View>
         </View>
@@ -286,6 +290,12 @@ export default function MisProductos({ navigation }) {
             </View>
             <Text style={[estilos.miPerfil, { color: colores.titulo }]}>Mi Perfil</Text>
           </Pressable>
+
+          {/* Atajos: volver a cargar lo último o lo más vendido */}
+          <PublicarDeNuevo
+            productos={productos}
+            alElegir={(p) => navigation.navigate('FormProducto', { copiarDe: p.id })}
+          />
 
           {/* "Productos disponibles +" */}
           <Pressable

@@ -152,7 +152,7 @@ export default function Registro({ navigation, route }) {
     try {
       await registrar(rol, valores);
       // Listo: quedó logueada. Si se llegó desde la app como invitado (Perfil o "Ingresá para reservar"),
-      // se cierran el registro y el login y se vuelve a donde estaba. Si no, la navegación cambia sola.
+      // se cierran el registro y el login y se abre la bienvenida. Si no, la navegación cambia sola.
       if (invitado) {
         const rutas = navigation?.getState?.()?.routes || [];
         let deCuenta = 0;
@@ -160,6 +160,7 @@ export default function Registro({ navigation, route }) {
           deCuenta += 1;
         }
         if (deCuenta > 0 && deCuenta < rutas.length) navigation.dispatch(StackActions.pop(deCuenta));
+        navigation.navigate('VerBienvenida', { rol }); // y se le da la bienvenida a la cuenta nueva
       }
     } catch (e) {
       if (e?.sinConexion || e?.error) {

@@ -1,5 +1,5 @@
 // Búsquedas recientes del catálogo (las últimas 6), guardadas en el celular.
-// Uso:  const { recientes, guardarBusqueda, borrarBusquedas } = useBusquedas();
+// Uso:  const { recientes, guardarBusqueda, quitarBusqueda, borrarBusquedas } = useBusquedas();
 import { useSyncExternalStore } from 'react';
 import * as SecureStore from 'expo-secure-store';
 
@@ -32,7 +32,12 @@ function guardarBusqueda(texto) {
   cambiar([limpio, ...sinRepetir].slice(0, MAXIMO));
 }
 
-function borrarBusquedas() {
+function quitarBusqueda(texto) {
+  cambiar(recientes.filter((r) => r !== texto));
+}
+
+// También lo usa "Cerrar sesión" (contexto/Sesion.js)
+export function borrarBusquedas() {
   cambiar([]);
 }
 
@@ -43,5 +48,5 @@ function suscribirse(oyente) {
 
 export function useBusquedas() {
   const lista = useSyncExternalStore(suscribirse, () => recientes);
-  return { recientes: lista, guardarBusqueda, borrarBusquedas };
+  return { recientes: lista, guardarBusqueda, quitarBusqueda, borrarBusquedas };
 }

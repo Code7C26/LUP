@@ -7,6 +7,11 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import * as SecureStore from 'expo-secure-store';
 
 import { api, borrarToken, guardarToken, leerToken } from '../api/cliente';
+import { cancelarTodosLosRecordatorios } from '../servicios/recordatorios';
+import { borrarBienvenidas } from './Bienvenida';
+import { borrarBusquedas } from './Busquedas';
+import { vaciar as vaciarCarrito } from './Carrito';
+import { borrarFavoritos } from './Favoritos';
 
 const ContextoSesion = createContext(null);
 const CLAVE_USUARIO = 'lup_usuario';
@@ -42,8 +47,14 @@ export function ProveedorSesion({ children }) {
     setUsuario(datos);
   }
 
-  async function iniciarSesion(username, password) {
+  // rolEsperado (opcional): el tipo de cuenta elegido arriba en el login.
+  // Se revisa ANTES de guardar la sesión: si no coincide, no se entra y se avisa,
+  // sin que la app llegue a cambiar de pantalla.
+  async function iniciarSesion(username, password, rolEsperado) {
     const datos = await api('/auth/login/', { metodo: 'POST', datos: { username, password } });
+    if (rolEsperado && datos.rol !== rolEsperado) {
+      throw { rolReal: datos.rol };
+    }
     await guardarSesion(datos);
     return datos;
   }
@@ -54,9 +65,17 @@ export function ProveedorSesion({ children }) {
     return datos;
   }
 
+  // Además de la sesión, borra todo lo que esa cuenta dejó guardado en el celular:
+  // carrito, favoritos, búsquedas recientes, avisos de retiro y la bienvenida (se vuelve a ver al entrar).
+  // Lo que está en Django (cuenta, reservas, productos) no se toca. La apariencia elegida se mantiene.
   async function cerrarSesion() {
     await borrarToken();
     await SecureStore.deleteItemAsync(CLAVE_USUARIO);
+    vaciarCarrito();
+    borrarFavoritos();
+    borrarBusquedas();
+    borrarBienvenidas();
+    await cancelarTodosLosRecordatorios();
     setUsuario(null);
     setInvitado(false); // vuelve a mostrar el login
   }

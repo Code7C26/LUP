@@ -1,7 +1,8 @@
-// Recuerda qué bienvenidas (las tarjetas verdes del mockup) ya se vieron, una por rol.
-// Se muestra la primera vez que alguien entra con ese rol (también como invitado).
+// Recuerda qué bienvenidas ya se vieron, una por CUENTA (y una para el invitado).
+// Sale apenas se entra: al iniciar sesión, al crear la cuenta o al tocar "Omitir".
+// Como "Cerrar sesión" las borra (borrarBienvenidas), al volver a entrar se ve de nuevo.
 // Uso:  const { cargada, vista, marcarVista } = useBienvenida();
-//       vista('comercio') → true / false      marcarVista('comercio')
+//       const clave = claveBienvenida(usuario);   vista(clave) → true / false   marcarVista(clave)
 import { useSyncExternalStore } from 'react';
 import * as SecureStore from 'expo-secure-store';
 
@@ -18,10 +19,21 @@ SecureStore.getItemAsync(CLAVE)
   .then((valor) => cambiar({ cargada: true, vistas: JSON.parse(valor || '{}') || {} }))
   .catch(() => cambiar({ cargada: true }));
 
-function marcarVista(rol) {
-  const vistas = { ...estado.vistas, [rol]: true };
+// "cuenta-12" para alguien con sesión, "invitado" si entró con "Omitir"
+export function claveBienvenida(usuario) {
+  return usuario ? `cuenta-${usuario.id}` : 'invitado';
+}
+
+function marcarVista(clave) {
+  const vistas = { ...estado.vistas, [clave]: true };
   cambiar({ vistas });
   SecureStore.setItemAsync(CLAVE, JSON.stringify(vistas)).catch(() => {});
+}
+
+// Al cerrar sesión (contexto/Sesion.js)
+export function borrarBienvenidas() {
+  cambiar({ vistas: {} });
+  SecureStore.deleteItemAsync(CLAVE).catch(() => {});
 }
 
 function suscribirse(oyente) {
@@ -31,5 +43,5 @@ function suscribirse(oyente) {
 
 export function useBienvenida() {
   const { cargada, vistas } = useSyncExternalStore(suscribirse, () => estado);
-  return { cargada, vista: (rol) => !!vistas[rol], marcarVista };
+  return { cargada, vista: (clave) => !!vistas[clave], marcarVista };
 }

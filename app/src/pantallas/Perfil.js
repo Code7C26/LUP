@@ -14,6 +14,7 @@ import Boton from '../componentes/Boton';
 import Cifras from '../componentes/Cifras';
 import Icono from '../componentes/Icono';
 import MensajeError from '../componentes/MensajeError';
+import { claveBienvenida, useBienvenida } from '../contexto/Bienvenida';
 import { useSesion } from '../contexto/Sesion';
 import { cambiarApariencia, espacio, fuentes, radio, sombra, tamanos, useTema } from '../tema';
 
@@ -161,6 +162,7 @@ async function calcularImpacto(rol) {
 export default function Perfil({ navigation }) {
   const { colores } = useTema();
   const { usuario, cerrarSesion, entrarComoInvitado } = useSesion();
+  const { marcarVista } = useBienvenida();
 
   const [datos, setDatos] = useState(usuario); // se muestra lo guardado y se actualiza con Django
   const [error, setError] = useState('');
@@ -189,10 +191,24 @@ export default function Perfil({ navigation }) {
 
   useEffect(() => navigation?.addListener?.('focus', cargar), [navigation, cargar]);
 
+  // Antes de salir se avisa qué se borra del celular (ver cerrarSesion en contexto/Sesion.js)
+  function confirmarSalida() {
+    Alert.alert(
+      '¿Cerrar sesión?',
+      'Se van a borrar de este celular tu carrito, tus comercios favoritos, tus búsquedas recientes y los avisos de retiro.\n\n' +
+        'Tu cuenta, tus reservas y tus publicaciones siguen guardadas: las ves de nuevo al volver a entrar.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Cerrar sesión y borrar', style: 'destructive', onPress: salir },
+      ]
+    );
+  }
+
   async function salir() {
     setSaliendo(true);
     try {
       await cerrarSesion();
+      marcarVista(claveBienvenida(null)); // recién salió: no hace falta mostrarle la bienvenida del invitado
       entrarComoInvitado(); // vuelve a la vista de invitado, como el botón "Omitir"
     } finally {
       setSaliendo(false);
@@ -306,7 +322,7 @@ export default function Perfil({ navigation }) {
       <Soporte />
 
       <Boton texto="Ver la bienvenida" icono="sparkles-outline" variante="texto" chico onPress={() => navigation.navigate('VerBienvenida', { rol: usuario?.rol || 'consumidor' })} />
-      <Boton texto="Cerrar sesión" icono="log-out-outline" variante="texto" onPress={salir} cargando={saliendo} />
+      <Boton texto="Cerrar sesión" icono="log-out-outline" variante="texto" onPress={confirmarSalida} cargando={saliendo} />
       <Text style={[estilos.nota, { color: colores.gris }]}>Para editar tus datos, entrá a Lüp desde la web.</Text>
     </ScrollView>
   );

@@ -32,6 +32,9 @@ const CATEGORIAS = [
   ['otros', 'Otros'],
 ];
 
+// Lo que se sugiere buscar antes de la primera búsqueda
+const SUGERENCIAS = ['medialunas', 'pan', 'verduras', 'bolsa sorpresa', 'tarta'];
+
 const ORDENES = [
   ['recientes', 'Nuevos', 'sparkles-outline'],
   ['cercania', 'Cerca', 'navigate-outline'],
@@ -76,6 +79,14 @@ export default function Catalogo({ navigation, route }) {
       setComercio({ id: route.params.comercio, nombre: route.params.nombre });
     }
   }, [route?.params?.comercio, route?.params?.nombre]);
+
+  // Si se llegó desde una búsqueda reciente de Inicio: navigate('Catalogo', { q, t: Date.now() })
+  useEffect(() => {
+    const q = route?.params?.q;
+    if (!q) return;
+    setTexto(q);
+    setBusqueda(q); // busca al toque, sin esperar
+  }, [route?.params?.q, route?.params?.t]);
 
   // La ubicación, una sola vez
   useEffect(() => {
@@ -128,27 +139,43 @@ export default function Catalogo({ navigation, route }) {
         onChangeText={setTexto}
         autoCorrect={false}
         returnKeyType="search"
+        onSubmitEditing={() => {
+          setBusqueda(texto.trim()); // al apretar "Buscar" en el teclado, busca al toque
+          guardarBusqueda(texto);
+        }}
         clearButtonMode="while-editing"
       />
 
-      {/* Búsquedas recientes (cuando el buscador está vacío) */}
-      {!texto && recientes.length ? (
+      {/* Búsquedas recientes (o sugerencias si todavía no buscaste nada), cuando el buscador está vacío */}
+      {!texto && !comercio ? (
         <View style={estilos.recientes}>
           <View style={estilos.filaRecientes}>
-            <Text style={[estilos.textoRecientes, { color: colores.gris }]}>Búsquedas recientes</Text>
-            <Text
-              onPress={borrarBusquedas}
-              accessibilityRole="button"
-              style={[estilos.textoRecientes, { color: colores.verdeHover, fontFamily: fuentes.negrita }]}
-            >
-              Borrar
+            <Text style={[estilos.textoRecientes, { color: colores.gris }]}>
+              {recientes.length ? 'Búsquedas recientes' : 'Probá buscar'}
             </Text>
+            {recientes.length ? (
+              <Text
+                onPress={borrarBusquedas}
+                accessibilityRole="button"
+                style={[estilos.textoRecientes, { color: colores.verdeHover, fontFamily: fuentes.negrita }]}
+              >
+                Borrar
+              </Text>
+            ) : null}
           </View>
-          <View style={estilos.chipsRecientes}>
-            {recientes.map((r) => (
-              <Chip key={r} texto={r} icono="time-outline" onPress={() => setTexto(r)} />
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={estilos.filaChips}>
+            {(recientes.length ? recientes : SUGERENCIAS).map((r) => (
+              <Chip
+                key={r}
+                texto={r}
+                icono={recientes.length ? 'time-outline' : 'search-outline'}
+                onPress={() => {
+                  setTexto(r);
+                  setBusqueda(r); // busca al toque, sin esperar
+                }}
+              />
             ))}
-          </View>
+          </ScrollView>
         </View>
       ) : null}
 

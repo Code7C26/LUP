@@ -58,7 +58,8 @@ function quitar(id) {
   guardar(items.filter((i) => i.id !== id));
 }
 
-function vaciar() {
+// También lo usa "Cerrar sesión" (contexto/Sesion.js)
+export function vaciar() {
   guardar([]);
 }
 

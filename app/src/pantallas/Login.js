@@ -51,7 +51,7 @@ const ROLES = [
 
 export default function Login({ navigation, route }) {
   const { colores } = useTema();
-  const { iniciarSesion, cerrarSesion, entrarComoInvitado, invitado } = useSesion();
+  const { iniciarSesion, entrarComoInvitado, invitado } = useSesion();
   // Si ya estaba como invitado, el login se abrió como ventana (desde Perfil o "Reservar"): al terminar se cierra.
   // Si no, al entrar la navegación cambia sola a las pestañas.
   const enVentana = invitado;
@@ -72,18 +72,18 @@ export default function Login({ navigation, route }) {
     }
     setEnviando(true);
     try {
-      const datos = await iniciarSesion(usuario.trim(), clave);
-      // Igual que la web: la cuenta tiene que ser del tipo de la pestaña elegida
-      if (datos.rol !== rol) {
-        await cerrarSesion();
-        const real = ROLES.find((r) => r.id === datos.rol)?.titulo || datos.rol;
-        setError(`Esta cuenta es de ${real}. Elegí esa opción arriba.`);
-        return;
-      }
-      if (enVentana && navigation?.canGoBack?.()) navigation.goBack();
+      // Igual que la web: la cuenta tiene que ser del tipo elegido arriba (se revisa antes de entrar)
+      const datos = await iniciarSesion(usuario.trim(), clave, rol);
+      // Al entrar, la navegación pasa sola a la bienvenida y la app. Si el login se abrió como ventana,
+      // en su lugar se abre la bienvenida, y al terminarla se vuelve a donde estaba.
+      if (enVentana) navigation.replace('VerBienvenida', { rol: datos.rol });
     } catch (e) {
-      setError(e);
-    } finally {
+      if (e?.rolReal) {
+        const real = ROLES.find((r) => r.id === e.rolReal)?.titulo || e.rolReal;
+        setError(`Esta cuenta es de ${real}. Elegí "${real}" arriba y volvé a ingresar.`);
+      } else {
+        setError(e);
+      }
       setEnviando(false);
     }
   }

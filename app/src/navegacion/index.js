@@ -1,7 +1,7 @@
 // PASO 37 · Navegación por rol.
 // - Sin sesión: la portada del mockup ("Una segunda oportunidad…" y el logo con "Iniciar sesión"),
 //   el login (con "Omitir" se entra como invitado) y el registro.
-// - La primera vez que se entra con cada rol, antes de las pestañas, va la bienvenida (tarjeta verde).
+// - Apenas se entra (al iniciar sesión, crear la cuenta o tocar "Omitir"), antes de las pestañas, va la bienvenida.
 // - Con sesión o como invitado: las pestañas de su rol. Arriba de las pestañas se abren
 //   los detalles y el formulario de producto, y el login y el registro como ventanas modales
 //   (desde Perfil, o al querer reservar sin sesión).
@@ -11,7 +11,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import Aviso from '../componentes/Aviso';
 import Cargando from '../componentes/Cargando';
-import { useBienvenida } from '../contexto/Bienvenida';
+import { claveBienvenida, useBienvenida } from '../contexto/Bienvenida';
 import { useSesion } from '../contexto/Sesion';
 import FormProducto from '../pantallas/comercio/FormProducto';
 import DetalleComercio from '../pantallas/DetalleComercio';
@@ -46,16 +46,19 @@ export default function Navegacion() {
 
   if (cargando || !bienvenida.cargada) return <Cargando texto="Abriendo Lüp…" />;
 
-  // El invitado ve la parte del consumidor, así que también su bienvenida
-  const rolActual = usuario?.rol || 'consumidor';
+  // Una bienvenida por cuenta (y una para el invitado): "Cerrar sesión" las borra, así que se ve cada vez que se entra
+  const bienvenidaVista = bienvenida.vista(claveBienvenida(usuario));
 
-  // Login y registro: tienen su propio "Omitir" y "Volver", así que van sin barra arriba
+  // Login y registro: tienen su propio "Omitir" y "Volver", así que van sin barra arriba.
+  // "navigationKey": como estas pantallas existen con y sin sesión, al entrar (o tocar "Omitir") y al
+  // cerrar sesión se sacan de la pila y se va a la primera pantalla que corresponde. Sin esto, la app
+  // se quedaba en el login (con el botón cargando para siempre) aunque la cuenta ya hubiera entrado.
   const pantallasDeCuenta = (
-    <>
+    <Stack.Group navigationKey={usuario || invitado ? 'app' : 'cuenta'}>
       <Stack.Screen name="Login" component={Login} />
       <Stack.Screen name="Registro" component={RegistroSeleccion} />
       <Stack.Screen name="RegistroFormulario" component={Registro} />
-    </>
+    </Stack.Group>
   );
 
   return (
@@ -63,8 +66,8 @@ export default function Navegacion() {
       <Stack.Navigator screenOptions={opciones}>
         {usuario || invitado ? (
           <>
-            {/* Primera vez con este rol: la bienvenida va primero. Al terminarla desaparece sola. */}
-            {!bienvenida.vista(rolActual) ? (
+            {/* Recién entró: la bienvenida va primero. Al terminarla desaparece sola. */}
+            {!bienvenidaVista ? (
               <Stack.Screen name="Bienvenida" component={Bienvenida} options={{ headerShown: false, gestureEnabled: false }} />
             ) : null}
             <Stack.Screen name="Pestanas" component={Pestanas} options={{ headerShown: false }} />

@@ -1,6 +1,7 @@
 """API REST de Lüp para la app móvil."""
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, Sum
+from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import localdate
 from rest_framework import serializers, viewsets
@@ -172,11 +173,24 @@ def cancelar_reserva(request, pk):
 # ACCIONES DEL COMERCIO 
 # ==========================================
 
+def con_vendidos(productos):
+    """Agrega 'vendidos' a cada producto: unidades reservadas que no se cancelaron."""
+    return productos.annotate(vendidos=Coalesce(
+        Sum('reservas__cantidad', filter=~Q(reservas__estado=Reserva.CANCELADA)), 0))
+
+
 class MiProductoSerializer(ProductoSerializer):
     estado = serializers.CharField(read_only=True)
+    # Para "Publicar de nuevo" en la app: el más vendido del comercio
+    vendidos = serializers.SerializerMethodField()
 
     class Meta(ProductoSerializer.Meta):
-        fields = ProductoSerializer.Meta.fields + ['estado']
+        fields = ProductoSerializer.Meta.fields + ['estado', 'vendidos']
+
+    def get_vendidos(self, producto):
+        if hasattr(producto, 'vendidos'):
+            return producto.vendidos
+        return con_vendidos(Producto.objects.filter(pk=producto.pk)).values_list('vendidos', flat=True).first() or 0
 
     def validate_stock(self, stock):
         if stock < 1:
@@ -202,7 +216,7 @@ class MisProductosViewSet(viewsets.ModelViewSet):
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get_queryset(self):
-        return Producto.objects.filter(comercio__usuario=self.request.user).select_related('comercio')
+        return con_vendidos(Producto.objects.filter(comercio__usuario=self.request.user).select_related('comercio'))
 
     def perform_create(self, serializer):
         tienda = getattr(self.request.user, 'tienda', None)
