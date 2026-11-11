@@ -1,5 +1,6 @@
 // PASO 40 · Inicio, IGUAL AL MOCKUP (página 7 del PDF):
-//   arriba: soporte a la izquierda y compartir / carrito (con el número de productos) a la derecha
+//   arriba: el menú ☰ a la izquierda (Perfil, Mis reservas, Mis favoritos, Apariencia y Soporte;
+//   ver componentes/MenuLateral.js) y compartir / carrito (con el número de productos) a la derecha
 //   el mapa a todo lo ancho con los comercios y el logo en la esquina
 //   "Cerca tuyo" con el buscador chiquito, y los comercios con foto, km y "Ver catálogo"
 //   "Ver catálogo completo" y las fotos de las ofertas con sus km
@@ -7,10 +8,8 @@
 // Usa GET /api/comercios/?lat=&lng= y GET /api/productos/?orden=cercania&lat=&lng=
 import { useCallback, useEffect, useState } from 'react';
 import {
-  Alert,
   FlatList,
   Image,
-  Linking,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -30,13 +29,12 @@ import Chip from '../componentes/Chip';
 import Esqueleto from '../componentes/Esqueleto';
 import Icono from '../componentes/Icono';
 import Logo from '../componentes/Logo';
+import MenuLateral from '../componentes/MenuLateral';
 import MensajeError from '../componentes/MensajeError';
 import { useBusquedas } from '../contexto/Busquedas';
 import { useFavoritos } from '../contexto/Favoritos';
 import { espacio, fuentes, useTema } from '../tema';
 import { emojiCategoria, textoDistancia } from '../utilidades';
-
-const WHATSAPP_SOPORTE = 'https://wa.me/5493547620629';
 
 // "1 km", "350 m" (sin el "a" de adelante, como el mockup)
 const km = (distancia) => textoDistancia(distancia)?.replace('a ', '') || null;
@@ -109,7 +107,7 @@ export default function Inicio({ navigation }) {
   const [cargando, setCargando] = useState(true);
   const [actualizando, setActualizando] = useState(false);
   const [error, setError] = useState('');
-  const [verSoporte, setVerSoporte] = useState(false);
+  const [verMenu, setVerMenu] = useState(false);
 
   const cargar = useCallback(async () => {
     setError('');
@@ -174,16 +172,16 @@ export default function Inicio({ navigation }) {
         />
       }
     >
-      {/* Barra de arriba */}
+      {/* Barra de arriba: el menú ☰ a la izquierda */}
       <View style={estilos.barra}>
         <Pressable
-          onPress={() => setVerSoporte((v) => !v)}
+          onPress={() => setVerMenu(true)}
           hitSlop={8}
           accessibilityRole="button"
-          accessibilityLabel="Soporte al Consumidor"
+          accessibilityLabel="Abrir el menú"
           style={[estilos.botonBarra, { backgroundColor: colores.panel }]}
         >
-          <Icono nombre="chatbubble-ellipses-outline" tamano={20} color={colores.texto} />
+          <Icono nombre="menu" tamano={22} color={colores.texto} />
         </Pressable>
         <View style={{ flex: 1 }} />
         <Pressable onPress={compartir} hitSlop={8} accessibilityRole="button" accessibilityLabel="Compartir Lüp" style={estilos.botonBarra}>
@@ -192,19 +190,7 @@ export default function Inicio({ navigation }) {
         <BotonCarrito navigation={navigation} />
       </View>
 
-      {/* Cartelito de soporte, como el mockup */}
-      {verSoporte ? (
-        <Pressable
-          onPress={() => Linking.openURL(WHATSAPP_SOPORTE).catch(() => Alert.alert('Soporte', '+54 9 3547 62-0629'))}
-          style={[estilos.soporte, { backgroundColor: colores.panel }]}
-        >
-          <Text style={[estilos.tituloSoporte, { color: colores.titulo }]}>Soporte al Consumidor</Text>
-          <Text style={[estilos.textoSoporte, { color: colores.titulo }]}>
-            Por cualquier duda, consulta o inquietud, comuníquese al{' '}
-            <Text style={{ textDecorationLine: 'underline' }}>+54 9 3547620629</Text>
-          </Text>
-        </Pressable>
-      ) : null}
+      <MenuLateral visible={verMenu} alCerrar={() => setVerMenu(false)} navigation={navigation} />
 
       {/* Mapa a todo lo ancho */}
       {centro ? (
@@ -367,22 +353,6 @@ const estilos = StyleSheet.create({
     borderRadius: 19,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  soporte: {
-    marginHorizontal: espacio(2),
-    marginBottom: espacio(1),
-    borderRadius: 10,
-    padding: espacio(1.25),
-    gap: 2,
-  },
-  tituloSoporte: {
-    fontFamily: fuentes.normal,
-    fontSize: 13,
-    textDecorationLine: 'underline',
-  },
-  textoSoporte: {
-    fontFamily: fuentes.normal,
-    fontSize: 11,
   },
   mapa: {
     height: 230,

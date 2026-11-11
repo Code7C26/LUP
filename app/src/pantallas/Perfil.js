@@ -14,9 +14,10 @@ import Boton from '../componentes/Boton';
 import Cifras from '../componentes/Cifras';
 import Icono from '../componentes/Icono';
 import MensajeError from '../componentes/MensajeError';
+import SelectorApariencia from '../componentes/SelectorApariencia';
 import { claveBienvenida, useBienvenida } from '../contexto/Bienvenida';
 import { useSesion } from '../contexto/Sesion';
-import { cambiarApariencia, espacio, fuentes, radio, sombra, tamanos, useTema } from '../tema';
+import { espacio, fuentes, radio, sombra, tamanos, useTema } from '../tema';
 
 // Mismos datos que el pie de página de la web (scr/templates/base.html)
 const SOPORTE = {
@@ -59,36 +60,6 @@ function Dato({ icono, valor, ultimo }) {
       <Text style={[estilos.valor, { color: colores.texto }]} numberOfLines={2}>
         {valor}
       </Text>
-    </View>
-  );
-}
-
-// Selector Automático / Claro / Oscuro
-function Apariencia() {
-  const { colores, apariencia } = useTema();
-  const opciones = [
-    ['sistema', 'Auto', 'phone-portrait-outline'],
-    ['claro', 'Claro', 'sunny-outline'],
-    ['oscuro', 'Oscuro', 'moon-outline'],
-  ];
-  return (
-    <View style={[estilos.segmento, { backgroundColor: colores.campo }]}>
-      {opciones.map(([clave, texto, icono]) => {
-        const activa = apariencia === clave;
-        const color = activa ? colores.sobreVerdeProfundo : colores.gris;
-        return (
-          <Pressable
-            key={clave}
-            onPress={() => cambiarApariencia(clave)}
-            accessibilityRole="radio"
-            accessibilityState={{ selected: activa }}
-            style={[estilos.opcion, activa && { backgroundColor: colores.verdeProfundo }]}
-          >
-            <Icono nombre={icono} tamano={16} color={color} />
-            <Text style={[estilos.textoOpcion, { color }]}>{texto}</Text>
-          </Pressable>
-        );
-      })}
     </View>
   );
 }
@@ -230,7 +201,7 @@ export default function Perfil({ navigation }) {
         <Boton texto="Crear cuenta" variante="secundario" onPress={() => navigation.navigate('Registro')} />
         <Grupo titulo="Apariencia">
           <View style={{ padding: espacio(1) }}>
-            <Apariencia />
+            <SelectorApariencia />
           </View>
         </Grupo>
         <Soporte />
@@ -315,7 +286,7 @@ export default function Perfil({ navigation }) {
 
       <Grupo titulo="Apariencia">
         <View style={{ padding: espacio(1) }}>
-          <Apariencia />
+          <SelectorApariencia />
         </View>
       </Grupo>
 
@@ -395,24 +366,6 @@ const estilos = StyleSheet.create({
     flex: 1,
     fontFamily: fuentes.normal,
     fontSize: tamanos.normal,
-  },
-  segmento: {
-    flexDirection: 'row',
-    borderRadius: 999,
-    padding: 4,
-  },
-  opcion: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: espacio(1),
-    borderRadius: 999,
-  },
-  textoOpcion: {
-    fontFamily: fuentes.media,
-    fontSize: tamanos.chico,
   },
   soporte: {
     flexDirection: 'row',

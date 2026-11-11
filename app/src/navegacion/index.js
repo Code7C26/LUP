@@ -22,6 +22,7 @@ import Carrito from '../pantallas/Carrito';
 import DetalleProducto from '../pantallas/DetalleProducto';
 import Login from '../pantallas/Login';
 import Mapa from '../pantallas/Mapa';
+import MisFavoritos from '../pantallas/MisFavoritos';
 import Portada from '../pantallas/Portada';
 import Registro from '../pantallas/Registro';
 import RegistroSeleccion from '../pantallas/RegistroSeleccion';
@@ -96,6 +97,8 @@ export default function Navegacion() {
             <Stack.Screen name="DetalleComercio" component={DetalleComercio} options={{ headerShown: false }} />
             <Stack.Screen name="Carrito" component={Carrito} options={{ title: '' }} />
             <Stack.Screen name="Mapa" component={Mapa} options={{ headerShown: false }} />
+            {/* Desde el menú ☰ de Inicio. El título grande está dentro de la pantalla */}
+            <Stack.Screen name="MisFavoritos" component={MisFavoritos} options={{ title: '' }} />
             <Stack.Screen
               name="FormProducto"
               component={FormProducto}
