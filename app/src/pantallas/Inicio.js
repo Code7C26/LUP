@@ -25,6 +25,7 @@ import * as Location from 'expo-location';
 import { api, urlCompleta } from '../api/cliente';
 import BotonCarrito from '../componentes/BotonCarrito';
 import BotonFavorito from '../componentes/BotonFavorito';
+import CalificacionComercio, { textoCalificacion } from '../componentes/CalificacionComercio';
 import Chip from '../componentes/Chip';
 import Esqueleto from '../componentes/Esqueleto';
 import Icono from '../componentes/Icono';
@@ -68,14 +69,15 @@ function Foto({ uri, icono, emoji, estilo }) {
   );
 }
 
-// Tarjeta de comercio del carrusel "Cerca tuyo": foto, nombre, km y "Ver catálogo"
+// Tarjeta de comercio del carrusel "Cerca tuyo": foto, nombre, km, estrellas y "Ver catálogo"
 function TarjetaComercio({ comercio, foto, onPress }) {
   const { colores } = useTema();
+  const estrellas = textoCalificacion(comercio.calificacion_promedio, comercio.calificaciones);
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`${comercio.nombre_fantasia}. Ver catálogo`}
+      accessibilityLabel={[comercio.nombre_fantasia, estrellas, 'Ver catálogo'].filter(Boolean).join('. ')}
       style={({ pressed }) => [estilos.comercio, pressed && { opacity: 0.8 }]}
     >
       <View>
@@ -85,7 +87,10 @@ function TarjetaComercio({ comercio, foto, onPress }) {
       <Text style={[estilos.nombreComercio, { color: colores.titulo }]} numberOfLines={1}>
         {comercio.nombre_fantasia}
       </Text>
-      <Distancia valor={km(comercio.distancia_km)} />
+      <View style={estilos.filaDatos}>
+        <Distancia valor={km(comercio.distancia_km)} />
+        <CalificacionComercio promedio={comercio.calificacion_promedio} cantidad={comercio.calificaciones} tamano={10} />
+      </View>
       <Text style={[estilos.verCatalogo, { color: colores.titulo }]}>
         {comercio.ofertas ? 'Ver catálogo' : 'Sin ofertas por ahora'}
       </Text>
@@ -471,6 +476,11 @@ const estilos = StyleSheet.create({
     fontFamily: fuentes.negrita,
     fontSize: 12,
     marginTop: 3,
+  },
+  filaDatos: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: espacio(1),
   },
   distancia: {
     flexDirection: 'row',

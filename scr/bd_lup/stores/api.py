@@ -5,9 +5,11 @@ from rest_framework import serializers
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from scr.bd_lup.products.models import Producto
+from scr.bd_lup.products.models import Calificacion, Producto
 
 from .models import Tienda
+
+OPINIONES_EN_DETALLE = 20  # las últimas N opiniones que trae /api/comercios/<id>/
 from .ubicacion import distancia_km, leer_coordenadas, url_como_llegar
 
 
@@ -38,6 +40,26 @@ class TiendaSerializer(serializers.ModelSerializer):
 
     def get_como_llegar(self, tienda):
         return url_como_llegar(tienda)
+
+
+class OpinionSerializer(serializers.ModelSerializer):
+    """Una opinión pública sobre el comercio (solo en el detalle, no en la lista)."""
+    producto = serializers.SerializerMethodField()
+    autor = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Calificacion
+        fields = [
+            'id', 'puntaje', 'puntaje_producto', 'comentario', 'producto', 'autor',
+            'creada_en', 'respuesta', 'respondida_en',
+        ]
+
+    def get_producto(self, calificacion):
+        return calificacion.producto.titulo if calificacion.producto_id else None
+
+    def get_autor(self, calificacion):
+        # Privacidad: solo el nombre de pila (nunca apellido, usuario ni email)
+        return (calificacion.consumidor.first_name or '').strip() or 'Cliente de Lüp'
 
 
 def _tiendas_con_ofertas():
@@ -73,8 +95,15 @@ def comercios(request):
 
 @api_view(['GET'])
 def detalle_comercio(request, pk):
-    """Datos de un comercio (con su distancia si se manda ?lat=&lng=)."""
+    """Datos de un comercio (con su distancia si se manda ?lat=&lng=) y sus últimas opiniones."""
     tienda = get_object_or_404(_tiendas_con_ofertas(), pk=pk)
     lat, lng = leer_coordenadas(request.query_params.get('lat'), request.query_params.get('lng'))
     _calcular_distancia(tienda, lat, lng)
-    return Response(TiendaSerializer(tienda).data)
+    datos = TiendaSerializer(tienda).data
+    opiniones = (
+        Calificacion.objects.filter(tienda=tienda)
+        .select_related('consumidor', 'producto')
+        .order_by('-creada_en', '-pk')[:OPINIONES_EN_DETALLE]
+    )
+    datos['opiniones'] = OpinionSerializer(opiniones, many=True).data
+    return Response(datos)

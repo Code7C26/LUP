@@ -12,6 +12,7 @@ import { api } from '../api/cliente';
 import Boton from '../componentes/Boton';
 import BotonFavorito from '../componentes/BotonFavorito';
 import BotonVolver from '../componentes/BotonVolver';
+import CalificacionComercio from '../componentes/CalificacionComercio';
 import Cargando from '../componentes/Cargando';
 import Icono from '../componentes/Icono';
 import MensajeError from '../componentes/MensajeError';
@@ -118,6 +119,7 @@ export default function Mapa({ navigation }) {
               <Text style={[estilos.nombre, { color: colores.texto }]} numberOfLines={1}>
                 {elegido.nombre_fantasia}
               </Text>
+              <CalificacionComercio promedio={elegido.calificacion_promedio} cantidad={elegido.calificaciones} />
               <Text style={[estilos.detalle, { color: colores.gris }]} numberOfLines={1}>
                 {[distancia?.replace('a ', ''), elegido.rubro_texto, elegido.horario_atencion].filter(Boolean).join(' · ')}
               </Text>

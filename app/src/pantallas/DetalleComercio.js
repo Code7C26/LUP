@@ -6,6 +6,7 @@
 // IGUAL AL MOCKUP (página 8): portada arriba (una foto de sus productos; si no hay, el mapa),
 // el nombre en negrita con la flechita (despliega dirección, horario y "Cómo llegar")
 // y los productos en filas: foto a la izquierda y tarjeta gris con "Reservar".
+// Al final, "Opiniones": el promedio grande y las últimas 20 (con la respuesta del comercio, si hay).
 import { useCallback, useEffect, useState } from 'react';
 import { FlatList, Image, Linking, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
@@ -16,11 +17,110 @@ import BarraCarrito from '../componentes/BarraCarrito';
 import Boton from '../componentes/Boton';
 import BotonFavorito from '../componentes/BotonFavorito';
 import BotonVolver from '../componentes/BotonVolver';
+import CalificacionComercio from '../componentes/CalificacionComercio';
 import Esqueleto from '../componentes/Esqueleto';
+import Estrellas from '../componentes/Estrellas';
 import Icono from '../componentes/Icono';
 import MensajeError from '../componentes/MensajeError';
 import FilaProducto from '../componentes/FilaProducto';
-import { espacio, fuentes, tamanos, useTema } from '../tema';
+import { espacio, fuentes, radio, tamanos, useTema } from '../tema';
+
+// "2026-10-26T14:30:00-03:00" -> "26/10/2026"
+function textoFecha(fechaHora) {
+  const fecha = new Date(fechaHora);
+  if (Number.isNaN(fecha.getTime())) return '';
+  const dd = String(fecha.getDate()).padStart(2, '0');
+  const mm = String(fecha.getMonth() + 1).padStart(2, '0');
+  return `${dd}/${mm}/${fecha.getFullYear()}`;
+}
+
+// Una opinión: estrellas y fecha, nombre y producto, comentario y la respuesta del comercio
+function Opinion({ opinion, comercio }) {
+  const { colores } = useTema();
+  return (
+    <View style={[estilos.opinion, { backgroundColor: colores.superficie }]}>
+      <View style={estilos.filaEntre}>
+        <Estrellas valor={opinion.puntaje} tamano={15} />
+        <Text style={[estilos.mini, { color: colores.gris }]}>{textoFecha(opinion.creada_en)}</Text>
+      </View>
+      <Text style={[estilos.autor, { color: colores.titulo }]} numberOfLines={1}>
+        {opinion.autor}
+      </Text>
+      {opinion.producto ? (
+        <View style={estilos.linea}>
+          <Icono nombre="bag-handle-outline" tamano={13} color={colores.gris} />
+          <Text style={[estilos.mini, { color: colores.gris, flexShrink: 1 }]} numberOfLines={1}>
+            {opinion.producto}
+          </Text>
+          {opinion.puntaje_producto ? (
+            <View
+              style={estilos.linea}
+              accessible
+              accessibilityLabel={`El producto: ${opinion.puntaje_producto} de 5 estrellas`}
+            >
+              <Icono nombre="star" tamano={11} color={colores.ambar} />
+              <Text style={[estilos.mini, { color: colores.gris }]}>{opinion.puntaje_producto}</Text>
+            </View>
+          ) : null}
+        </View>
+      ) : null}
+      {opinion.comentario ? (
+        <Text style={[estilos.comentario, { color: colores.texto }]}>{opinion.comentario}</Text>
+      ) : null}
+
+      {opinion.respuesta ? (
+        <View style={[estilos.respuesta, { backgroundColor: colores.menta, borderLeftColor: colores.verde }]}>
+          <View style={estilos.linea}>
+            <Icono nombre="chatbubble-ellipses-outline" tamano={14} color={colores.verdeHover} />
+            <Text style={[estilos.mini, { color: colores.verdeHover, fontFamily: fuentes.negrita, flex: 1 }]} numberOfLines={1}>
+              Respuesta de {comercio}
+            </Text>
+          </View>
+          <Text style={[estilos.comentario, { color: colores.texto }]}>{opinion.respuesta}</Text>
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+// "Opiniones": "★ 4,0 · 1 opinión" grande y la lista (o "Todavía no tiene opiniones")
+function Opiniones({ comercio }) {
+  const { colores } = useTema();
+  const opiniones = comercio.opiniones || [];
+  const cantidad = comercio.calificaciones || 0;
+  const promedio = Number(comercio.calificacion_promedio);
+  const hayPromedio = cantidad > 0 && comercio.calificacion_promedio !== null && !Number.isNaN(promedio);
+  const textoCantidad = `${cantidad} ${cantidad === 1 ? 'opinión' : 'opiniones'}`;
+
+  return (
+    <View style={[estilos.cuerpo, estilos.seccion]}>
+      <Text style={[estilos.tituloSeccion, { color: colores.titulo }]} accessibilityRole="header">
+        Opiniones
+      </Text>
+
+      {hayPromedio ? (
+        <View
+          style={estilos.promedio}
+          accessible
+          accessibilityLabel={`${promedio.toFixed(1).replace('.', ',')} de 5 estrellas, ${textoCantidad}`}
+        >
+          <Icono nombre="star" tamano={28} color={colores.ambar} />
+          <Text style={[estilos.numeroPromedio, { color: colores.titulo }]}>{promedio.toFixed(1).replace('.', ',')}</Text>
+          <Text style={[estilos.texto, { color: colores.gris }]}>· {textoCantidad}</Text>
+        </View>
+      ) : null}
+
+      {opiniones.length ? (
+        opiniones.map((o) => <Opinion key={o.id} opinion={o} comercio={comercio.nombre_fantasia} />)
+      ) : (
+        <View style={[estilos.sinOpiniones, { backgroundColor: colores.superficie }]}>
+          <Icono nombre="star-outline" tamano={22} color={colores.gris} />
+          <Text style={[estilos.detalle, { color: colores.gris }]}>Todavía no tiene opiniones</Text>
+        </View>
+      )}
+    </View>
+  );
+}
 
 export default function DetalleComercio({ navigation, route }) {
   const { colores } = useTema();
@@ -106,6 +206,13 @@ export default function DetalleComercio({ navigation, route }) {
           <Icono nombre={verDatos ? 'chevron-up' : 'chevron-down'} tamano={20} color={colores.texto} />
         </Pressable>
 
+        {/* "★ 4,6 (23)" (nada si todavía no tiene opiniones) */}
+        <CalificacionComercio
+          promedio={comercio.calificacion_promedio}
+          cantidad={comercio.calificaciones}
+          estilo={{ marginTop: 4 }}
+        />
+
         {verDatos ? (
           <View style={estilos.datos}>
             <Text style={[estilos.detalle, { color: colores.gris }]}>{comercio.rubro_texto}</Text>
@@ -144,6 +251,7 @@ export default function DetalleComercio({ navigation, route }) {
         data={productos}
         keyExtractor={(p) => String(p.id)}
         ListHeaderComponent={encabezado}
+        ListFooterComponent={<Opiniones comercio={comercio} />}
         refreshControl={
           <RefreshControl
             refreshing={actualizando}
@@ -218,5 +326,60 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     gap: espacio(1),
     marginTop: espacio(2),
+  },
+  seccion: {
+    marginTop: espacio(4),
+    gap: espacio(1.5),
+  },
+  tituloSeccion: {
+    fontFamily: fuentes.normal,
+    fontSize: tamanos.mediano,
+  },
+  promedio: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  numeroPromedio: {
+    fontFamily: fuentes.negrita,
+    fontSize: tamanos.titulo,
+  },
+  opinion: {
+    borderRadius: radio,
+    padding: espacio(1.5),
+    gap: 6,
+  },
+  filaEntre: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: espacio(1),
+  },
+  autor: {
+    fontFamily: fuentes.negrita,
+    fontSize: tamanos.normal,
+  },
+  mini: {
+    fontFamily: fuentes.normal,
+    fontSize: 12,
+  },
+  comentario: {
+    fontFamily: fuentes.normal,
+    fontSize: tamanos.chico,
+    lineHeight: 19,
+  },
+  respuesta: {
+    borderRadius: 10,
+    borderLeftWidth: 3,
+    padding: espacio(1.25),
+    gap: 4,
+    marginTop: 2,
+  },
+  sinOpiniones: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: espacio(1),
+    borderRadius: radio,
+    padding: espacio(2),
   },
 });
