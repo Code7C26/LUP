@@ -1,5 +1,6 @@
 // Fila de producto IGUAL AL MOCKUP (página 8): la foto cuadrada a la izquierda
-// y una tarjeta gris a la derecha con el nombre, el precio y "Agregar al carrito".
+// y una tarjeta gris a la derecha con el nombre, el precio y "Agregar al carrito"
+// (en pantallas chicas el botón baja abajo de los precios).
 // Tocar la fila abre el detalle; el botón lo suma al carrito (si ya está, suma uno más).
 // Uso:  <FilaProducto producto={p} onPress={() => navigation.navigate('DetalleProducto', { id: p.id })} />
 import { useEffect, useRef } from 'react';
@@ -130,17 +131,22 @@ const estilos = StyleSheet.create({
     fontFamily: fuentes.normal,
     fontSize: 11,
   },
+  // Precios y botón en la misma línea si entran; si no (pantallas chicas, precios largos),
+  // el botón baja a su propia línea: nunca se tapan.
   abajo: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: espacio(1),
+    columnGap: espacio(1),
+    rowGap: espacio(0.75),
+    marginTop: espacio(0.5),
   },
   precios: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'baseline',
-    gap: 6,
-    flexShrink: 1,
+    columnGap: 6,
   },
   precio: {
     fontFamily: fuentes.negrita,
