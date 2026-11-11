@@ -45,6 +45,12 @@
           "color": "#71A24D"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "659308e2-51d2-42c2-838e-3d7ef9a45e98"
+      }
+    },
+    "owner": "ssofias-team"
   }
 }
