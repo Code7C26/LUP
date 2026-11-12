@@ -3,6 +3,7 @@
 //   ver componentes/MenuLateral.js) y compartir / carrito (con el número de productos) a la derecha
 //   el mapa a todo lo ancho con los comercios y el logo en la esquina
 //   "Cerca tuyo" con el buscador chiquito, y los comercios con foto, km y "Ver catálogo"
+//   (agregado) "Vence hoy": las ofertas que hay que retirar hoy, si hay alguna
 //   "Ver catálogo completo" y las fotos de las ofertas con sus km
 //   (agregado) "Tus favoritos" al final, si marcaste alguno con el corazón
 // Usa GET /api/comercios/?lat=&lng= y GET /api/productos/?orden=cercania&lat=&lng=
@@ -39,6 +40,13 @@ import { emojiCategoria, textoDistancia } from '../utilidades';
 // "1 km", "350 m" (sin el "a" de adelante, como el mockup)
 const km = (distancia) => textoDistancia(distancia)?.replace('a ', '') || null;
 
+// La fecha de hoy en la hora del celular, como la manda Django: "2026-11-12"
+// (no se usa toISOString() porque está en UTC y a la noche ya daría "mañana")
+function hoyLocal() {
+  const hoy = new Date();
+  return `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
+}
+
 // Pin + distancia chiquitos
 function Distancia({ valor }) {
   const { colores } = useTema();
@@ -64,6 +72,21 @@ function Foto({ uri, icono, emoji, estilo }) {
         </View>
       )}
     </View>
+  );
+}
+
+// Tarjeta de oferta (foto + km), la de "Vence hoy" y "Ver catálogo completo"
+function TarjetaOferta({ producto, onPress }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`${producto.titulo}, ${km(producto.distancia_km) || ''}`}
+      style={({ pressed }) => [{ gap: 4 }, pressed && { opacity: 0.8 }]}
+    >
+      <Foto uri={producto.imagen} emoji={emojiCategoria(producto.categoria)} estilo={estilos.fotoProducto} />
+      <Distancia valor={km(producto.distancia_km)} />
+    </Pressable>
   );
 }
 
@@ -156,6 +179,10 @@ export default function Inicio({ navigation }) {
     coords ||
     (conUbicacion[0] && { latitude: Number(conUbicacion[0].latitud), longitude: Number(conUbicacion[0].longitud) });
   const misFavoritos = comercios.filter((c) => favoritos.includes(c.id));
+  // "Vence hoy": de las mismas ofertas, las que hay que retirar hoy
+  const hoy = hoyLocal();
+  const vencenHoy = ofertas.filter((p) => String(p.fecha_vencimiento).slice(0, 10) === hoy);
+  const abrirProducto = (p) => navigation?.navigate?.('DetalleProducto', { id: p.id });
 
   return (
     <ScrollView
@@ -284,6 +311,26 @@ export default function Inicio({ navigation }) {
         }
       />
 
+      {/* Agregado: "Vence hoy" (si no hay ninguna, no se muestra) */}
+      {vencenHoy.length ? (
+        <>
+          <View style={[estilos.cuerpo, estilos.filaVenceHoy]}>
+            <Icono nombre="time-outline" tamano={20} color={colores.ambar} />
+            <Text style={[estilos.titulo, { color: colores.titulo }]} accessibilityRole="header">
+              Vence hoy
+            </Text>
+          </View>
+          <FlatList
+            horizontal
+            data={vencenHoy}
+            keyExtractor={(p) => `hoy-${p.id}`}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={estilos.carrusel}
+            renderItem={({ item }) => <TarjetaOferta producto={item} onPress={() => abrirProducto(item)} />}
+          />
+        </>
+      ) : null}
+
       {/* "Ver catálogo completo" y las ofertas */}
       <View style={estilos.cuerpo}>
         <Text
@@ -301,17 +348,7 @@ export default function Inicio({ navigation }) {
         keyExtractor={(p) => String(p.id)}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={estilos.carrusel}
-        renderItem={({ item }) => (
-          <Pressable
-            onPress={() => navigation?.navigate?.('DetalleProducto', { id: item.id })}
-            accessibilityRole="button"
-            accessibilityLabel={`${item.titulo}, ${km(item.distancia_km) || ''}`}
-            style={({ pressed }) => [{ gap: 4 }, pressed && { opacity: 0.8 }]}
-          >
-            <Foto uri={item.imagen} emoji={emojiCategoria(item.categoria)} estilo={estilos.fotoProducto} />
-            <Distancia valor={km(item.distancia_km)} />
-          </Pressable>
-        )}
+        renderItem={({ item }) => <TarjetaOferta producto={item} onPress={() => abrirProducto(item)} />}
         ListEmptyComponent={
           <Text style={[estilos.vacio, { color: colores.gris }]}>No hay ofertas por ahora.</Text>
         }
@@ -403,6 +440,13 @@ const estilos = StyleSheet.create({
   titulo: {
     fontFamily: fuentes.normal,
     fontSize: 18,
+  },
+  filaVenceHoy: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: espacio(0.75),
+    marginTop: espacio(3),
+    marginBottom: espacio(1.5),
   },
   subrayado: {
     textDecorationLine: 'underline',
