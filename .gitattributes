@@ -1,0 +1,2 @@
+# Los scripts que corre Render siempre con saltos de línea de Linux (aunque se editen en Windows)
+*.sh text eol=lf

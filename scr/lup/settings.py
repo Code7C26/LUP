@@ -6,6 +6,9 @@ Documentación: https://docs.djangoproject.com/en/6.1/topics/settings/
 
 import os
 from pathlib import Path
+from urllib.parse import unquote, urlparse
+
+from django.core.exceptions import ImproperlyConfigured
 
 # BASE_DIR apunta a la carpeta "scr/"
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -31,14 +34,35 @@ def _cargar_env(ruta):
 _cargar_env(BASE_DIR.parent / '.env')
 
 
-# SEGURIDAD: esta clave solo sirve para desarrollo. En producción definir
-# DJANGO_SECRET_KEY, DJANGO_DEBUG=0 y DJANGO_ALLOWED_HOSTS como variables de entorno.
-SECRET_KEY = os.environ.get(
-    'DJANGO_SECRET_KEY',
-    'django-insecure-e!&2u4q_+m-9w$-ccqknc_4%ufg-n9@uq%as0rk!97dd1qvrti',
-)
+def _lista(variable, por_defecto=''):
+    """Variable de entorno con valores separados por comas → lista."""
+    return [v.strip() for v in os.environ.get(variable, por_defecto).split(',') if v.strip()]
+
+
+# ==========================================
+# Desarrollo o producción
+# ==========================================
+# En la compu (sin variables) todo funciona como siempre: DEBUG activado y SQLite.
+# Publicada (Render u otro hosting) se define DJANGO_DEBUG=0 y lo de "Publicar la página" en el README.
 DEBUG = os.environ.get('DJANGO_DEBUG', '1') == '1'
-ALLOWED_HOSTS = [h for h in os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,[::1]').split(',') if h]
+
+_CLAVE_DESARROLLO = 'django-insecure-e!&2u4q_+m-9w$-ccqknc_4%ufg-n9@uq%as0rk!97dd1qvrti'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '').strip() or _CLAVE_DESARROLLO
+if not DEBUG and SECRET_KEY == _CLAVE_DESARROLLO:
+    raise ImproperlyConfigured('Falta DJANGO_SECRET_KEY: en producción la clave secreta tiene que ser propia.')
+
+# Dominios desde los que se puede abrir la página (ej: lup.onrender.com,www.lupalimentos.com)
+ALLOWED_HOSTS = _lista('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,[::1]')
+# Render avisa la dirección del servicio (lup-xxxx.onrender.com): se agrega sola
+RENDER_HOST = os.environ.get('RENDER_EXTERNAL_HOSTNAME', '').strip()
+if RENDER_HOST and RENDER_HOST not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(RENDER_HOST)
+
+# Formularios enviados desde la dirección pública (https://...). Se arma con ALLOWED_HOSTS.
+CSRF_TRUSTED_ORIGINS = _lista('DJANGO_CSRF_TRUSTED_ORIGINS') or [
+    f'https://{h.lstrip(".")}' for h in ALLOWED_HOSTS
+    if h not in ('localhost', '127.0.0.1', '[::1]', '*')
+]
 
 
 INSTALLED_APPS = [
@@ -60,6 +84,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'scr.lup.salud.SaludMiddleware',   # /salud/: el hosting chequea que la página esté viva
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'scr.lup.idioma.IdiomaMiddleware',
@@ -69,6 +94,16 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# Recordatorio "último día para retirar": publicada, se manda solo una vez por día desde esta hora
+RECORDATORIOS_AUTOMATICOS = os.environ.get('RECORDATORIOS_AUTOMATICOS', '0' if DEBUG else '1') == '1'
+RECORDATORIOS_HORA = int(os.environ.get('RECORDATORIOS_HORA', 9))
+if RECORDATORIOS_AUTOMATICOS:
+    MIDDLEWARE.append('scr.bd_lup.products.recordatorios.RecordatoriosMiddleware')
+
+if not DEBUG:
+    # Publicada: WhiteNoise sirve el CSS, JS y logos (en la compu lo hace runserver)
+    MIDDLEWARE.insert(2, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 ROOT_URLCONF = 'scr.lup.urls'
 
@@ -94,13 +129,35 @@ TEMPLATES = [
 WSGI_APPLICATION = 'scr.lup.wsgi.application'
 
 
-# Base de datos (el archivo db.sqlite3 queda en la raíz del repositorio)
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR.parent / 'db.sqlite3',
+# Base de datos
+# · En la compu: el archivo db.sqlite3 de la raíz del repositorio.
+# · Publicada: PostgreSQL, con la dirección que da el hosting en DATABASE_URL
+#   (postgresql://usuario:clave@servidor:puerto/base).
+def _base_de_datos(url):
+    partes = urlparse(url)
+    if partes.scheme not in ('postgres', 'postgresql'):
+        raise ImproperlyConfigured('DATABASE_URL tiene que ser una dirección postgresql://')
+    return {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': unquote(partes.path.lstrip('/')),
+        'USER': unquote(partes.username or ''),
+        'PASSWORD': unquote(partes.password or ''),
+        'HOST': partes.hostname or '',
+        'PORT': str(partes.port or ''),
+        'CONN_MAX_AGE': 60,
+        'CONN_HEALTH_CHECKS': True,
     }
-}
+
+
+if os.environ.get('DATABASE_URL', '').strip():
+    DATABASES = {'default': _base_de_datos(os.environ['DATABASE_URL'].strip())}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR.parent / 'db.sqlite3',
+        }
+    }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -135,12 +192,22 @@ USE_TZ = True
 # Archivos estáticos (CSS, JS, logos)
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
-STATIC_ROOT = BASE_DIR.parent / 'staticfiles'
+STATIC_ROOT = BASE_DIR.parent / 'staticfiles'   # "collectstatic" los junta acá al publicar
 
-# Archivos subidos por los usuarios (fotos de productos).
-# Quedan en LUP/media/, que está en .gitignore: no se suben al repositorio.
+# Archivos subidos por los usuarios (fotos de productos, logos, fotos de perfil).
+# En la compu quedan en LUP/media/ (está en .gitignore). Publicada, en un disco que no se borra
+# con cada actualización: MEDIA_ROOT=/var/data/media en Render.
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR.parent / 'media'
+MEDIA_ROOT = Path(os.environ.get('MEDIA_ROOT', '').strip() or BASE_DIR.parent / 'media')
+
+STORAGES = {
+    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+    # Publicada: archivos comprimidos y con un código en el nombre, así el navegador nunca usa uno viejo
+    'staticfiles': {
+        'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage' if DEBUG
+        else 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+    },
+}
 
 
 # Email · Avisos a los comercios por Gmail
@@ -169,7 +236,11 @@ EMAIL_EN_SEGUNDO_PLANO = os.environ.get('EMAIL_EN_SEGUNDO_PLANO', '1') == '1'
 PUSH_ACTIVADO = os.environ.get('PUSH_ACTIVADO', '1') == '1'
 
 # Dirección pública del sitio, para armar los links de los emails
-SITIO_URL = os.environ.get('SITIO_URL', 'http://127.0.0.1:8000').rstrip('/')
+SITIO_URL = (
+    os.environ.get('SITIO_URL', '').strip()
+    or os.environ.get('RENDER_EXTERNAL_URL', '').strip()
+    or 'http://127.0.0.1:8000'
+).rstrip('/')
 
 
 # Google Maps (opcional)
@@ -208,4 +279,37 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
+}
+
+
+# ==========================================
+# Seguridad de la página publicada (solo con DJANGO_DEBUG=0)
+# ==========================================
+if not DEBUG:
+    # El hosting recibe el https y le pasa el pedido a Django: así Django sabe que fue seguro
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT = os.environ.get('DJANGO_REDIRIGIR_HTTPS', '1') == '1'
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    LANGUAGE_COOKIE_SECURE = True
+    # Los navegadores recuerdan usar siempre https (1 mes; sin subdominios ni "preload",
+    # para poder cambiar de dominio sin problemas después de la presentación)
+    SECURE_HSTS_SECONDS = int(os.environ.get('DJANGO_HSTS_SEGUNDOS', 60 * 60 * 24 * 30))
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+    # Sin subdominios ni "preload" a propósito (ver arriba): se aceptan estos dos avisos de check --deploy
+    SILENCED_SYSTEM_CHECKS = ['security.W005', 'security.W021']
+
+
+# Errores y avisos en la consola (en Render se ven en la pestaña "Logs")
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {'consola': {'class': 'logging.StreamHandler'}},
+    'root': {'handlers': ['consola'], 'level': 'WARNING'},
+    'loggers': {
+        'django': {'handlers': ['consola'], 'level': os.environ.get('DJANGO_LOG_LEVEL', 'WARNING'), 'propagate': False},
+        # Robots que entran con direcciones ajenas: se rechazan (400) sin llenar los logs
+        'django.security.DisallowedHost': {'handlers': [], 'propagate': False},
+    },
 }

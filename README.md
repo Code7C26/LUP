@@ -286,13 +286,13 @@ cp .env.ejemplo .env
 Funcionan igual desde la web y desde la app. Cada persona puede apagarlos en *Mis datos → Avisos por email*
 o con el link **"Dejar de recibir avisos"** que va al pie de cada email.
 
-El recordatorio del último día se manda con un comando que conviene programar una vez por día (por ejemplo a las 9):
+El recordatorio del último día se manda **solo** en la página publicada: una vez por día, con la primera
+visita después de las 9 (`RECORDATORIOS_HORA`). No hace falta ninguna tarea programada.
+En la compu se puede probar a mano:
 
 ```bash
 python manage.py enviar_recordatorios
 ```
-
-(En el hosting: una tarea programada/cron `0 9 * * *`. En Windows: Programador de tareas.)
 
 1. Usá una cuenta de Gmail para el proyecto (ej: `lup.avisos@gmail.com`) con la **verificación en 2 pasos** activada.
 2. Entrá a https://myaccount.google.com/apppasswords y creá una **contraseña de aplicación** (16 letras).
@@ -347,6 +347,69 @@ SOPORTE_EMAIL=email_del_equipo@gmail.com
 
 ---
 
+## <img src="jpg/doc_assets/icon_ubicacion.png" width="40"> Publicar la página (Render)
+
+La página está lista para publicarse en [Render](https://render.com) con el archivo `render.yaml`
+(un *Blueprint*: Render lo lee y crea todo solo). Cada cambio que llega a `main` se publica automáticamente.
+
+**Qué se crea** (planes pagos; el gratuito no manda emails, se duerme y borra la base a los 30 días):
+
+| Parte | Plan en Render | Para qué |
+|---|---|---|
+| Página web `lup` | Starter (0.5 CPU, 512 MB) | Django con gunicorn; CSS y JS con WhiteNoise |
+| Base de datos `lup-db` | PostgreSQL Basic 256 MB | Usuarios, comercios, ofertas, reservas |
+| Disco `fotos` | 1 GB | Fotos de productos, logos y fotos de perfil |
+
+Costo aproximado: unos US$13 por mes (verificar en render.com/pricing). Se puede dar de baja cuando quieran.
+
+### Paso a paso
+
+1. Creá una cuenta en Render con GitHub y dale acceso al repositorio `Code7C26/LUP`.
+2. **New → Blueprint**, elegí el repositorio y la rama `main`. Render muestra lo que va a crear.
+3. Completá las claves que pide (quedan solo en Render, nunca en GitHub):
+   `GMAIL_USUARIO`, `GMAIL_CLAVE_APP`, y si las tienen, `ANTHROPIC_API_KEY` y `GOOGLE_MAPS_API_KEY`
+   (las que no tengan, déjenlas vacías).
+4. **Apply**. La primera vez tarda unos minutos: instala todo (`build.sh`), crea las tablas (`migrate`)
+   y abre la página en `https://lup-xxxx.onrender.com`.
+5. Creá la cuenta de administrador: en el servicio `lup` → **Shell** →
+   `python manage.py createsuperuser`.
+6. Cargá las cuentas y ofertas reales (la base publicada empieza vacía; lo de la compu no se copia).
+
+### Dominio propio
+
+1. Comprá el dominio (ej. `lupalimentos.com`).
+2. En Render: servicio `lup` → **Settings → Custom Domains** → agregá `lupalimentos.com` y `www.lupalimentos.com`.
+   Render muestra los registros DNS que hay que cargar donde compraste el dominio. El https es automático.
+3. En **Environment** agregá y guardá (la página se reinicia sola):
+   ```
+   DJANGO_ALLOWED_HOSTS=lupalimentos.com,www.lupalimentos.com
+   SITIO_URL=https://lupalimentos.com
+   ```
+   `SITIO_URL` es la dirección que va en los links de los emails.
+4. En la app (`app/.env`): `EXPO_PUBLIC_URL_SERVIDOR=https://lupalimentos.com`.
+
+### Cómo se actualiza
+
+- **Código**: se trabaja en cada rama, se pasa a `main` y Render publica solo (unos minutos).
+  Las migraciones corren solas antes de publicar. Si algo falla, la versión anterior sigue online.
+- **Contenido** (ofertas, comercios, opiniones): desde la misma página o `/admin`, al instante.
+- **Errores**: pestaña **Logs** del servicio. `/salud/` responde `ok` si la página y la base funcionan.
+
+### Variables de la página publicada
+
+| Variable | Valor | Quién la pone |
+|---|---|---|
+| `DJANGO_DEBUG` | `0` | `render.yaml` |
+| `DJANGO_SECRET_KEY` | clave aleatoria | Render la genera |
+| `DATABASE_URL` | dirección de PostgreSQL | Render, desde `lup-db` |
+| `MEDIA_ROOT` | `/var/data/media` (el disco) | `render.yaml` |
+| `DJANGO_ALLOWED_HOSTS`, `SITIO_URL` | el dominio propio | ustedes (sin dominio no hacen falta) |
+| `GMAIL_*`, `ANTHROPIC_API_KEY`, `GOOGLE_MAPS_API_KEY`, `SOPORTE_EMAIL` | claves | ustedes, en Environment |
+
+En la compu no cambia nada: sin estas variables se usa SQLite y el modo desarrollo de siempre.
+
+---
+
 ## <img src="jpg/doc_assets/icon_infinito.png" width="40"> Idiomas (español / inglés)
 
 Toda la página se puede ver en inglés con el botón **EN / ES** de la barra (al lado del modo oscuro).
@@ -370,7 +433,7 @@ Lo que cargan los usuarios (nombres de productos, comercios, opiniones) no se tr
 ## Estado del proyecto
 
 **MVP terminado y funcionando** en la web y en la app (Android, con Expo).
-Próximos pasos: carga de productos con foto e IA, publicación en internet, APK con EAS y Google Play.
+Lista para publicarse en internet (ver "Publicar la página"). Próximos pasos: carga de productos con foto e IA, APK con EAS y Google Play.
 
 ---
 
