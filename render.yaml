@@ -7,10 +7,10 @@ services:
   - type: web
     name: lup
     runtime: python
-    plan: 0.5c-512mb         # "Starter": 0.5 CPU / 512 MB, pago (el gratis no manda emails ni guarda las fotos)
+    plan: starter            # 0.5 CPU / 512 MB, pago (el gratis no manda emails ni guarda las fotos)
     region: virginia         # la más cercana a Argentina
-    branch: main             # cada cambio que llega a main se publica solo
-    autoDeploy: true
+    branch: main                 # cada cambio que llega a main se publica solo
+    autoDeployTrigger: commit
     buildCommand: ./build.sh
     preDeployCommand: python manage.py migrate --noinput
     startCommand: gunicorn scr.lup.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 60
@@ -47,7 +47,7 @@ services:
 
 databases:
   - name: lup-db
-    plan: 0.1c-256mb         # PostgreSQL "Basic 256 MB", pago (la gratuita se borra a los 30 días)
+    plan: basic-256mb        # PostgreSQL pago (la gratuita se borra a los 30 días)
     region: virginia
     databaseName: lup
     user: lup
