@@ -8,6 +8,7 @@ urlpatterns = [
     path('<int:pk>/reservar/', views.reservar, name='reservar'),
     path('<int:pk>/solicitar-donacion/', views.solicitar_donacion, name='solicitar_donacion'),
     path('publicar/', views.publicar_excedente, name='publicar_excedente'),
+    path('sugerir/', views.sugerir_producto, name='sugerir_producto'),  # "Completar con IA"
     path('<int:pk>/editar/', views.editar_excedente, name='editar_excedente'),
     path('<int:pk>/eliminar/', views.eliminar_excedente, name='eliminar_excedente'),
     path('<int:pk>/estado/', views.cambiar_estado_producto, name='cambiar_estado_producto'),

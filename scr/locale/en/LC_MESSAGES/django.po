@@ -2765,3 +2765,35 @@ msgstr "Done! You changed your password"
 #: recuperar contraseña
 msgid "Ya podés ingresar con la contraseña nueva, en la web y en la app."
 msgstr "You can now log in with your new password, on the web and in the app."
+
+#: completar con IA
+msgid "Completar con IA"
+msgstr "Fill in with AI"
+
+#: completar con IA
+msgid "Elegí una foto y la IA sugiere título, categoría, descripción, precio y fecha. Después revisalos."
+msgstr "Choose a photo and the AI suggests the title, category, description, price and date. Then check them."
+
+#: completar con IA
+msgid "No pudimos analizar la foto ahora. Probá de nuevo en un rato o completá los datos a mano."
+msgstr "We couldn't analyze the photo right now. Try again later or fill in the details yourself."
+
+#: completar con IA
+msgid "Elegí o sacá una foto del producto."
+msgstr "Choose or take a photo of the product."
+
+#: completar con IA
+msgid "Ese archivo no es una imagen. Probá con una foto JPG o PNG."
+msgstr "That file isn't an image. Try a JPG or PNG photo."
+
+#: completar con IA
+msgid "\"Completar con IA\" no está activado en Lüp. Completá los datos a mano."
+msgstr "\"Fill in with AI\" isn't enabled on Lüp. Fill in the details yourself."
+
+#: completar con IA
+msgid "Usaste mucho \"Completar con IA\" en la última hora. Probá más tarde."
+msgstr "You used \"Fill in with AI\" a lot in the last hour. Try again later."
+
+#: completar con IA
+msgid "No reconocimos comida en la foto. Probá con otra foto o completá los datos a mano."
+msgstr "We didn't recognize any food in the photo. Try another photo or fill in the details yourself."

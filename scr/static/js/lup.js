@@ -322,6 +322,51 @@
                 refrescar();
             });
         });
+
+        // "Completar con IA": manda la foto elegida y llena los campos (products/ia_fotos.py).
+        // Son sugerencias: el comercio las revisa y elige el precio Lüp.
+        const ia = $('[data-ia-foto]');
+        if (ia && img) {
+            const boton = $('[data-ia-completar]', ia);
+            const estado = $('[data-ia-estado]', ia);
+            const csrf = $('input[name="csrfmiddlewaretoken"]', formProducto).value;
+            const hayFoto = () => Boolean(img.files && img.files[0]);
+            const avisar = (texto, tipo) => {
+                estado.textContent = texto;
+                estado.className = tipo === 'error' ? 'small text-danger' : tipo === 'ok' ? 'small text-lup' : 'small text-muted-lup';
+            };
+            img.addEventListener('change', () => { boton.disabled = !hayFoto(); });
+            boton.addEventListener('click', async () => {
+                if (!hayFoto()) return;
+                const datos = new FormData();
+                datos.append('imagen', img.files[0]);
+                const textoBoton = boton.innerHTML;
+                boton.disabled = true;
+                boton.innerHTML = '<span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>' + T('Analizando la foto…');
+                avisar('', '');
+                try {
+                    const r = await fetch(ia.dataset.url, {
+                        method: 'POST', headers: { 'X-CSRFToken': csrf }, body: datos, credentials: 'same-origin',
+                    });
+                    let res = {};
+                    try { res = await r.json(); } catch (e) { /* no vino JSON (por ejemplo, se cerró la sesión) */ }
+                    if (!r.ok || !res.titulo) throw new Error(res.error || T('No pudimos analizar la foto ahora. Probá de nuevo en un rato o completá los datos a mano.'));
+                    campo('titulo').value = res.titulo;
+                    campo('categoria').value = res.categoria;
+                    campo('descripcion').value = res.descripcion;
+                    if (res.precio_sugerido) campo('precio_original').value = res.precio_sugerido;
+                    if (res.fecha_vencimiento) campo('fecha_vencimiento').value = res.fecha_vencimiento;
+                    refrescar();
+                    avisar(T('Listo. Revisá los datos y elegí el precio Lüp: la IA puede equivocarse.'), 'ok');
+                    campo('precio_descuento').focus();
+                } catch (e) {
+                    avisar(e instanceof TypeError ? T('No pudimos conectarnos. Revisá tu conexión y probá de nuevo.') : e.message, 'error');
+                } finally {
+                    boton.innerHTML = textoBoton;
+                    boton.disabled = !hayFoto();
+                }
+            });
+        }
     }
 
     /* ---------- Foto de perfil: vista previa antes de guardar ---------- */

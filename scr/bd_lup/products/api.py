@@ -5,7 +5,8 @@ from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import localdate
 from rest_framework import serializers, viewsets
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.decorators import api_view, authentication_classes, parser_classes, permission_classes
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.response import Response
 
@@ -421,3 +422,23 @@ def calificar_reserva(request, pk):
         datos['puntaje_producto'] = puntaje_producto
     Calificacion.objects.update_or_create(reserva=reserva, defaults=datos)
     return Response(ReservaSerializer(reserva).data)
+
+
+# ==========================================
+# COMPLETAR CON IA (pasos 22, 23 y 50): reconocer el producto por la foto
+# ==========================================
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([EsComercio])
+@parser_classes([MultiPartParser, FormParser])
+def sugerir_producto(request):
+    """POST multipart con "imagen" → {titulo, categoria, descripcion, precio_sugerido, dias_hasta_vencer,
+    fecha_vencimiento}. Son sugerencias para llenar el formulario; no se publica nada.
+    """
+    from .ia_fotos import SugerenciaError, sugerir
+
+    try:
+        return Response(sugerir(request.FILES.get('imagen'), request.user))
+    except SugerenciaError as e:
+        return Response({'error': e.mensaje}, status=e.estado)
