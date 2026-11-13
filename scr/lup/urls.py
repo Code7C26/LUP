@@ -37,7 +37,8 @@ urlpatterns = [
     # API: cuentas 
     path('api/auth/login/', users_api.login, name='api_login'),
     path('api/auth/registro/<str:rol>/', users_api.registro, name='api_registro'),
-    path('api/auth/yo/', users_api.yo, name='api_yo'),
+    path('api/auth/yo/', users_api.yo, name='api_yo'),  # GET y PATCH (editar mis datos)
+    path('api/auth/recuperar/', users_api.recuperar, name='api_recuperar'),
     path('api/auth/push/', users_api.dispositivo_push, name='api_dispositivo_push'),
 
     # API: consumidor 

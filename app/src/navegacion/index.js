@@ -21,10 +21,12 @@ import DetalleComercio from '../pantallas/DetalleComercio';
 import Bienvenida from '../pantallas/Bienvenida';
 import Carrito from '../pantallas/Carrito';
 import DetalleProducto from '../pantallas/DetalleProducto';
+import EditarPerfil from '../pantallas/EditarPerfil';
 import Login from '../pantallas/Login';
 import Mapa from '../pantallas/Mapa';
 import MisFavoritos from '../pantallas/MisFavoritos';
 import Portada from '../pantallas/Portada';
+import RecuperarClave from '../pantallas/RecuperarClave';
 import Registro from '../pantallas/Registro';
 import RegistroSeleccion from '../pantallas/RegistroSeleccion';
 import { abrirPantallaDelAviso } from '../servicios/push';
@@ -80,6 +82,8 @@ export default function Navegacion() {
       <Stack.Screen name="Login" component={Login} />
       <Stack.Screen name="Registro" component={RegistroSeleccion} />
       <Stack.Screen name="RegistroFormulario" component={Registro} />
+      {/* "¿Olvidaste tu contraseña?" del login (tiene su propio botón para volver) */}
+      <Stack.Screen name="RecuperarClave" component={RecuperarClave} />
     </Stack.Group>
   );
 
@@ -102,6 +106,8 @@ export default function Navegacion() {
             <Stack.Screen name="MisFavoritos" component={MisFavoritos} options={{ title: '' }} />
             {/* Chat de ayuda con Lü (desde Inicio y Perfil, también como invitado). Tiene su propia cabecera */}
             <Stack.Screen name="Ayuda" component={Ayuda} options={{ headerShown: false }} />
+            {/* "Editar mis datos" de Perfil. El título grande está dentro de la pantalla */}
+            {usuario ? <Stack.Screen name="EditarPerfil" component={EditarPerfil} options={{ title: '' }} /> : null}
             <Stack.Screen
               name="FormProducto"
               component={FormProducto}

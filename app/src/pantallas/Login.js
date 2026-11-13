@@ -163,6 +163,14 @@ export default function Login({ navigation, route }) {
             onChangeText={setClave}
             onSubmitEditing={ingresar}
           />
+          <Pressable
+            onPress={() => navigation?.navigate('RecuperarClave', { email: usuario.includes('@') ? usuario.trim() : '' })}
+            hitSlop={8}
+            accessibilityRole="link"
+            style={estilos.olvide}
+          >
+            <Text style={[estilos.textoOlvide, { color: colores.verdeHover }]}>¿Olvidaste tu contraseña?</Text>
+          </Pressable>
         </View>
 
         <MensajeError mensaje={error} />
@@ -245,6 +253,14 @@ const estilos = StyleSheet.create({
     alignSelf: 'center',
     width: '82%',
     marginTop: espacio(2),
+  },
+  olvide: {
+    alignSelf: 'flex-end',
+    marginTop: -espacio(1),
+  },
+  textoOlvide: {
+    fontFamily: fuentes.negrita,
+    fontSize: tamanos.chico,
   },
   registro: {
     alignItems: 'center',

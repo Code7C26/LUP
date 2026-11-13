@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% translate "Contraseña nueva" %} · Lüp{% endblock %}
+
+{% block content %}
+<div class="container pt-5" style="max-width: 480px;">
+    <div class="tarjeta p-4 p-md-5">
+        {% if validlink %}
+            <div class="fs-1 mb-2 text-center" aria-hidden="true">🔒</div>
+            <h1 class="h4 text-center">{% translate "Elegí tu contraseña nueva" %}</h1>
+            <p class="text-muted-lup text-center">{% translate "Mínimo 8 caracteres, no solo números." %}</p>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                {% include 'includes/_campo.html' with campo=form.new_password1 %}
+                {% include 'includes/_campo.html' with campo=form.new_password2 clase='mb-4' %}
+                <button type="submit" class="btn btn-lup btn-lg w-100">{% translate "Guardar contraseña" %}</button>
+            </form>
+        {% else %}
+            <div class="text-center">
+                <div class="fs-1 mb-2" aria-hidden="true">⌛</div>
+                <h1 class="h4">{% translate "Este link ya no sirve" %}</h1>
+                <p class="text-muted-lup">{% translate "Puede que ya lo hayas usado o que haya vencido. Pedí uno nuevo." %}</p>
+                <a href="{% url 'recuperar' %}" class="btn btn-lup">{% translate "Pedir otro link" %}</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

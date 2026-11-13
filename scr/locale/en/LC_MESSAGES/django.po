@@ -2697,3 +2697,71 @@ msgstr "Your details were updated successfully."
 #: scr/bd_lup/users/views.py:145
 msgid "El link no es válido."
 msgstr "The link isn't valid."
+
+#: recuperar contraseña
+msgid "Contraseña nueva"
+msgstr "New password"
+
+#: recuperar contraseña
+msgid "Repetí la contraseña nueva"
+msgstr "Repeat the new password"
+
+#: recuperar contraseña
+msgid "Recuperar contraseña"
+msgstr "Reset password"
+
+#: recuperar contraseña
+msgid "¿Olvidaste tu contraseña?"
+msgstr "Forgot your password?"
+
+#: recuperar contraseña
+msgid "Escribí el email de tu cuenta y te mandamos un link para elegir una nueva."
+msgstr "Enter your account email and we'll send you a link to choose a new one."
+
+#: recuperar contraseña
+msgid "Mandarme el link"
+msgstr "Send me the link"
+
+#: recuperar contraseña
+msgid "Volver a iniciar sesión"
+msgstr "Back to log in"
+
+#: recuperar contraseña
+msgid "Revisá tu email"
+msgstr "Check your email"
+
+#: recuperar contraseña
+msgid "Si ese email tiene una cuenta en Lüp, en unos minutos te llega un link para elegir una contraseña nueva. Fijate también en Spam o Promociones."
+msgstr "If that email has a Lüp account, you'll get a link to choose a new password in a few minutes. Also check Spam or Promotions."
+
+#: recuperar contraseña
+msgid "Elegí tu contraseña nueva"
+msgstr "Choose your new password"
+
+#: recuperar contraseña
+msgid "Guardar contraseña"
+msgstr "Save password"
+
+#: recuperar contraseña
+msgid "Este link ya no sirve"
+msgstr "This link no longer works"
+
+#: recuperar contraseña
+msgid "Puede que ya lo hayas usado o que haya vencido. Pedí uno nuevo."
+msgstr "You may have already used it or it may have expired. Request a new one."
+
+#: recuperar contraseña
+msgid "Pedir otro link"
+msgstr "Request another link"
+
+#: recuperar contraseña
+msgid "Contraseña cambiada"
+msgstr "Password changed"
+
+#: recuperar contraseña
+msgid "¡Listo! Cambiaste tu contraseña"
+msgstr "Done! You changed your password"
+
+#: recuperar contraseña
+msgid "Ya podés ingresar con la contraseña nueva, en la web y en la app."
+msgstr "You can now log in with your new password, on the web and in the app."

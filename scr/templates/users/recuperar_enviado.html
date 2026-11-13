@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% translate "Revisá tu email" %} · Lüp{% endblock %}
+
+{% block content %}
+<div class="container pt-5" style="max-width: 520px;">
+    <div class="tarjeta text-center p-4 p-md-5">
+        <div class="fs-1 mb-2" aria-hidden="true">📬</div>
+        <h1 class="h4">{% translate "Revisá tu email" %}</h1>
+        <p class="text-muted-lup">{% translate "Si ese email tiene una cuenta en Lüp, en unos minutos te llega un link para elegir una contraseña nueva. Fijate también en Spam o Promociones." %}</p>
+        <a href="{% url 'login' %}" class="btn btn-lup">{% translate "Volver a iniciar sesión" %}</a>
+    </div>
+</div>
+{% endblock %}

@@ -91,6 +91,7 @@ export function ProveedorSesion({ children }) {
     cargando,
     invitado,
     entrarComoInvitado: () => setInvitado(true),
+    actualizarUsuario: guardarSesion, // después de "Editar mis datos" (lo que devuelve PATCH /api/auth/yo/)
     iniciarSesion,
     registrar,
     cerrarSesion,

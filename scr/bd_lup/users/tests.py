@@ -302,3 +302,210 @@ class IdiomaTests(TestCase):
         for clave, valor in po.items():
             if clave and '\0' not in clave:
                 self.assertEqual(mo.gettext(clave), valor, clave)
+
+
+class EditarPerfilApiTests(TestCase):
+    """PATCH /api/auth/yo/ desde la app: mismas validaciones que "Mis datos" de la web."""
+
+    def setUp(self):
+        import shutil
+        import tempfile
+
+        from django.test import override_settings
+        from rest_framework.authtoken.models import Token
+        from rest_framework.test import APIClient
+
+        self.media = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, self.media, ignore_errors=True)
+        ajustes = override_settings(MEDIA_ROOT=self.media)
+        ajustes.enable()
+        self.addCleanup(ajustes.disable)
+
+        self.usuario = Usuario.objects.create_user(
+            'ana', 'ana@lup.test', 'ClaveSegura#2026', rol=Usuario.CONSUMIDOR,
+            first_name='Ana', last_name='Pérez', telefono='351 111', ciudad='Córdoba',
+        )
+        self.api = APIClient()
+        self.api.credentials(HTTP_AUTHORIZATION=f'Token {Token.objects.create(user=self.usuario).key}')
+
+    def patch(self, datos, formato='json'):
+        return self.api.patch('/api/auth/yo/', datos, format=formato)
+
+    def test_sin_token(self):
+        from rest_framework.test import APIClient
+        self.assertEqual(APIClient().patch('/api/auth/yo/', {'ciudad': 'X'}, format='json').status_code, 401)
+
+    def test_cambia_solo_lo_que_se_manda(self):
+        r = self.patch({'first_name': 'Anita', 'telefono': '3547 620629'})
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.json()['first_name'], 'Anita')
+        self.assertEqual(r.json()['nombre'], 'Anita Pérez')
+        self.usuario.refresh_from_db()
+        self.assertEqual(self.usuario.telefono, '3547 620629')
+        self.assertEqual(self.usuario.last_name, 'Pérez')
+        self.assertEqual(self.usuario.ciudad, 'Córdoba')
+
+    def test_no_cambia_email_ni_avisos(self):
+        self.patch({'email': 'otro@lup.test', 'avisos_email': False, 'username': 'hacker', 'rol': 'comercio'})
+        self.usuario.refresh_from_db()
+        self.assertEqual(self.usuario.email, 'ana@lup.test')
+        self.assertTrue(self.usuario.avisos_email)
+        self.assertEqual(self.usuario.username, 'ana')
+        self.assertEqual(self.usuario.rol, Usuario.CONSUMIDOR)
+
+    def test_validaciones_del_formulario(self):
+        r = self.patch({'telefono': '1' * 30})
+        self.assertEqual(r.status_code, 400)
+        self.assertIn('telefono', r.json())
+        self.assertEqual(self.patch([1, 2]).status_code, 200)  # sin datos: no cambia nada
+
+    def test_subir_cambiar_y_quitar_foto(self):
+        import os
+
+        from PIL import Image
+
+        r = self.patch({'foto': imagen_de_prueba(1200, 700), 'ciudad': 'Alta Gracia'}, formato='multipart')
+        self.assertEqual(r.status_code, 200)
+        self.usuario.refresh_from_db()
+        self.assertEqual(r.json()['foto'], self.usuario.foto.url)
+        self.assertEqual(self.usuario.ciudad, 'Alta Gracia')
+        with Image.open(self.usuario.foto.path) as img:
+            self.assertEqual(img.size, (400, 400))
+        vieja = self.usuario.foto.path
+
+        self.patch({'foto': imagen_de_prueba(formato='PNG', nombre='logo.png')}, formato='multipart')
+        self.usuario.refresh_from_db()
+        self.assertFalse(os.path.exists(vieja))
+        actual = self.usuario.foto.path
+
+        r = self.patch({'quitar_foto': 'true'}, formato='multipart')
+        self.assertIsNone(r.json()['foto'])
+        self.assertFalse(os.path.exists(actual))
+
+    def test_foto_invalida_o_muy_pesada(self):
+        from unittest import mock
+
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        falsa = SimpleUploadedFile('virus.jpg', b'no soy una imagen', content_type='image/jpeg')
+        r = self.patch({'foto': falsa}, formato='multipart')
+        self.assertEqual(r.status_code, 400)
+        self.assertIn('foto', r.json())
+        with mock.patch('scr.bd_lup.users.forms.FOTO_TAMANO_MAX_MB', 0):
+            r = self.patch({'foto': imagen_de_prueba()}, formato='multipart')
+        self.assertEqual(r.status_code, 400)
+        self.assertIn('MB', r.json()['foto'][0])
+        self.usuario.refresh_from_db()
+        self.assertFalse(self.usuario.foto)
+
+
+class RecuperarClaveTests(TestCase):
+    """"¿Olvidaste tu contraseña?" en la web y en la app (POST /api/auth/recuperar/)."""
+
+    def setUp(self):
+        from django.core.cache import cache
+        from django.test import override_settings
+
+        cache.clear()  # el límite de pedidos por hora se guarda en la caché
+        ajustes = override_settings(EMAIL_EN_SEGUNDO_PLANO=False, SITIO_URL='https://lup.test')
+        ajustes.enable()
+        self.addCleanup(ajustes.disable)
+        self.usuario = Usuario.objects.create_user(
+            'ana', 'ana@lup.test', 'ClaveVieja#2026', rol=Usuario.CONSUMIDOR, first_name='Ana', avisos_email=False,
+        )
+
+    def pedir(self, email):
+        with self.captureOnCommitCallbacks(execute=True):
+            return self.client.post(reverse('recuperar'), {'email': email})
+
+    def pedir_api(self, datos):
+        with self.captureOnCommitCallbacks(execute=True):
+            return self.client.post(reverse('api_recuperar'), datos, content_type='application/json')
+
+    def link_del_email(self):
+        import re
+        from django.core import mail
+        return re.search(r'https://lup\.test\S+', mail.outbox[-1].body).group(0)
+
+    def test_link_en_el_login(self):
+        self.assertContains(self.client.get(reverse('login')), reverse('recuperar'))
+        self.assertContains(self.client.get(reverse('recuperar')), '¿Olvidaste tu contraseña?')
+
+    def test_web_manda_el_email_y_se_cambia_la_clave(self):
+        from django.core import mail
+        from rest_framework.authtoken.models import Token
+
+        Token.objects.create(user=self.usuario)
+        r = self.pedir('ANA@lup.test')
+        self.assertRedirects(r, reverse('recuperar_enviado'))
+        # Llega aunque tenga los avisos apagados, y sin los links para darse de baja
+        self.assertEqual(len(mail.outbox), 1)
+        email = mail.outbox[0]
+        self.assertEqual(email.to, ['ana@lup.test'])
+        self.assertIn('contraseña', email.subject)
+        self.assertIn('ana', email.body)
+        html = email.alternatives[0][0]
+        self.assertIn('Elegir contraseña nueva', html)
+        self.assertNotIn('Dejar de recibir avisos', html)
+
+        link = self.link_del_email()
+        self.assertTrue(link.startswith('https://lup.test/usuarios/recuperar/'))
+        r = self.client.get(link.replace('https://lup.test', ''), follow=True)
+        self.assertContains(r, 'Elegí tu contraseña nueva')
+        r = self.client.post(r.redirect_chain[-1][0], {'new_password1': 'ClaveNueva#2026', 'new_password2': 'ClaveNueva#2026'})
+        self.assertRedirects(r, reverse('recuperar_listo'))
+
+        self.usuario.refresh_from_db()
+        self.assertTrue(self.usuario.check_password('ClaveNueva#2026'))
+        self.assertFalse(Token.objects.filter(user=self.usuario).exists())  # la app vuelve a pedir el login
+        # El link no sirve dos veces
+        r = self.client.get(link.replace('https://lup.test', ''), follow=True)
+        self.assertContains(r, 'Este link ya no sirve')
+
+    def test_clave_nueva_con_las_reglas_de_siempre(self):
+        self.pedir('ana@lup.test')
+        r = self.client.get(self.link_del_email().replace('https://lup.test', ''), follow=True)
+        r = self.client.post(r.redirect_chain[-1][0], {'new_password1': '12345678', 'new_password2': '12345678'})
+        self.assertEqual(r.status_code, 200)
+        self.usuario.refresh_from_db()
+        self.assertTrue(self.usuario.check_password('ClaveVieja#2026'))
+
+    def test_email_sin_cuenta_o_cuenta_inactiva_no_manda_nada(self):
+        from django.core import mail
+
+        self.assertRedirects(self.pedir('nadie@lup.test'), reverse('recuperar_enviado'))
+        self.usuario.is_active = False
+        self.usuario.save()
+        self.pedir('ana@lup.test')
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_limite_de_pedidos(self):
+        from django.core import mail
+
+        for _ in range(5):
+            self.pedir('ana@lup.test')
+        self.assertEqual(len(mail.outbox), 3)
+
+    def test_link_invalido(self):
+        r = self.client.get(reverse('recuperar_confirmar', args=['MQ', 'token-falso']), follow=True)
+        self.assertContains(r, 'Este link ya no sirve')
+
+    def test_api(self):
+        from django.core import mail
+
+        r = self.pedir_api({'email': 'ana@lup.test'})
+        self.assertEqual(r.status_code, 200)
+        self.assertIn('Spam', r.json()['mensaje'])
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertTrue(self.link_del_email().startswith('https://lup.test/usuarios/recuperar/'))
+        # Misma respuesta si no hay cuenta (no se revela quién está registrado)
+        r2 = self.pedir_api({'email': 'nadie@lup.test'})
+        self.assertEqual(r2.json(), r.json())
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(self.pedir_api({'email': 'malo'}).status_code, 400)
+        self.assertEqual(self.pedir_api([1]).status_code, 400)
+
+    def test_en_ingles(self):
+        self.client.post(reverse('set_language'), {'language': 'en', 'next': '/'})
+        self.assertContains(self.client.get(reverse('login')), 'Forgot your password?')
+        self.assertContains(self.client.get(reverse('recuperar')), 'Send me the link')

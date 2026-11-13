@@ -1,5 +1,6 @@
 // PASO 49 · Perfil y soporte.
-// Con sesión: los datos del usuario (GET /api/auth/yo/), los de su comercio u organización,
+// Con sesión: los datos del usuario (GET /api/auth/yo/) con "Editar mis datos" (pantalla EditarPerfil),
+// los de su comercio u organización,
 // el recuadro de soporte ("Chatear con Lü" → pantalla Ayuda, y WhatsApp / teléfono / Instagram) y "Cerrar sesión".
 // Sin sesión: "Iniciar sesión" y "Registrarme".
 // PROPUESTA DE ESTÉTICA: cabecera con foto, filas con íconos (menos texto),
@@ -265,6 +266,14 @@ export default function Perfil({ navigation }) {
           <Icono nombre={rol.icono} tamano={13} color={colores.verdeHover} />
           <Text style={[estilos.textoRol, { color: colores.verdeHover }]}>{rol.titulo}</Text>
         </View>
+        <Boton
+          texto="Editar mis datos"
+          icono="create-outline"
+          variante="secundario"
+          chico
+          onPress={() => navigation.navigate('EditarPerfil')}
+          estilo={{ marginTop: espacio(0.5) }}
+        />
       </View>
 
       <MensajeError mensaje={error} alReintentar={cargar} />
@@ -315,7 +324,9 @@ export default function Perfil({ navigation }) {
 
       <Boton texto="Ver la bienvenida" icono="sparkles-outline" variante="texto" chico onPress={() => navigation.navigate('VerBienvenida', { rol: usuario?.rol || 'consumidor' })} />
       <Boton texto="Cerrar sesión" icono="log-out-outline" variante="texto" onPress={confirmarSalida} cargando={saliendo} />
-      <Text style={[estilos.nota, { color: colores.gris }]}>Para editar tus datos, entrá a Lüp desde la web.</Text>
+      <Text style={[estilos.nota, { color: colores.gris }]}>
+        El email{comercio || organizacion ? ' y los datos de tu comercio u organización' : ''} se cambian desde la web.
+      </Text>
     </ScrollView>
   );
 }

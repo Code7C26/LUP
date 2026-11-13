@@ -1,0 +1,11 @@
+Hola, {{ nombre }}: elegí una contraseña nueva.
+
+Nos pidieron cambiar la contraseña de tu cuenta de Lüp (usuario {{ usuario.username }}).
+Entrá a este link para elegir una nueva:
+
+{{ url_recuperar }}
+
+El link sirve una sola vez y vence en unos días. Si no lo pediste vos, ignorá este email: tu contraseña no cambia.
+Nunca te vamos a pedir tu contraseña por email.
+
+— Lüp

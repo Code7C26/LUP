@@ -15,8 +15,9 @@
             <a href="{% block url_boton %}{{ url_panel }}{% endblock %}" style="display:inline-block;background:#71A24D;color:#ffffff;text-decoration:none;font-weight:bold;padding:12px 22px;border-radius:999px;">{% block boton %}Ir a mi panel{% endblock %}</a>
         </td></tr>
         <tr><td style="padding:16px 24px;background:#F7F5EE;font-size:12px;color:#5c6b62;line-height:1.5;">
-            {% block pie %}Recibís este aviso porque tenés una cuenta en Lüp.{% endblock %}<br>
-            <a href="{{ url_avisos }}" style="color:#5c6b62;">Configurar avisos</a> · <a href="{{ url_baja }}" style="color:#5c6b62;">Dejar de recibir avisos</a>
+            {% block pie %}Recibís este aviso porque tenés una cuenta en Lüp.{% endblock %}
+            {% block links_avisos %}<br>
+            <a href="{{ url_avisos }}" style="color:#5c6b62;">Configurar avisos</a> · <a href="{{ url_baja }}" style="color:#5c6b62;">Dejar de recibir avisos</a>{% endblock %}
         </td></tr>
     </table>
 </td></tr>
