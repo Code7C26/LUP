@@ -3,6 +3,8 @@
 // y la foto (sacarla con la cámara o elegirla de la galería).
 // Nuevo:  POST  /api/mis-productos/        → navigation.navigate('FormProducto')
 // Editar: PATCH /api/mis-productos/<id>/   → navigation.navigate('FormProducto', { id })
+// PASOS 22, 23 y 50 · "Completar con IA": con una foto nueva, POST /api/productos/sugerir/ reconoce
+// el producto y llena título, categoría, descripción, precio y fecha (el comercio los puede cambiar).
 import { useEffect, useState } from 'react';
 import { Alert, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { File, Paths } from 'expo-file-system';
@@ -15,7 +17,7 @@ import Cargando from '../../componentes/Cargando';
 import MensajeError from '../../componentes/MensajeError';
 import PublicarDeNuevo from '../../componentes/PublicarDeNuevo';
 import { espacio, fuentes, radio, tamanos, useTema } from '../../tema';
-import { textoError } from '../../utilidades';
+import { textoError, vibrar } from '../../utilidades';
 import { Opciones } from '../Registro';
 import Icono from '../../componentes/Icono';
 
@@ -83,6 +85,13 @@ export default function FormProducto({ navigation, route }) {
   const [cargando, setCargando] = useState(Boolean(id || copiarDe));
   const [enviando, setEnviando] = useState(false);
   const [anteriores, setAnteriores] = useState([]); // para "¿Lo mismo de siempre?" (solo en uno nuevo)
+  // "Completar con IA": { cargando, tipo: 'ok' | 'error' | '', texto }
+  const [ia, setIa] = useState({ cargando: false, tipo: '', texto: '' });
+
+  // Con cada foto nueva se borra el mensaje de la anterior
+  useEffect(() => {
+    setIa({ cargando: false, tipo: '', texto: '' });
+  }, [fotoNueva]);
 
   // Producto nuevo: se traen los anteriores para ofrecer cargar de nuevo el último o el más vendido
   useEffect(() => {
@@ -153,6 +162,39 @@ export default function FormProducto({ navigation, route }) {
       aspect: [4, 3],
     });
     if (!r.canceled) setFotoNueva(r.assets[0]);
+  }
+
+  // Manda la foto a Django (POST /api/productos/sugerir/), que se la pasa a la IA, y llena los campos.
+  // Son sugerencias: el comercio las puede cambiar antes de publicar.
+  async function completarConIa() {
+    if (!fotoNueva || ia.cargando) return;
+    setIa({ cargando: true, tipo: '', texto: '' });
+    try {
+      const datos = new FormData();
+      datos.append('imagen', new File(fotoNueva.uri)); // igual que al publicar (ver más abajo)
+      const s = await api('/productos/sugerir/', { metodo: 'POST', datos, espera: 60000 });
+      setValores((v) => ({
+        ...v,
+        titulo: s.titulo || v.titulo,
+        categoria: s.categoria || v.categoria,
+        descripcion: s.descripcion || v.descripcion,
+        precio_original: s.precio_sugerido ? String(s.precio_sugerido) : v.precio_original,
+        fecha_vencimiento: fechaEnDias(s.dias_hasta_vencer ?? 0),
+      }));
+      setErrores({});
+      vibrar('exito');
+      setIa({
+        cargando: false,
+        tipo: 'ok',
+        texto: 'Listo. Revisá los datos y poné el precio con descuento: la IA puede equivocarse.',
+      });
+    } catch (e) {
+      setIa({
+        cargando: false,
+        tipo: 'error',
+        texto: textoError(e) || 'No pudimos analizar la foto ahora. Probá de nuevo en un rato o completá los datos a mano.',
+      });
+    }
   }
 
   async function publicar() {
@@ -250,6 +292,35 @@ export default function FormProducto({ navigation, route }) {
           )}
         </Pressable>
         {errores.imagen ? <Text style={[estilos.ayuda, { color: colores.error }]}>{textoError(errores.imagen)}</Text> : null}
+
+        {/* Con una foto recién sacada o elegida, la IA puede completar el resto */}
+        {fotoNueva ? (
+          <View style={{ gap: espacio(0.75) }}>
+            <Boton
+              texto={ia.cargando ? 'Analizando la foto…' : 'Completar con IA'}
+              icono="sparkles-outline"
+              variante="secundario"
+              chico
+              cargando={ia.cargando}
+              onPress={completarConIa}
+              estilo={{ alignSelf: 'flex-start' }}
+            />
+            {ia.cargando ? (
+              <Text style={[estilos.ayuda, { color: colores.gris }]}>Mirando la foto… puede tardar unos segundos.</Text>
+            ) : ia.texto ? (
+              <Text
+                accessibilityLiveRegion="polite"
+                style={[estilos.ayuda, { color: ia.tipo === 'error' ? colores.error : colores.verdeHover }]}
+              >
+                {ia.texto}
+              </Text>
+            ) : (
+              <Text style={[estilos.ayuda, { color: colores.gris }]}>
+                La IA sugiere título, categoría, descripción, precio y fecha a partir de la foto.
+              </Text>
+            )}
+          </View>
+        ) : null}
 
         <Campo
           placeholder="Nombre del Producto"

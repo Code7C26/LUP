@@ -294,6 +294,20 @@ def publicar_excedente(request):
 
 
 @solo_comercios
+@require_POST
+def sugerir_producto(request):
+    """Botón "Completar con IA" del formulario de producto: la misma lógica que la app (products/ia_fotos.py)."""
+    from django.http import JsonResponse
+
+    from .ia_fotos import SugerenciaError, sugerir
+
+    try:
+        return JsonResponse(sugerir(request.FILES.get('imagen'), request.user))
+    except SugerenciaError as e:
+        return JsonResponse({'error': e.mensaje}, status=e.estado)
+
+
+@solo_comercios
 def editar_excedente(request, pk):
     producto = get_object_or_404(Producto, pk=pk, comercio__usuario=request.user)
     form = ProductoForm(request.POST or None, request.FILES or None, instance=producto)

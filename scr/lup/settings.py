@@ -253,6 +253,9 @@ GOOGLE_MAPS_API_KEY = os.environ.get('GOOGLE_MAPS_API_KEY', '').strip()
 # Con ANTHROPIC_API_KEY responde Claude; sin clave, responde con preguntas frecuentes.
 ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '').strip()
 SOPORTE_MODELO = os.environ.get('SOPORTE_MODELO', 'claude-haiku-5-5').strip()
+# "Completar con IA" al publicar un producto (products/ia_fotos.py): reconoce el producto por la foto.
+# Usa la misma clave; el modelo tiene que aceptar imágenes y salidas JSON (structured outputs).
+IA_FOTOS_MODELO = os.environ.get('IA_FOTOS_MODELO', '').strip() or SOPORTE_MODELO
 # A dónde llegan los pedidos de "Hablar con una persona"
 SOPORTE_EMAIL = os.environ.get('SOPORTE_EMAIL', '').strip() or GMAIL_USUARIO
 

@@ -17,6 +17,16 @@
                 {% if form.non_field_errors %}<div class="alert alert-danger rounded-4">{{ form.non_field_errors }}</div>{% endif %}
 
                 <div class="form-seccion mt-0">{% translate "¿Qué ofrecés?" %}</div>
+                {# La foto primero: con "Completar con IA" se llenan los demás campos a partir de ella #}
+                {% include 'includes/_campo.html' with campo=form.imagen clase='mb-2' %}
+                {% if SOPORTE_CON_IA %}
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-3" data-ia-foto data-url="{% url 'sugerir_producto' %}">
+                        <button type="button" class="btn btn-lup-outline btn-sm" data-ia-completar disabled>
+                            <i class="bi bi-stars me-1" aria-hidden="true"></i>{% translate "Completar con IA" %}
+                        </button>
+                        <small class="text-muted-lup" data-ia-estado aria-live="polite">{% translate "Elegí una foto y la IA sugiere título, categoría, descripción, precio y fecha. Después revisalos." %}</small>
+                    </div>
+                {% endif %}
                 <div class="row">
                     {% include 'includes/_campo.html' with campo=form.titulo clase='col-md-8 mb-3' %}
                     {% include 'includes/_campo.html' with campo=form.categoria clase='col-md-4 mb-3' %}
@@ -41,7 +51,6 @@
                     {% include 'includes/_campo.html' with campo=form.stock clase='col-6 mb-3' %}
                     {% include 'includes/_campo.html' with campo=form.fecha_vencimiento clase='col-6 mb-3' %}
                 </div>
-                {% include 'includes/_campo.html' with campo=form.imagen %}
                 <div class="bg-menta rounded-4 p-3">
                     {% include 'includes/_campo.html' with campo=form.es_donacion clase='mb-0' %}
                     <small class="text-muted-lup d-block mt-1 ms-4">{% translate "Las organizaciones sociales podrán solicitarla sin costo." %}</small>

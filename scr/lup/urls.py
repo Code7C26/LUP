@@ -52,6 +52,8 @@ urlpatterns = [
 
     # API: comercio 
     path('api/mis-productos/<int:pk>/estado/', products_api.cambiar_estado, name='api_cambiar_estado'),
+    # "Completar con IA": antes del router, si no "sugerir" se tomaría como el id de un producto
+    path('api/productos/sugerir/', products_api.sugerir_producto, name='api_sugerir_producto'),
     path('api/reservas-del-comercio/', products_api.reservas_del_comercio, name='api_reservas_comercio'),
     path('api/retiros/confirmar/', products_api.confirmar_retiro, name='api_confirmar_retiro'),
     path('api/mis-solicitudes/', products_api.mis_solicitudes, name='api_mis_solicitudes'),

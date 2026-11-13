@@ -159,6 +159,31 @@ def hay_ia():
     return bool(settings.ANTHROPIC_API_KEY)
 
 
+def llamar_api(cuerpo, timeout=25):
+    """Manda un pedido a la Messages API de Anthropic (también lo usa products/ia_fotos.py).
+
+    Devuelve la respuesta como dict, o None si falló (el error queda en el log).
+    """
+    pedido = Request(
+        URL_API,
+        data=json.dumps(cuerpo).encode('utf-8'),
+        headers={
+            'x-api-key': settings.ANTHROPIC_API_KEY,
+            'anthropic-version': VERSION_API,
+            'content-type': 'application/json',
+        },
+        method='POST',
+    )
+    try:
+        with urlopen(pedido, timeout=timeout) as respuesta:
+            return json.load(respuesta)
+    except HTTPError as e:
+        logger.error('La API de Anthropic respondió %s: %s', e.code, e.read()[:300])
+    except (URLError, TimeoutError, ValueError):
+        logger.exception('No se pudo consultar la API de Anthropic')
+    return None
+
+
 def preguntar_a_claude(historial, usuario, pagina=''):
     """historial: [{'role': 'user'|'assistant', 'content': str}, ...] terminando en 'user'.
 
@@ -177,24 +202,8 @@ def preguntar_a_claude(historial, usuario, pagina=''):
         ],
         'messages': historial[-MENSAJES_DE_CONTEXTO:],
     }
-    pedido = Request(
-        URL_API,
-        data=json.dumps(cuerpo).encode('utf-8'),
-        headers={
-            'x-api-key': settings.ANTHROPIC_API_KEY,
-            'anthropic-version': VERSION_API,
-            'content-type': 'application/json',
-        },
-        method='POST',
-    )
-    try:
-        with urlopen(pedido, timeout=25) as respuesta:
-            datos = json.load(respuesta)
-    except HTTPError as e:
-        logger.error('La IA de soporte respondió %s: %s', e.code, e.read()[:300])
-        return None
-    except (URLError, TimeoutError, ValueError):
-        logger.exception('No se pudo consultar la IA de soporte')
+    datos = llamar_api(cuerpo)
+    if datos is None:
         return None
     texto = ''.join(b.get('text', '') for b in datos.get('content', []) if b.get('type') == 'text').strip()
     return texto or None

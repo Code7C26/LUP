@@ -38,4 +38,7 @@ window.LUP_I18N = {
     'Vista previa': 'Preview',
     'disp.': 'avail.',
     '¡Excelente!': 'Excellent!',
+    'Analizando la foto…': 'Analyzing the photo…',
+    'Listo. Revisá los datos y elegí el precio Lüp: la IA puede equivocarse.': 'Done. Check the details and choose the Lüp price: the AI can make mistakes.',
+    'No pudimos analizar la foto ahora. Probá de nuevo en un rato o completá los datos a mano.': "We couldn't analyze the photo right now. Try again later or fill in the details yourself.",
 };
