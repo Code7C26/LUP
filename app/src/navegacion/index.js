@@ -21,6 +21,9 @@ import DetalleComercio from '../pantallas/DetalleComercio';
 import Bienvenida from '../pantallas/Bienvenida';
 import Carrito from '../pantallas/Carrito';
 import DetalleProducto from '../pantallas/DetalleProducto';
+import CambiarClave from '../pantallas/CambiarClave';
+import EditarComercio from '../pantallas/EditarComercio';
+import EditarOrganizacion from '../pantallas/EditarOrganizacion';
 import EditarPerfil from '../pantallas/EditarPerfil';
 import Login from '../pantallas/Login';
 import Mapa from '../pantallas/Mapa';
@@ -107,7 +110,14 @@ export default function Navegacion() {
             {/* Chat de ayuda con Lü (desde Inicio y Perfil, también como invitado). Tiene su propia cabecera */}
             <Stack.Screen name="Ayuda" component={Ayuda} options={{ headerShown: false }} />
             {/* "Editar mis datos" de Perfil. El título grande está dentro de la pantalla */}
-            {usuario ? <Stack.Screen name="EditarPerfil" component={EditarPerfil} options={{ title: '' }} /> : null}
+            {usuario ? (
+              <>
+                <Stack.Screen name="EditarPerfil" component={EditarPerfil} options={{ title: '' }} />
+                <Stack.Screen name="EditarComercio" component={EditarComercio} options={{ title: '' }} />
+                <Stack.Screen name="EditarOrganizacion" component={EditarOrganizacion} options={{ title: '' }} />
+                <Stack.Screen name="CambiarClave" component={CambiarClave} options={{ title: '' }} />
+              </>
+            ) : null}
             <Stack.Screen
               name="FormProducto"
               component={FormProducto}

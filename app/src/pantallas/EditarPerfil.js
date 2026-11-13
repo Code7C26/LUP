@@ -1,11 +1,23 @@
-// Editar mis datos (desde Perfil): foto, nombre, apellido, teléfono y ciudad.
+// Editar mis datos (desde Perfil): foto, nombre, apellido, email, teléfono, ciudad y avisos por email.
 // Estilo del mockup (página 12, "Nuevo Producto"): título grande con ícono, la foto en un recuadro,
 // campos grises redondeados y el botón verde oscuro.
 // Usa GET /api/auth/yo/ para completar y PATCH /api/auth/yo/ (multipart) para guardar.
 // Django valida lo mismo que "Mis datos" de la web (la foto se recorta en un cuadrado de 400×400).
-// El email y los datos del comercio u organización se cambian desde la web.
+// Para cambiar el email pide la contraseña actual (el campo aparece solo si el email cambia).
+// Los datos del comercio u organización se editan en EditarComercio / EditarOrganizacion (desde Perfil).
 import { useEffect, useState } from 'react';
-import { Alert, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  View,
+} from 'react-native';
 import { File } from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -19,14 +31,17 @@ import { useSesion } from '../contexto/Sesion';
 import { espacio, fuentes, tamanos, useTema } from '../tema';
 import { textoError, vibrar } from '../utilidades';
 
-const CAMPOS = ['first_name', 'last_name', 'telefono', 'ciudad'];
+const CAMPOS = ['first_name', 'last_name', 'email', 'telefono', 'ciudad'];
 
 export default function EditarPerfil({ navigation }) {
   const { colores } = useTema();
   const { usuario, actualizarUsuario } = useSesion();
   const responsable = usuario?.rol === 'comercio' || usuario?.rol === 'organizacion';
 
-  const [valores, setValores] = useState({ first_name: '', last_name: '', telefono: '', ciudad: '' });
+  const [valores, setValores] = useState({ first_name: '', last_name: '', email: '', telefono: '', ciudad: '' });
+  const [emailGuardado, setEmailGuardado] = useState(''); // para saber si cambió (y pedir la contraseña)
+  const [claveActual, setClaveActual] = useState('');
+  const [avisos, setAvisos] = useState(true);
   const [fotoActual, setFotoActual] = useState(null); // la que ya está en Django
   const [fotoNueva, setFotoNueva] = useState(null); // la elegida en el celular (todavía sin subir)
   const [quitarFoto, setQuitarFoto] = useState(false);
@@ -40,6 +55,8 @@ export default function EditarPerfil({ navigation }) {
       try {
         const yo = await api('/auth/yo/');
         setValores(Object.fromEntries(CAMPOS.map((c) => [c, yo[c] || ''])));
+        setEmailGuardado(yo.email || '');
+        setAvisos(yo.avisos_email !== false);
         setFotoActual(urlCompleta(yo.foto));
       } catch (e) {
         setErrorGeneral(e);
@@ -78,6 +95,8 @@ export default function EditarPerfil({ navigation }) {
   }
 
   const foto = fotoNueva?.uri || (quitarFoto ? null : fotoActual);
+  // Igual que Django: el email se compara sin mayúsculas ni espacios
+  const cambioEmail = valores.email.trim().toLowerCase() !== emailGuardado.toLowerCase();
 
   function opcionesFoto() {
     const opciones = [
@@ -103,6 +122,8 @@ export default function EditarPerfil({ navigation }) {
     setErrorGeneral('');
     const datos = new FormData();
     CAMPOS.forEach((c) => datos.append(c, valores[c].trim()));
+    datos.append('avisos_email', avisos ? 'true' : 'false');
+    if (cambioEmail) datos.append('clave_actual', claveActual);
     if (fotoNueva) {
       // Igual que en FormProducto: la foto va como un File de expo-file-system (ya trae nombre y tipo)
       datos.append('foto', new File(fotoNueva.uri));
@@ -114,6 +135,7 @@ export default function EditarPerfil({ navigation }) {
     try {
       const actualizado = await api('/auth/yo/', { metodo: 'PATCH', datos });
       await actualizarUsuario(actualizado); // el nombre y la foto nuevos se ven en toda la app
+      setClaveActual('');
       vibrar('exito');
       Alert.alert('Listo', 'Tus datos se actualizaron.');
       navigation.goBack();
@@ -189,6 +211,35 @@ export default function EditarPerfil({ navigation }) {
             maxLength={150}
           />
           <Campo
+            etiqueta="Email"
+            placeholder="tu@email.com"
+            value={valores.email}
+            onChangeText={cambiar('email')}
+            error={errores.email}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete="email"
+            maxLength={254}
+          />
+          {cambioEmail ? (
+            <View style={{ gap: espacio(0.5) }}>
+              <Campo
+                etiqueta="Tu contraseña actual"
+                placeholder="Para confirmar el cambio de email"
+                value={claveActual}
+                onChangeText={setClaveActual}
+                error={errores.clave_actual}
+                secureTextEntry
+                autoComplete="current-password"
+                textContentType="password"
+              />
+              <Text style={[estilos.ayuda, { color: colores.gris }]}>
+                A partir de ahora los avisos y los links para recuperar la contraseña llegan al email nuevo.
+              </Text>
+            </View>
+          ) : null}
+          <Campo
             etiqueta="Teléfono"
             placeholder="351 555 1234"
             value={valores.telefono}
@@ -209,12 +260,33 @@ export default function EditarPerfil({ navigation }) {
           />
         </View>
 
+        {/* Avisos por email (igual que "Avisos por email" de la web) */}
+        <View style={[estilos.avisos, { backgroundColor: colores.superficie, borderColor: colores.borde }]}>
+          <View style={[estilos.iconoAvisos, { backgroundColor: colores.menta }]}>
+            <Icono nombre="mail-outline" tamano={18} color={colores.verdeHover} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={[estilos.tituloAvisos, { color: colores.texto }]}>Recibir avisos por email</Text>
+            <Text style={[estilos.ayuda, { color: colores.gris }]}>
+              Reservas, retiros, opiniones y donaciones. La bienvenida y los emails de contraseña llegan siempre.
+            </Text>
+          </View>
+          <Switch
+            value={avisos}
+            onValueChange={setAvisos}
+            accessibilityLabel="Recibir avisos por email"
+            trackColor={{ false: colores.borde, true: colores.verde }}
+            thumbColor={Platform.OS === 'android' ? (avisos ? colores.verdeProfundo : colores.fondo) : undefined}
+            ios_backgroundColor={colores.borde}
+          />
+        </View>
+        {errores.avisos_email ? (
+          <Text style={[estilos.ayuda, { color: colores.error }]}>{textoError(errores.avisos_email)}</Text>
+        ) : null}
+
         <MensajeError mensaje={errorGeneral} />
 
         <Boton texto="Guardar cambios" onPress={guardar} cargando={guardando} estilo={estilos.boton} />
-        <Text style={[estilos.nota, { color: colores.gris }]}>
-          El email{responsable ? ' y los datos de tu comercio u organización' : ''} se cambian desde la web, en Mis datos.
-        </Text>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -272,10 +344,28 @@ const estilos = StyleSheet.create({
     width: '82%',
     marginTop: espacio(1),
   },
-  nota: {
+  ayuda: {
     fontFamily: fuentes.normal,
-    fontSize: tamanos.mini,
-    textAlign: 'center',
-    marginTop: -espacio(1),
+    fontSize: tamanos.mini + 1,
+    lineHeight: 16,
+  },
+  avisos: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: espacio(1.5),
+    padding: espacio(1.5),
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  iconoAvisos: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tituloAvisos: {
+    fontFamily: fuentes.media,
+    fontSize: tamanos.normal,
   },
 });

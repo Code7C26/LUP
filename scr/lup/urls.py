@@ -39,6 +39,9 @@ urlpatterns = [
     path('api/auth/registro/<str:rol>/', users_api.registro, name='api_registro'),
     path('api/auth/yo/', users_api.yo, name='api_yo'),  # GET y PATCH (editar mis datos)
     path('api/auth/recuperar/', users_api.recuperar, name='api_recuperar'),
+    path('api/auth/cambiar-clave/', users_api.cambiar_clave, name='api_cambiar_clave'),
+    path('api/mi-comercio/', users_api.mi_comercio, name='api_mi_comercio'),  # GET y PATCH (TiendaForm)
+    path('api/mi-organizacion/', users_api.mi_organizacion, name='api_mi_organizacion'),  # GET y PATCH (OrganizacionForm)
     path('api/auth/push/', users_api.dispositivo_push, name='api_dispositivo_push'),
 
     # API: consumidor 
