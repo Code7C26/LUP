@@ -1,5 +1,5 @@
 // Ayuda: chat con Lü, el asistente de soporte de Lüp (el mismo del widget de la web).
-// Se abre desde el ícono de auriculares de Inicio (como el mockup, página 7) y desde Perfil,
+// Se abre desde el botón "Ayuda" de la barra de Inicio (el mismo del chat de la web) y desde Perfil,
 // con sesión o como invitado:  navigation.navigate('Ayuda', { desde: 'Inicio' })
 //   POST /api/soporte/mensaje/  {texto, conversacion, pagina, invitado}  → {conversacion, respuesta, con_ia}
 //   POST /api/soporte/persona/  {email, detalle, conversacion, ...}      → {respuesta}  ("Hablar con una persona")
