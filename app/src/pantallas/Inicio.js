@@ -1,6 +1,7 @@
 // PASO 40 · Inicio, IGUAL AL MOCKUP (página 7 del PDF):
 //   arriba: el menú ☰ a la izquierda (Perfil, Mis reservas, Mis favoritos, Apariencia y Soporte;
-//   ver componentes/MenuLateral.js) y compartir / carrito (con el número de productos) a la derecha
+//   ver componentes/MenuLateral.js), al lado los auriculares de soporte (abren la Ayuda con Lü)
+//   y compartir / carrito (con el número de productos) a la derecha
 //   el mapa a todo lo ancho con los comercios y el logo en la esquina
 //   "Cerca tuyo" con el buscador chiquito, y los comercios con foto, km y "Ver catálogo"
 //   (agregado) "Vence hoy": las ofertas que hay que retirar hoy, si hay alguna
@@ -209,6 +210,16 @@ export default function Inicio({ navigation }) {
           style={[estilos.botonBarra, { backgroundColor: colores.panel }]}
         >
           <Icono nombre="menu" tamano={22} color={colores.texto} />
+        </Pressable>
+        {/* Soporte (auriculares, como el mockup): abre el chat de ayuda con Lü */}
+        <Pressable
+          onPress={() => navigation?.navigate?.('Ayuda', { desde: 'Inicio' })}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel="Ayuda: chatear con Lü"
+          style={[estilos.botonBarra, { backgroundColor: colores.panel }]}
+        >
+          <Icono nombre="headset-outline" tamano={21} color={colores.texto} />
         </Pressable>
         <View style={{ flex: 1 }} />
         <Pressable onPress={compartir} hitSlop={8} accessibilityRole="button" accessibilityLabel="Compartir Lüp" style={estilos.botonBarra}>

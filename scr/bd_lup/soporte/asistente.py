@@ -100,7 +100,16 @@ CÓMO RESPONDER
 def contexto_usuario(usuario, pagina=''):
     """Lo que el asistente puede saber de quien escribe (nunca datos de otras personas)."""
     lineas = [f'Fecha de hoy: {localdate():%d/%m/%Y}.']
-    if pagina:
+    if pagina.startswith('app:'):
+        lineas.append(
+            'Escribe desde la APP del celular, no desde la web. La app tiene pestañas abajo: consumidor e invitado: '
+            'Inicio, Buscar, Reservas (sus códigos de retiro) y Perfil; comercio: Productos, Retiros, Donaciones '
+            'y Perfil; organización: Donaciones, Pedidos y Perfil. Los datos de la cuenta (nombre, email, foto, '
+            'ubicación del local) se editan desde la web. Nombrá las pestañas de la app cuando ayude.'
+        )
+        if pagina[4:]:
+            lineas.append(f'Pantalla de la app desde la que abrió la ayuda: {pagina[4:124]}')
+    elif pagina:
         lineas.append(f'Está en la página: {pagina[:120]}')
     if not usuario or not usuario.is_authenticated:
         lineas.append('No inició sesión (visitante).')

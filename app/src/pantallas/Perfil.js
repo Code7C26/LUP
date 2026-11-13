@@ -1,6 +1,6 @@
 // PASO 49 · Perfil y soporte.
 // Con sesión: los datos del usuario (GET /api/auth/yo/), los de su comercio u organización,
-// el recuadro de soporte (WhatsApp y teléfono, los mismos del pie de la web) y "Cerrar sesión".
+// el recuadro de soporte ("Chatear con Lü" → pantalla Ayuda, y WhatsApp / teléfono / Instagram) y "Cerrar sesión".
 // Sin sesión: "Iniciar sesión" y "Registrarme".
 // PROPUESTA DE ESTÉTICA: cabecera con foto, filas con íconos (menos texto),
 // "Apariencia" para elegir claro / oscuro / automático y el soporte en 3 botones redondos.
@@ -64,8 +64,8 @@ function Dato({ icono, valor, ultimo }) {
   );
 }
 
-// Soporte: 3 botones redondos (WhatsApp, llamar, Instagram)
-function Soporte() {
+// Soporte: el chat con Lü (pantalla Ayuda) y 3 botones redondos (WhatsApp, llamar, Instagram)
+function Soporte({ navigation }) {
   const { colores } = useTema();
   const botones = [
     ['logo-whatsapp', 'WhatsApp', SOPORTE.whatsapp],
@@ -74,6 +74,27 @@ function Soporte() {
   ];
   return (
     <Grupo titulo="¿Necesitás ayuda?">
+      <Pressable
+        onPress={() => navigation?.navigate?.('Ayuda', { desde: 'Perfil' })}
+        accessibilityRole="button"
+        accessibilityLabel="Chatear con Lü. Respuestas al instante o hablá con una persona"
+        style={({ pressed }) => [
+          estilos.fila,
+          { borderBottomWidth: StyleSheet.hairlineWidth, borderColor: colores.borde },
+          pressed && { opacity: 0.7 },
+        ]}
+      >
+        <View style={[estilos.iconoFila, { backgroundColor: colores.verdeProfundo }]}>
+          <Icono nombre="chatbubbles-outline" tamano={17} color={colores.sobreVerdeProfundo} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={[estilos.valor, { color: colores.texto, fontFamily: fuentes.media }]}>Chatear con Lü</Text>
+          <Text style={[estilos.subtitulo, { color: colores.gris, textAlign: 'left' }]}>
+            Respuestas al instante o hablá con una persona
+          </Text>
+        </View>
+        <Icono nombre="chevron-forward" tamano={16} color={colores.gris} />
+      </Pressable>
       <View style={estilos.soporte}>
         {botones.map(([icono, texto, url]) => (
           <Pressable
@@ -204,7 +225,7 @@ export default function Perfil({ navigation }) {
             <SelectorApariencia />
           </View>
         </Grupo>
-        <Soporte />
+        <Soporte navigation={navigation} />
         <Boton texto="Ver la bienvenida" icono="sparkles-outline" variante="texto" chico onPress={() => navigation.navigate('VerBienvenida', { rol: usuario?.rol || 'consumidor' })} />
       </ScrollView>
     );
@@ -290,7 +311,7 @@ export default function Perfil({ navigation }) {
         </View>
       </Grupo>
 
-      <Soporte />
+      <Soporte navigation={navigation} />
 
       <Boton texto="Ver la bienvenida" icono="sparkles-outline" variante="texto" chico onPress={() => navigation.navigate('VerBienvenida', { rol: usuario?.rol || 'consumidor' })} />
       <Boton texto="Cerrar sesión" icono="log-out-outline" variante="texto" onPress={confirmarSalida} cargando={saliendo} />

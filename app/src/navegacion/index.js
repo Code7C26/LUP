@@ -15,6 +15,7 @@ import Aviso from '../componentes/Aviso';
 import Cargando from '../componentes/Cargando';
 import { claveBienvenida, useBienvenida } from '../contexto/Bienvenida';
 import { useSesion } from '../contexto/Sesion';
+import Ayuda from '../pantallas/Ayuda';
 import FormProducto from '../pantallas/comercio/FormProducto';
 import DetalleComercio from '../pantallas/DetalleComercio';
 import Bienvenida from '../pantallas/Bienvenida';
@@ -99,6 +100,8 @@ export default function Navegacion() {
             <Stack.Screen name="Mapa" component={Mapa} options={{ headerShown: false }} />
             {/* Desde el menú ☰ de Inicio. El título grande está dentro de la pantalla */}
             <Stack.Screen name="MisFavoritos" component={MisFavoritos} options={{ title: '' }} />
+            {/* Chat de ayuda con Lü (desde Inicio y Perfil, también como invitado). Tiene su propia cabecera */}
+            <Stack.Screen name="Ayuda" component={Ayuda} options={{ headerShown: false }} />
             <Stack.Screen
               name="FormProducto"
               component={FormProducto}

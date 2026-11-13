@@ -9,6 +9,7 @@ from scr.bd_lup.stores import api as stores_api
 from scr.bd_lup.products import api as products_api
 from scr.bd_lup.products import views as product_views
 from scr.bd_lup.products.api import ProductoViewSet
+from scr.bd_lup.soporte import api as soporte_api
 from scr.bd_lup.stores import views as store_views
 from scr.bd_lup.users import api as users_api
 
@@ -56,6 +57,10 @@ urlpatterns = [
     path('api/donaciones/', products_api.donaciones_disponibles, name='api_donaciones'),
     path('api/productos/<int:pk>/solicitar-donacion/', products_api.solicitar_donacion, name='api_solicitar_donacion'),
     path('api/mis-solicitudes-donacion/', products_api.mis_solicitudes_donacion, name='api_mis_solicitudes_donacion'),
+
+    # API: chat de ayuda (Lü) para la app, con token o como invitado
+    path('api/soporte/mensaje/', soporte_api.mensaje, name='api_soporte_mensaje'),
+    path('api/soporte/persona/', soporte_api.persona, name='api_soporte_persona'),
 
     # API: lista de productos y "mis productos" (router)
     path('api/', include(router.urls)),
