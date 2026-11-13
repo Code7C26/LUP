@@ -1,6 +1,6 @@
 // PASO 40 · Inicio, IGUAL AL MOCKUP (página 7 del PDF):
 //   arriba: el menú ☰ a la izquierda (Perfil, Mis reservas, Mis favoritos, Apariencia y Soporte;
-//   ver componentes/MenuLateral.js), al lado los auriculares de soporte (abren la Ayuda con Lü)
+//   ver componentes/MenuLateral.js), al lado el botón "Ayuda" (abre el chat con Lü, como el de la web)
 //   y compartir / carrito (con el número de productos) a la derecha
 //   el mapa a todo lo ancho con los comercios y el logo en la esquina
 //   "Cerca tuyo" con el buscador chiquito, y los comercios con foto, km y "Ver catálogo"
@@ -211,15 +211,20 @@ export default function Inicio({ navigation }) {
         >
           <Icono nombre="menu" tamano={22} color={colores.texto} />
         </Pressable>
-        {/* Soporte (auriculares, como el mockup): abre el chat de ayuda con Lü */}
+        {/* "Ayuda" (el mismo botón del chat de la web, más chico): abre el chat de ayuda con Lü */}
         <Pressable
           onPress={() => navigation?.navigate?.('Ayuda', { desde: 'Inicio' })}
           hitSlop={8}
           accessibilityRole="button"
           accessibilityLabel="Ayuda: chatear con Lü"
-          style={[estilos.botonBarra, { backgroundColor: colores.panel }]}
+          style={({ pressed }) => [
+            estilos.botonAyuda,
+            { backgroundColor: colores.verdeProfundo },
+            pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] },
+          ]}
         >
-          <Icono nombre="headset-outline" tamano={21} color={colores.texto} />
+          <Icono nombre="chatbubble-ellipses" tamano={15} color={colores.sobreVerdeProfundo} />
+          <Text style={[estilos.textoAyuda, { color: colores.sobreVerdeProfundo }]}>Ayuda</Text>
         </Pressable>
         <View style={{ flex: 1 }} />
         <Pressable onPress={compartir} hitSlop={8} accessibilityRole="button" accessibilityLabel="Compartir Lüp" style={estilos.botonBarra}>
@@ -401,6 +406,18 @@ const estilos = StyleSheet.create({
     borderRadius: 19,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  botonAyuda: {
+    height: 32,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+  },
+  textoAyuda: {
+    fontFamily: fuentes.boton,
+    fontSize: 13,
   },
   mapa: {
     height: 230,
