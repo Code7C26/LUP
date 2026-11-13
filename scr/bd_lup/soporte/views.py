@@ -26,9 +26,10 @@ WHATSAPP_LINK = 'https://wa.me/5493547620629'
 
 def _datos(request):
     try:
-        return json.loads(request.body or b'{}')
+        datos = json.loads(request.body or b'{}')
     except (ValueError, UnicodeDecodeError):
         return {}
+    return datos if isinstance(datos, dict) else {}
 
 
 def _clave_sesion(request):
@@ -37,60 +38,127 @@ def _clave_sesion(request):
     return request.session.session_key
 
 
-def _conversacion_propia(request, pk):
+def _usuario(request):
+    return request.user if request.user.is_authenticated else None
+
+
+# ==========================================
+# Lógica del chat (la usan la web, con la sesión, y la API de la app, con el token: soporte/api.py)
+#   usuario: la cuenta que escribe, o None si es un visitante
+#   sesion: para visitantes, la clave que identifica su charla (cookie de sesión en la web,
+#           clave "app-..." en la app). Devuelven (datos de la respuesta, código HTTP).
+# ==========================================
+
+def _conversacion_propia(usuario, sesion, pk):
     """La conversación solo la puede seguir quien la empezó (su cuenta o su sesión)."""
-    if not pk:
+    try:
+        pk = int(pk)
+    except (TypeError, ValueError):
         return None
     qs = Conversacion.objects.filter(pk=pk)
-    if request.user.is_authenticated:
-        qs = qs.filter(usuario=request.user)
+    if usuario is not None:
+        qs = qs.filter(usuario=usuario)
     else:
-        qs = qs.filter(usuario__isnull=True, sesion=_clave_sesion(request))
+        qs = qs.filter(usuario__isnull=True, sesion=sesion)
     return qs.first()
 
 
-def _demasiados_mensajes(request):
+def _demasiados_mensajes(usuario, sesion):
     desde = timezone.now() - timedelta(hours=1)
     qs = Mensaje.objects.filter(rol=Mensaje.USUARIO, creado_en__gte=desde)
-    if request.user.is_authenticated:
-        qs = qs.filter(conversacion__usuario=request.user)
+    if usuario is not None:
+        qs = qs.filter(conversacion__usuario=usuario)
     else:
-        qs = qs.filter(conversacion__sesion=_clave_sesion(request))
+        qs = qs.filter(conversacion__usuario__isnull=True, conversacion__sesion=sesion)
     return qs.count() >= MAX_MENSAJES_POR_HORA
 
 
-@require_POST
-def mensaje(request):
-    datos = _datos(request)
+def _error_limite():
+    return {'error': _('Mandaste muchos mensajes seguidos. Esperá un rato o escribinos por WhatsApp.')}, 429
+
+
+def responder_mensaje(usuario, sesion, datos, pagina):
     texto = str(datos.get('texto', '')).strip()
     if not texto:
-        return JsonResponse({'error': _('Escribí tu consulta.')}, status=400)
+        return {'error': _('Escribí tu consulta.')}, 400
     texto = texto[:MAX_CARACTERES]
 
-    if _demasiados_mensajes(request):
-        return JsonResponse({'error': _('Mandaste muchos mensajes seguidos. Esperá un rato o escribinos por WhatsApp.')}, status=429)
+    if _demasiados_mensajes(usuario, sesion):
+        return _error_limite()
 
-    conversacion = _conversacion_propia(request, datos.get('conversacion'))
+    conversacion = _conversacion_propia(usuario, sesion, datos.get('conversacion'))
     if conversacion is None:
-        conversacion = Conversacion.objects.create(
-            usuario=request.user if request.user.is_authenticated else None,
-            sesion=_clave_sesion(request),
-            pagina=str(datos.get('pagina', ''))[:200],
-        )
+        conversacion = Conversacion.objects.create(usuario=usuario, sesion=sesion, pagina=pagina[:200])
     Mensaje.objects.create(conversacion=conversacion, rol=Mensaje.USUARIO, texto=texto)
 
     historial = [
         {'role': 'user' if m.rol == Mensaje.USUARIO else 'assistant', 'content': m.texto}
         for m in conversacion.mensajes.all()
     ]
-    respuesta = asistente.preguntar_a_claude(historial, request.user, conversacion.pagina)
+    respuesta = asistente.preguntar_a_claude(historial, usuario, conversacion.pagina)
     con_ia = respuesta is not None
     if not con_ia:
         respuesta = asistente.respuesta_frecuente(texto)
     Mensaje.objects.create(conversacion=conversacion, rol=Mensaje.ASISTENTE, texto=respuesta, con_ia=con_ia)
     conversacion.save(update_fields=['actualizada_en'])
 
-    return JsonResponse({'conversacion': conversacion.pk, 'respuesta': respuesta, 'con_ia': con_ia})
+    return {'conversacion': conversacion.pk, 'respuesta': respuesta, 'con_ia': con_ia}, 200
+
+
+def derivar_a_persona(usuario, sesion, datos, pagina):
+    """'Hablar con una persona': avisa al equipo por email con toda la charla."""
+    detalle = str(datos.get('detalle', '')).strip()[:MAX_CARACTERES]
+    email = str(datos.get('email', '')).strip()
+    if usuario is not None and not email:
+        email = usuario.email
+    if not email:
+        return {'error': _('Dejanos un email para poder responderte.')}, 400
+    try:
+        validate_email(email)
+    except ValidationError:
+        return {'error': _('Ese email no parece válido.')}, 400
+
+    conversacion = _conversacion_propia(usuario, sesion, datos.get('conversacion'))
+    if conversacion is None:
+        if _demasiados_mensajes(usuario, sesion):
+            return _error_limite()
+        conversacion = Conversacion.objects.create(usuario=usuario, sesion=sesion, pagina=pagina[:200])
+    elif conversacion.derivada and not detalle:
+        return {'ok': True, 'conversacion': conversacion.pk, 'respuesta': _respuesta_derivada(email)}, 200
+
+    if detalle:
+        Mensaje.objects.create(conversacion=conversacion, rol=Mensaje.USUARIO, texto=detalle)
+    conversacion.derivada = True
+    conversacion.resuelta = False
+    conversacion.email_contacto = email
+    conversacion.save()
+
+    if settings.EMAIL_EN_SEGUNDO_PLANO:
+        threading.Thread(target=_mandar_al_equipo, args=(conversacion, detalle), daemon=True).start()
+    else:
+        _mandar_al_equipo(conversacion, detalle)
+
+    respuesta = _respuesta_derivada(email)
+    Mensaje.objects.create(conversacion=conversacion, rol=Mensaje.ASISTENTE, texto=respuesta)
+    return {'ok': True, 'conversacion': conversacion.pk, 'respuesta': respuesta}, 200
+
+
+# ==========================================
+# Vistas de la web (widget de base.html, con la sesión del navegador)
+# ==========================================
+
+@require_POST
+def mensaje(request):
+    datos = _datos(request)
+    cuerpo, estado = responder_mensaje(_usuario(request), _clave_sesion(request), datos, str(datos.get('pagina', '')))
+    return JsonResponse(cuerpo, status=estado)
+
+
+@require_POST
+def derivar(request):
+    datos = _datos(request)
+    cuerpo, estado = derivar_a_persona(_usuario(request), _clave_sesion(request), datos, str(datos.get('pagina', '')))
+    return JsonResponse(cuerpo, status=estado)
 
 
 def _mandar_al_equipo(conversacion, detalle):
@@ -123,50 +191,6 @@ def _mandar_al_equipo(conversacion, detalle):
         email.send()
     except Exception:
         logger.exception('No se pudo mandar el pedido de soporte #%s', conversacion.pk)
-
-
-@require_POST
-def derivar(request):
-    """'Hablar con una persona': avisa al equipo por email con toda la charla."""
-    datos = _datos(request)
-    detalle = str(datos.get('detalle', '')).strip()[:MAX_CARACTERES]
-    email = str(datos.get('email', '')).strip()
-    if request.user.is_authenticated and not email:
-        email = request.user.email
-    if not email:
-        return JsonResponse({'error': _('Dejanos un email para poder responderte.')}, status=400)
-    try:
-        validate_email(email)
-    except ValidationError:
-        return JsonResponse({'error': _('Ese email no parece válido.')}, status=400)
-
-    conversacion = _conversacion_propia(request, datos.get('conversacion'))
-    if conversacion is None:
-        if _demasiados_mensajes(request):
-            return JsonResponse({'error': _('Mandaste muchos mensajes seguidos. Esperá un rato o escribinos por WhatsApp.')}, status=429)
-        conversacion = Conversacion.objects.create(
-            usuario=request.user if request.user.is_authenticated else None,
-            sesion=_clave_sesion(request),
-            pagina=str(datos.get('pagina', ''))[:200],
-        )
-    elif conversacion.derivada and not detalle:
-        return JsonResponse({'ok': True, 'respuesta': _respuesta_derivada(email)})
-
-    if detalle:
-        Mensaje.objects.create(conversacion=conversacion, rol=Mensaje.USUARIO, texto=detalle)
-    conversacion.derivada = True
-    conversacion.resuelta = False
-    conversacion.email_contacto = email
-    conversacion.save()
-
-    if settings.EMAIL_EN_SEGUNDO_PLANO:
-        threading.Thread(target=_mandar_al_equipo, args=(conversacion, detalle), daemon=True).start()
-    else:
-        _mandar_al_equipo(conversacion, detalle)
-
-    respuesta = _respuesta_derivada(email)
-    Mensaje.objects.create(conversacion=conversacion, rol=Mensaje.ASISTENTE, texto=respuesta)
-    return JsonResponse({'ok': True, 'conversacion': conversacion.pk, 'respuesta': respuesta})
 
 
 def _respuesta_derivada(email):

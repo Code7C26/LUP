@@ -35,7 +35,8 @@ export function urlCompleta(ruta) {
 }
 
 // ---- La función para hablar con Django ----
-export async function api(ruta, { metodo = 'GET', datos } = {}) {
+// "espera" (opcional): cuántos milisegundos esperar la respuesta (el chat de ayuda con IA tarda más)
+export async function api(ruta, { metodo = 'GET', datos, espera: esperaMaxima } = {}) {
   const token = await leerToken();
   const headers = { Accept: 'application/json' };
   if (token) headers.Authorization = `Token ${token}`;
@@ -51,7 +52,7 @@ export async function api(ruta, { metodo = 'GET', datos } = {}) {
   // Sin esto, si el celular no llega al servidor, fetch se queda esperando varios minutos.
   // Las fotos tardan más en subir, así que tienen más margen.
   const control = new AbortController();
-  const espera = setTimeout(() => control.abort(), datos instanceof FormData ? 60000 : 15000);
+  const espera = setTimeout(() => control.abort(), esperaMaxima || (datos instanceof FormData ? 60000 : 15000));
 
   let respuesta;
   try {
