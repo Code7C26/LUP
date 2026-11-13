@@ -345,13 +345,53 @@ class EditarPerfilApiTests(TestCase):
         self.assertEqual(self.usuario.last_name, 'Pérez')
         self.assertEqual(self.usuario.ciudad, 'Córdoba')
 
-    def test_no_cambia_email_ni_avisos(self):
-        self.patch({'email': 'otro@lup.test', 'avisos_email': False, 'username': 'hacker', 'rol': 'comercio'})
+    def test_no_cambia_usuario_ni_rol(self):
+        self.patch({'username': 'hacker', 'rol': 'comercio', 'is_staff': True})
         self.usuario.refresh_from_db()
-        self.assertEqual(self.usuario.email, 'ana@lup.test')
-        self.assertTrue(self.usuario.avisos_email)
         self.assertEqual(self.usuario.username, 'ana')
         self.assertEqual(self.usuario.rol, Usuario.CONSUMIDOR)
+        self.assertFalse(self.usuario.is_staff)
+
+    def test_avisos_por_email(self):
+        r = self.patch({'avisos_email': False})
+        self.assertEqual(r.status_code, 200)
+        self.assertFalse(r.json()['avisos_email'])
+        self.usuario.refresh_from_db()
+        self.assertFalse(self.usuario.avisos_email)
+        self.patch({'avisos_email': 'true'}, formato='multipart')
+        self.usuario.refresh_from_db()
+        self.assertTrue(self.usuario.avisos_email)
+
+    def test_cambiar_email_pide_la_clave_actual(self):
+        r = self.patch({'email': 'nueva@lup.test'})
+        self.assertEqual(r.status_code, 400)
+        self.assertEqual(r.json()['clave_actual'], ['Para cambiar el email, escribí tu contraseña actual.'])
+        r = self.patch({'email': 'nueva@lup.test', 'clave_actual': 'otra-cosa'})
+        self.assertEqual(r.json()['clave_actual'], ['La contraseña actual no es correcta.'])
+        self.usuario.refresh_from_db()
+        self.assertEqual(self.usuario.email, 'ana@lup.test')
+
+        r = self.patch({'email': ' Nueva@LUP.test ', 'clave_actual': 'ClaveSegura#2026'})
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.json()['email'], 'nueva@lup.test')
+        self.usuario.refresh_from_db()
+        self.assertEqual(self.usuario.email, 'nueva@lup.test')
+
+    def test_mismo_email_no_pide_clave(self):
+        r = self.patch({'email': 'ANA@lup.test', 'ciudad': 'Alta Gracia'})
+        self.assertEqual(r.status_code, 200)
+
+    def test_email_de_otra_cuenta_o_invalido(self):
+        Usuario.objects.create_user('beto', 'beto@lup.test', 'ClaveSegura#2026')
+        r = self.patch({'email': 'BETO@lup.test', 'clave_actual': 'ClaveSegura#2026'})
+        self.assertEqual(r.status_code, 400)
+        self.assertEqual(r.json()['email'], ['Ya existe una cuenta con este email.'])
+        r = self.patch({'email': 'no-es-un-email', 'clave_actual': 'ClaveSegura#2026'})
+        self.assertIn('email', r.json())
+        r = self.patch({'email': ''})
+        self.assertIn('email', r.json())
+        self.usuario.refresh_from_db()
+        self.assertEqual(self.usuario.email, 'ana@lup.test')
 
     def test_validaciones_del_formulario(self):
         r = self.patch({'telefono': '1' * 30})
@@ -509,3 +549,197 @@ class RecuperarClaveTests(TestCase):
         self.client.post(reverse('set_language'), {'language': 'en', 'next': '/'})
         self.assertContains(self.client.get(reverse('login')), 'Forgot your password?')
         self.assertContains(self.client.get(reverse('recuperar')), 'Send me the link')
+
+
+def cliente_api(usuario=None):
+    """APIClient con el token de esa cuenta (o sin sesión)."""
+    from rest_framework.authtoken.models import Token
+    from rest_framework.test import APIClient
+
+    api = APIClient()
+    if usuario is not None:
+        api.credentials(HTTP_AUTHORIZATION=f'Token {Token.objects.get_or_create(user=usuario)[0].key}')
+    return api
+
+
+class MiComercioApiTests(TestCase):
+    """GET/PATCH /api/mi-comercio/: los datos del comercio con TiendaForm, igual que "Mis datos" de la web."""
+
+    def setUp(self):
+        from django.test import override_settings
+
+        ajustes = override_settings(GOOGLE_MAPS_API_KEY='')  # sin pedidos reales a Google
+        ajustes.enable()
+        self.addCleanup(ajustes.disable)
+        self.comercio = Usuario.objects.create_user('pan', 'pan@lup.test', 'ClaveSegura#2026', rol=Usuario.COMERCIO)
+        self.tienda = Tienda.objects.create(
+            usuario=self.comercio, nombre_fantasia='Panadería Sol', rubro='panaderia', descripcion='Pan casero',
+            direccion='Belgrano 1', cuit='20-11111111-1', horario_atencion='18 a 20 hs',
+        )
+        self.api = cliente_api(self.comercio)
+        self.url = reverse('api_mi_comercio')
+
+    def patch(self, datos):
+        return self.api.patch(self.url, datos, format='json')
+
+    def test_get_trae_los_datos_y_los_rubros(self):
+        datos = self.api.get(self.url).json()
+        self.assertEqual(datos['nombre_fantasia'], 'Panadería Sol')
+        self.assertEqual(datos['rubro'], 'panaderia')
+        self.assertEqual(datos['cuit'], '20-11111111-1')
+        self.assertIsNone(datos['latitud'])
+        self.assertIn(['verduleria', 'Verdulería'], datos['rubros'])
+
+    def test_cambia_solo_lo_que_se_manda(self):
+        r = self.patch({'horario_atencion': 'Lun a Sáb de 19 a 21 hs', 'rubro': 'cafeteria'})
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.json()['horario_atencion'], 'Lun a Sáb de 19 a 21 hs')
+        self.tienda.refresh_from_db()
+        self.assertEqual(self.tienda.rubro, 'cafeteria')
+        self.assertEqual(self.tienda.nombre_fantasia, 'Panadería Sol')
+        self.assertEqual(self.tienda.descripcion, 'Pan casero')
+
+    def test_el_cuit_no_se_cambia(self):
+        self.patch({'cuit': '20-99999999-9', 'usuario': 999})
+        self.tienda.refresh_from_db()
+        self.assertEqual(self.tienda.cuit, '20-11111111-1')
+        self.assertEqual(self.tienda.usuario, self.comercio)
+
+    def test_validaciones_del_formulario(self):
+        r = self.patch({'nombre_fantasia': '', 'rubro': 'joyeria'})
+        self.assertEqual(r.status_code, 400)
+        self.assertIn('nombre_fantasia', r.json())
+        self.assertIn('rubro', r.json())
+        r = self.patch({'latitud': -31.66})
+        self.assertEqual(r.json()['non_field_errors'], ['La ubicación quedó incompleta. Volvé a marcarla.'])
+        r = self.patch({'latitud': 120, 'longitud': -64.4})
+        self.assertEqual(r.json()['non_field_errors'], ['La ubicación no es válida.'])
+        self.tienda.refresh_from_db()
+        self.assertEqual(self.tienda.nombre_fantasia, 'Panadería Sol')
+        self.assertIsNone(self.tienda.latitud)
+
+    def test_ubicacion_del_dispositivo(self):
+        r = self.patch({'latitud': -31.6591, 'longitud': -64.4317})
+        self.assertEqual(r.status_code, 200)
+        self.tienda.refresh_from_db()
+        self.assertAlmostEqual(self.tienda.latitud, -31.6591)
+        self.assertTrue(self.tienda.tiene_ubicacion)
+
+    def test_nueva_direccion_busca_la_ubicacion(self):
+        from unittest import mock
+
+        with mock.patch('scr.bd_lup.stores.ubicacion.geocodificar', return_value=(-31.65, -64.43)) as geo:
+            r = self.patch({'direccion': 'España 50, Alta Gracia'})
+        geo.assert_called_once_with('España 50, Alta Gracia')
+        self.assertEqual(r.json()['latitud'], -31.65)
+
+    def test_solo_el_comercio_dueno(self):
+        consumidor = Usuario.objects.create_user('ana', 'ana@lup.test', 'ClaveSegura#2026')
+        self.assertEqual(cliente_api(consumidor).patch(self.url, {'nombre_fantasia': 'X'}, format='json').status_code, 403)
+        self.assertEqual(cliente_api().get(self.url).status_code, 401)
+        # Otro comercio edita el suyo, nunca este
+        otro = Usuario.objects.create_user('otro', 'otro@lup.test', 'ClaveSegura#2026', rol=Usuario.COMERCIO)
+        Tienda.objects.create(usuario=otro, nombre_fantasia='Verdulería', rubro='verduleria',
+                              direccion='Sarmiento 2', cuit='20-22222222-2', horario_atencion='9 a 12')
+        r = cliente_api(otro).patch(self.url, {'nombre_fantasia': 'Cambiado'}, format='json')
+        self.assertEqual(r.json()['nombre_fantasia'], 'Cambiado')
+        self.tienda.refresh_from_db()
+        self.assertEqual(self.tienda.nombre_fantasia, 'Panadería Sol')
+
+    def test_comercio_sin_datos(self):
+        nuevo = Usuario.objects.create_user('nuevo', 'nuevo@lup.test', 'ClaveSegura#2026', rol=Usuario.COMERCIO)
+        self.assertEqual(cliente_api(nuevo).get(self.url).status_code, 404)
+
+
+class MiOrganizacionApiTests(TestCase):
+    """GET/PATCH /api/mi-organizacion/: los datos de la organización con OrganizacionForm."""
+
+    def setUp(self):
+        self.usuario = Usuario.objects.create_user('comedor', 'c@lup.test', 'ClaveSegura#2026', rol=Usuario.ORGANIZACION)
+        self.org = Organizacion.objects.create(
+            usuario=self.usuario, nombre='Comedor Luz', tipo='comedor', cuit='30-12345678-9',
+            direccion='Belgrano 50', personas_asistidas=20,
+        )
+        self.api = cliente_api(self.usuario)
+        self.url = reverse('api_mi_organizacion')
+
+    def test_get_y_patch(self):
+        datos = self.api.get(self.url).json()
+        self.assertEqual(datos['nombre'], 'Comedor Luz')
+        self.assertIn(['fundacion', 'Fundación'], datos['tipos'])
+        r = self.api.patch(self.url, {'personas_asistidas': 45, 'personeria_juridica': 'RES 123/2020'}, format='json')
+        self.assertEqual(r.status_code, 200)
+        self.org.refresh_from_db()
+        self.assertEqual(self.org.personas_asistidas, 45)
+        self.assertEqual(self.org.personeria_juridica, 'RES 123/2020')
+        self.assertEqual(self.org.nombre, 'Comedor Luz')
+
+    def test_validaciones(self):
+        r = self.api.patch(self.url, {'tipo': 'club', 'personas_asistidas': -3, 'nombre': ''}, format='json')
+        self.assertEqual(r.status_code, 400)
+        self.assertEqual(set(r.json()), {'tipo', 'personas_asistidas', 'nombre'})
+        self.api.patch(self.url, {'cuit': '30-99999999-9'}, format='json')
+        self.org.refresh_from_db()
+        self.assertEqual(self.org.cuit, '30-12345678-9')
+
+    def test_solo_organizaciones(self):
+        comercio = Usuario.objects.create_user('pan', 'pan@lup.test', 'ClaveSegura#2026', rol=Usuario.COMERCIO)
+        self.assertEqual(cliente_api(comercio).get(self.url).status_code, 403)
+        self.assertEqual(cliente_api().patch(self.url, {}, format='json').status_code, 401)
+
+
+class CambiarClaveApiTests(TestCase):
+    """POST /api/auth/cambiar-clave/ con la sesión abierta."""
+
+    def setUp(self):
+        self.usuario = Usuario.objects.create_user('ana', 'ana@lup.test', 'ClaveVieja#2026')
+        self.api = cliente_api(self.usuario)
+        self.url = reverse('api_cambiar_clave')
+
+    def cambiar(self, **datos):
+        return self.api.post(self.url, datos, format='json')
+
+    def test_cambia_y_la_sesion_sigue_abierta(self):
+        r = self.cambiar(clave_actual='ClaveVieja#2026', clave_nueva='ClaveNueva#2026')
+        self.assertEqual(r.status_code, 200)
+        self.usuario.refresh_from_db()
+        self.assertTrue(self.usuario.check_password('ClaveNueva#2026'))
+        self.assertEqual(self.api.get('/api/auth/yo/').status_code, 200)  # el mismo token sigue sirviendo
+        # Y se puede ingresar con la nueva
+        r = self.client.post('/api/auth/login/', {'username': 'ana', 'password': 'ClaveNueva#2026'},
+                             content_type='application/json')
+        self.assertEqual(r.status_code, 200)
+
+    def test_con_la_sesion_de_la_web_tambien_sigue_abierta(self):
+        self.client.force_login(self.usuario)
+        r = self.client.post(self.url, {'clave_actual': 'ClaveVieja#2026', 'clave_nueva': 'ClaveNueva#2026'},
+                             content_type='application/json')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(self.client.get('/api/auth/yo/').status_code, 200)
+        self.assertEqual(self.client.get(reverse('perfil')).status_code, 200)
+
+    def test_clave_actual_incorrecta(self):
+        r = self.cambiar(clave_actual='otra', clave_nueva='ClaveNueva#2026')
+        self.assertEqual(r.status_code, 400)
+        self.assertEqual(r.json(), {'clave_actual': ['La contraseña actual no es correcta.']})
+        self.usuario.refresh_from_db()
+        self.assertTrue(self.usuario.check_password('ClaveVieja#2026'))
+
+    def test_reglas_de_contrasena_de_django_en_castellano(self):
+        r = self.cambiar(clave_actual='ClaveVieja#2026', clave_nueva='12345678')
+        self.assertEqual(r.status_code, 400)
+        mensajes = ' '.join(r.json()['clave_nueva']).lower()
+        self.assertIn('contraseña', mensajes)
+        self.assertIn('común', mensajes)
+        r = self.cambiar(clave_actual='ClaveVieja#2026', clave_nueva='corta')
+        self.assertIn('clave_nueva', r.json())
+
+    def test_repetir_la_nueva(self):
+        r = self.cambiar(clave_actual='ClaveVieja#2026', clave_nueva='ClaveNueva#2026', clave_nueva2='ClaveNueva#2027')
+        self.assertEqual(r.status_code, 400)
+        self.assertIn('clave_nueva2', r.json())
+
+    def test_faltan_datos_o_sin_sesion(self):
+        r = self.cambiar()
+        self.assertEqual(set(r.json()), {'clave_actual', 'clave_nueva'})
+        self.assertEqual(cliente_api().post(self.url, {}, format='json').status_code, 401)

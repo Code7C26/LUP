@@ -1,6 +1,6 @@
 // PASO 49 · Perfil y soporte.
-// Con sesión: los datos del usuario (GET /api/auth/yo/) con "Editar mis datos" (pantalla EditarPerfil),
-// los de su comercio u organización,
+// Con sesión: los datos del usuario (GET /api/auth/yo/) con "Editar mis datos" (EditarPerfil) y
+// "Cambiar contraseña" (CambiarClave), los de su comercio u organización (EditarComercio / EditarOrganizacion),
 // el recuadro de soporte ("Chatear con Lü" → pantalla Ayuda, y WhatsApp / teléfono / Instagram) y "Cerrar sesión".
 // Sin sesión: "Iniciar sesión" y "Registrarme".
 // PROPUESTA DE ESTÉTICA: cabecera con foto, filas con íconos (menos texto),
@@ -62,6 +62,25 @@ function Dato({ icono, valor, ultimo }) {
         {valor}
       </Text>
     </View>
+  );
+}
+
+// Fila que se toca (con flecha) para abrir una pantalla: "Cambiar contraseña", "Editar datos del comercio"
+function FilaAccion({ icono, texto, alTocar }) {
+  const { colores } = useTema();
+  return (
+    <Pressable
+      onPress={alTocar}
+      accessibilityRole="button"
+      accessibilityLabel={texto}
+      style={({ pressed }) => [estilos.fila, pressed && { opacity: 0.7 }]}
+    >
+      <View style={[estilos.iconoFila, { backgroundColor: colores.verdeProfundo }]}>
+        <Icono nombre={icono} tamano={17} color={colores.sobreVerdeProfundo} />
+      </View>
+      <Text style={[estilos.valor, { color: colores.texto, fontFamily: fuentes.media }]}>{texto}</Text>
+      <Icono nombre="chevron-forward" tamano={16} color={colores.gris} />
+    </Pressable>
   );
 }
 
@@ -288,7 +307,12 @@ export default function Perfil({ navigation }) {
         <Dato icono="at" valor={datos?.username} />
         <Dato icono="mail-outline" valor={datos?.email} />
         <Dato icono="call-outline" valor={datos?.telefono} />
-        <Dato icono="location-outline" valor={datos?.ciudad} ultimo />
+        <Dato icono="location-outline" valor={datos?.ciudad} />
+        <Dato
+          icono={datos?.avisos_email === false ? 'notifications-off-outline' : 'notifications-outline'}
+          valor={datos?.avisos_email === false ? 'Avisos por email apagados' : 'Avisos por email activados'}
+        />
+        <FilaAccion icono="key-outline" texto="Cambiar contraseña" alTocar={() => navigation.navigate('CambiarClave')} />
       </Grupo>
 
       {comercio ? (
@@ -297,7 +321,8 @@ export default function Perfil({ navigation }) {
           <Dato icono="pricetag-outline" valor={comercio.rubro} />
           <Dato icono="map-outline" valor={comercio.direccion} />
           <Dato icono="time-outline" valor={comercio.horario} />
-          <Dato icono="document-text-outline" valor={comercio.cuit && `CUIT ${comercio.cuit}`} ultimo />
+          <Dato icono="document-text-outline" valor={comercio.cuit && `CUIT ${comercio.cuit}`} />
+          <FilaAccion icono="create-outline" texto="Editar datos del comercio" alTocar={() => navigation.navigate('EditarComercio')} />
         </Grupo>
       ) : null}
 
@@ -310,7 +335,12 @@ export default function Perfil({ navigation }) {
             icono="restaurant-outline"
             valor={organizacion.personas_asistidas ? `${organizacion.personas_asistidas} personas por semana` : null}
           />
-          <Dato icono="document-text-outline" valor={organizacion.cuit && `CUIT ${organizacion.cuit}`} ultimo />
+          <Dato icono="document-text-outline" valor={organizacion.cuit && `CUIT ${organizacion.cuit}`} />
+          <FilaAccion
+            icono="create-outline"
+            texto="Editar datos de la organización"
+            alTocar={() => navigation.navigate('EditarOrganizacion')}
+          />
         </Grupo>
       ) : null}
 
@@ -324,9 +354,6 @@ export default function Perfil({ navigation }) {
 
       <Boton texto="Ver la bienvenida" icono="sparkles-outline" variante="texto" chico onPress={() => navigation.navigate('VerBienvenida', { rol: usuario?.rol || 'consumidor' })} />
       <Boton texto="Cerrar sesión" icono="log-out-outline" variante="texto" onPress={confirmarSalida} cargando={saliendo} />
-      <Text style={[estilos.nota, { color: colores.gris }]}>
-        El email{comercio || organizacion ? ' y los datos de tu comercio u organización' : ''} se cambian desde la web.
-      </Text>
     </ScrollView>
   );
 }
@@ -418,11 +445,5 @@ const estilos = StyleSheet.create({
   textoSoporte: {
     fontFamily: fuentes.media,
     fontSize: tamanos.chico,
-  },
-  nota: {
-    fontFamily: fuentes.normal,
-    fontSize: tamanos.mini,
-    textAlign: 'center',
-    marginTop: -espacio(1.5),
   },
 });

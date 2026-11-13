@@ -3,7 +3,13 @@ from io import BytesIO
 
 from django import forms
 from django.core.files.base import ContentFile
-from django.contrib.auth.forms import AuthenticationForm, PasswordResetForm, SetPasswordForm, UserCreationForm
+from django.contrib.auth.forms import (
+    AuthenticationForm,
+    PasswordChangeForm,
+    PasswordResetForm,
+    SetPasswordForm,
+    UserCreationForm,
+)
 from django.contrib.auth.tokens import default_token_generator
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
@@ -254,14 +260,40 @@ class PerfilUsuarioForm(EstiloBootstrapMixin, forms.ModelForm):
 
 
 class PerfilApiForm(PerfilUsuarioForm):
-    """Lo que se edita desde la app (PATCH /api/auth/yo/): nombre, teléfono, ciudad y foto.
+    """"Mis datos" desde la app (PATCH /api/auth/yo/): los mismos campos y validaciones que la web
+    (foto, nombre, apellido, email, teléfono, ciudad y avisos por email).
 
-    Hereda las validaciones y el guardado de la foto de la web (tamaño, que sea imagen, recorte 400×400,
-    borrar la anterior). El email y los avisos se cambian desde la web.
+    Además, para cambiar el email pide la contraseña actual ("clave_actual"): con un celular
+    olvidado con la sesión abierta, nadie se puede quedar con la cuenta cambiándole el email.
     """
 
+    clave_actual = forms.CharField(required=False, strip=False, widget=forms.PasswordInput)
+
     class Meta(PerfilUsuarioForm.Meta):
-        fields = ('foto', 'first_name', 'last_name', 'telefono', 'ciudad')
+        fields = ('foto', 'first_name', 'last_name', 'email', 'telefono', 'ciudad', 'avisos_email')
+
+    def clean(self):
+        datos = super().clean()
+        email = datos.get('email')
+        if email and email != (self.instance.email or '').lower():
+            clave = datos.get('clave_actual') or ''
+            if not clave:
+                self.add_error('clave_actual', _('Para cambiar el email, escribí tu contraseña actual.'))
+            elif not self.instance.check_password(clave):
+                self.add_error('clave_actual', _('La contraseña actual no es correcta.'))
+        return datos
+
+
+class CambiarClaveForm(PasswordChangeForm):
+    """Cambiar la contraseña con la sesión abierta (POST /api/auth/cambiar-clave/).
+
+    Valida la actual y la nueva con las reglas de AUTH_PASSWORD_VALIDATORS (igual que el registro).
+    """
+
+    error_messages = {
+        **PasswordChangeForm.error_messages,
+        'password_incorrect': _('La contraseña actual no es correcta.'),
+    }
 
 
 # ==========================================
