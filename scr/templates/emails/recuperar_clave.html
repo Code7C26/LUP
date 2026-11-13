@@ -1,0 +1,12 @@
+{% extends 'emails/_base.html' %}
+{% block titulo %}Cambiá tu contraseña · Lüp{% endblock %}
+{% block etiqueta %}Tu cuenta{% endblock %}
+{% block encabezado %}Hola, {{ nombre }}: elegí una contraseña nueva{% endblock %}
+{% block cuerpo %}
+<p style="font-size:15px;line-height:1.6;margin:0 0 12px;">Nos pidieron cambiar la contraseña de tu cuenta de Lüp (usuario <strong>{{ usuario.username }}</strong>). Tocá el botón para elegir una nueva.</p>
+<p style="font-size:14px;line-height:1.7;color:#5c6b62;margin:0;">El link sirve una sola vez y vence en unos días. Si no lo pediste vos, ignorá este email: tu contraseña no cambia.</p>
+{% endblock %}
+{% block url_boton %}{{ url_recuperar }}{% endblock %}
+{% block boton %}Elegir contraseña nueva{% endblock %}
+{% block pie %}Te escribimos porque alguien pidió cambiar la contraseña de esta cuenta. Nunca te vamos a pedir tu contraseña por email.{% endblock %}
+{% block links_avisos %}{% endblock %}

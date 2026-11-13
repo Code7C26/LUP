@@ -3,7 +3,8 @@ from io import BytesIO
 
 from django import forms
 from django.core.files.base import ContentFile
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm, PasswordResetForm, SetPasswordForm, UserCreationForm
+from django.contrib.auth.tokens import default_token_generator
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 
@@ -250,6 +251,75 @@ class PerfilUsuarioForm(EstiloBootstrapMixin, forms.ModelForm):
         actual = usuario.foto.name if usuario.foto else ''
         if self.foto_anterior and self.foto_anterior != actual:
             usuario.foto.storage.delete(self.foto_anterior)
+
+
+class PerfilApiForm(PerfilUsuarioForm):
+    """Lo que se edita desde la app (PATCH /api/auth/yo/): nombre, teléfono, ciudad y foto.
+
+    Hereda las validaciones y el guardado de la foto de la web (tamaño, que sea imagen, recorte 400×400,
+    borrar la anterior). El email y los avisos se cambian desde la web.
+    """
+
+    class Meta(PerfilUsuarioForm.Meta):
+        fields = ('foto', 'first_name', 'last_name', 'telefono', 'ciudad')
+
+
+# ==========================================
+# Recuperar contraseña (web y app: POST /api/auth/recuperar/)
+# ==========================================
+
+RECUPERAR_MAX_POR_HORA = 3  # pedidos por email, para que no se use Lüp para llenarle la casilla a alguien
+
+
+class RecuperarClaveForm(EstiloBootstrapMixin, PasswordResetForm):
+    """Pide el email y le manda el link para elegir una contraseña nueva (emails/recuperar_clave).
+
+    Si el email no tiene cuenta no se manda nada, pero se responde igual (no revela quién tiene cuenta).
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['email'].label = _('Tu email')
+        self.fields['email'].widget.attrs['placeholder'] = _('tu@email.com')
+
+    def save(self, token_generator=default_token_generator, **kwargs):
+        from django.conf import settings
+        from django.core.cache import cache
+        from django.urls import reverse
+        from django.utils.encoding import force_bytes
+        from django.utils.http import urlsafe_base64_encode
+
+        from scr.bd_lup.products import notificaciones
+
+        email = self.cleaned_data['email']
+        for usuario in self.get_users(email):
+            clave_limite = f'lup-recuperar-{usuario.pk}'
+            pedidos = cache.get(clave_limite, 0)
+            if pedidos >= RECUPERAR_MAX_POR_HORA:
+                continue
+            cache.set(clave_limite, pedidos + 1, 60 * 60)
+            uid = urlsafe_base64_encode(force_bytes(usuario.pk))
+            # Como los demás emails, el link usa SITIO_URL (nunca el "Host" del pedido, que se puede falsear)
+            url = settings.SITIO_URL + reverse('recuperar_confirmar', args=[uid, token_generator.make_token(usuario)])
+            notificaciones.recuperar_clave(usuario, url)
+
+
+class NuevaClaveForm(EstiloBootstrapMixin, SetPasswordForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Sin la lista larga de reglas de Django (el template ya dice "Mínimo 8 caracteres, no solo números.")
+        for nombre, etiqueta in (('new_password1', _('Contraseña nueva')), ('new_password2', _('Repetí la contraseña nueva'))):
+            self.fields[nombre].label = etiqueta
+            self.fields[nombre].help_text = ''
+            self.fields[nombre].widget.attrs['placeholder'] = '••••••••'
+
+    def save(self, commit=True):
+        usuario = super().save(commit)
+        if commit:
+            # Las sesiones de la web se cierran solas al cambiar la contraseña; las de la app (token) también
+            from rest_framework.authtoken.models import Token
+            Token.objects.filter(user=usuario).delete()
+        return usuario
 
 
 class TiendaForm(EstiloBootstrapMixin, forms.ModelForm):

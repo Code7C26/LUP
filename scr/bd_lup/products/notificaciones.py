@@ -175,6 +175,12 @@ def bienvenida(usuario):
     _programar('¡Bienvenido/a a Lüp! 🌱', 'bienvenida', {'nombre': _nombre(usuario)}, usuario, obligatorio=True)
 
 
+def recuperar_clave(usuario, url):
+    """Link para elegir una contraseña nueva (users/forms.py → RecuperarClaveForm). Llega aunque tenga los avisos apagados."""
+    _programar('Cambiá tu contraseña de Lüp', 'recuperar_clave',
+               {'nombre': _nombre(usuario), 'url_recuperar': url}, usuario, obligatorio=True)
+
+
 # ==========================================
 # Reservas
 # ==========================================

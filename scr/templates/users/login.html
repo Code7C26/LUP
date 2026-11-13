@@ -49,7 +49,8 @@
                     <input type="hidden" name="rol" id="id_rol" value="{{ rol_activo }}">
                     {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
                     {% include 'includes/_campo.html' with campo=form.username %}
-                    {% include 'includes/_campo.html' with campo=form.password clase='mb-4' %}
+                    {% include 'includes/_campo.html' with campo=form.password clase='mb-2' %}
+                    <p class="text-end small mb-4"><a href="{% url 'recuperar' %}">{% translate "¿Olvidaste tu contraseña?" %}</a></p>
                     <button type="submit" id="btn-ingresar" class="btn btn-lup btn-lg w-100">
                         {% for clave, info in roles.items %}{% if clave == rol_activo %}{% blocktranslate with rol=info.titulo|lower %}Ingresar como {{ rol }}{% endblocktranslate %}{% endif %}{% endfor %}
                     </button>

@@ -3,7 +3,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from .forms import FORMULARIOS_REGISTRO
+from .forms import FORMULARIOS_REGISTRO, PerfilApiForm, RecuperarClaveForm
 from .models import DispositivoPush
 
 def datos_sesion(usuario):
@@ -21,6 +21,8 @@ def datos_perfil(usuario):
     datos = {
         **datos_sesion(usuario),
         'username': usuario.username,
+        'first_name': usuario.first_name,
+        'last_name': usuario.last_name,
         'email': usuario.email,
         'telefono': usuario.telefono,
         'ciudad': usuario.ciudad,
@@ -67,10 +69,50 @@ def registro(request, rol):
     notificaciones.bienvenida(usuario)
     return Response(datos_sesion(usuario), status=201)
 
-@api_view(['GET'])
+CAMPOS_EDITABLES = ('first_name', 'last_name', 'telefono', 'ciudad')
+
+
+@api_view(['GET', 'PATCH'])
 @permission_classes([IsAuthenticated])
 def yo(request):
-    return Response(datos_perfil(request.user))
+    """GET: el perfil. PATCH (JSON o multipart): editar nombre, apellido, teléfono, ciudad y foto.
+
+    Usa el formulario de "Mis datos" de la web (PerfilApiForm), así que valida lo mismo.
+    Solo cambia lo que se manda; "foto" es un archivo y "quitar_foto": true la saca.
+    """
+    if request.method == 'GET':
+        return Response(datos_perfil(request.user))
+
+    usuario = request.user
+    enviados = request.data if hasattr(request.data, 'get') else {}
+    datos = {campo: getattr(usuario, campo) for campo in CAMPOS_EDITABLES}
+    for campo in (*CAMPOS_EDITABLES, 'quitar_foto'):
+        if campo in enviados:
+            datos[campo] = enviados.get(campo)
+    form = PerfilApiForm(datos, request.FILES, instance=usuario)
+    if not form.is_valid():
+        return Response(form.errors, status=400)
+    form.save()
+    return Response(datos_perfil(usuario))
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def recuperar(request):
+    """"¿Olvidaste tu contraseña?" de la app: manda por email el link de la web para elegir una nueva.
+
+    Responde lo mismo exista o no la cuenta (así no se puede averiguar quién está registrado).
+    """
+    enviados = request.data if hasattr(request.data, 'get') else {}
+    form = RecuperarClaveForm({'email': enviados.get('email', '')})
+    if not form.is_valid():
+        return Response({'error': 'Escribí un email válido.'}, status=400)
+    form.save()
+    return Response({
+        'ok': True,
+        'mensaje': 'Si ese email tiene una cuenta en Lüp, en unos minutos te llega un link para elegir '
+                   'una contraseña nueva. Fijate también en Spam o Promociones.',
+    })
 
 
 @api_view(['POST', 'DELETE'])
