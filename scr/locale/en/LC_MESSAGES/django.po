@@ -39,7 +39,7 @@ msgid "Lüp, inicio"
 msgstr "Lüp, home"
 
 #: scr/templates/base.html:37
-#: scr/templates/base.html:167
+#: scr/templates/base.html:173
 msgid "Lüp"
 msgstr "Lüp"
 
@@ -52,7 +52,7 @@ msgid "Inicio"
 msgstr "Home"
 
 #: scr/templates/base.html:46
-#: scr/templates/base.html:176
+#: scr/templates/base.html:182
 #: scr/templates/products/catalogo.html:5
 msgid "Ofertas"
 msgstr "Offers"
@@ -64,77 +64,97 @@ msgid "Comercios"
 msgstr "Stores"
 
 #: scr/templates/base.html:48
-#: scr/templates/base.html:178
+#: scr/templates/base.html:184
 msgid "Cómo funciona"
 msgstr "How it works"
 
-#: scr/templates/base.html:53
+#: scr/templates/base.html:50
+#: scr/templates/base.html:186
+#: scr/templates/nosotros.html:4
+msgid "Nosotros"
+msgstr "About us"
+
+#: scr/templates/base.html:55
 msgid "Cambiar a modo oscuro"
 msgstr "Switch to dark mode"
 
-#: scr/templates/base.html:53
+#: scr/templates/base.html:55
 msgid "Modo oscuro / claro"
 msgstr "Dark / light mode"
 
-#: scr/templates/base.html:71
+#: scr/templates/base.html:73
 #: scr/templates/panel/comercio.html:27
 #: scr/templates/products/catalogo.html:16
 msgid "Publicar excedente"
 msgstr "Post surplus"
 
-#: scr/templates/base.html:83
+#: scr/templates/base.html:76
+msgid "Mis puntos Lüp"
+msgstr "My Lüp points"
+
+#: scr/templates/base.html:76
+#: scr/templates/puntos/mis_puntos.html:44
+#: scr/templates/puntos/mis_puntos.html:74
+msgid "pts"
+msgstr "pts"
+
+#: scr/templates/base.html:88
 #: scr/templates/panel/consumidor.html:5
 msgid "Mi panel"
 msgstr "My dashboard"
 
-#: scr/templates/base.html:84
+#: scr/templates/base.html:89
+msgid "Mis puntos"
+msgstr "My points"
+
+#: scr/templates/base.html:90
 #: scr/templates/users/perfil.html:5
 #: scr/templates/users/perfil.html:10
 msgid "Mis datos"
 msgstr "My details"
 
-#: scr/templates/base.html:85
+#: scr/templates/base.html:91
 msgid "Administración"
 msgstr "Administration"
 
-#: scr/templates/base.html:89
+#: scr/templates/base.html:95
 msgid "Cerrar sesión"
 msgstr "Log out"
 
-#: scr/templates/base.html:95
-#: scr/templates/products/detalle.html:113
+#: scr/templates/base.html:101
+#: scr/templates/products/detalle.html:114
 #: scr/templates/users/login.html:5
 msgid "Iniciar sesión"
 msgstr "Log in"
 
-#: scr/templates/base.html:96
+#: scr/templates/base.html:102
 #: scr/templates/home.html:100
-#: scr/templates/products/detalle.html:114
+#: scr/templates/nosotros.html:138
 msgid "Crear cuenta"
 msgstr "Sign up"
 
-#: scr/templates/base.html:111
-#: scr/templates/base.html:156
+#: scr/templates/base.html:117
+#: scr/templates/base.html:162
 #: scr/templates/includes/_chat_soporte.html:18
 msgid "Cerrar"
 msgstr "Close"
 
-#: scr/templates/base.html:127
+#: scr/templates/base.html:133
 #: scr/templates/products/opinar.html:4
 #: scr/templates/products/opinar.html:14
 msgid "¿Cómo te fue?"
 msgstr "How did it go?"
 
-#: scr/templates/base.html:128
+#: scr/templates/base.html:134
 #, python-format
 msgid "%(producto)s en %(comercio)s"
 msgstr "%(producto)s at %(comercio)s"
 
-#: scr/templates/base.html:129
+#: scr/templates/base.html:135
 msgid "Calificar al comercio"
 msgstr "Rate the store"
 
-#: scr/templates/base.html:130
+#: scr/templates/base.html:136
 #: scr/templates/includes/_selector_estrellas.html:10
 #: scr/templates/includes/_selector_estrellas.html:10
 #, python-format
@@ -143,115 +163,122 @@ msgid_plural "%(c)s estrellas"
 msgstr[0] "%(c)s star"
 msgstr[1] "%(c)s stars"
 
-#: scr/templates/base.html:132
+#: scr/templates/base.html:138
 msgid "Dejar mi opinión"
 msgstr "Leave my review"
 
-#: scr/templates/base.html:134
-#: scr/templates/base.html:146
+#: scr/templates/base.html:140
+#: scr/templates/base.html:152
 #: scr/templates/products/opinar.html:44
 msgid "Ahora no"
 msgstr "Not now"
 
-#: scr/templates/base.html:142
+#: scr/templates/base.html:148
 msgid "¿Te mostramos lo que está cerca tuyo?"
 msgstr "Want to see what's near you?"
 
-#: scr/templates/base.html:143
+#: scr/templates/base.html:149
 msgid "Usamos tu ubicación solo para buscar comercios y ofertas cercanas. No la guardamos ni la compartimos."
 msgstr "We only use your location to find nearby stores and offers. We don't store it or share it."
 
-#: scr/templates/base.html:145
+#: scr/templates/base.html:151
 msgid "Usar mi ubicación"
 msgstr "Use my location"
 
-#: scr/templates/base.html:150
+#: scr/templates/base.html:156
 msgid "O escribí tu dirección o barrio"
 msgstr "Or type your address or neighborhood"
 
-#: scr/templates/base.html:150
+#: scr/templates/base.html:156
 msgid "Tu dirección"
 msgstr "Your address"
 
-#: scr/templates/base.html:151
+#: scr/templates/base.html:157
 #: scr/templates/home.html:22
 #: scr/templates/products/catalogo.html:25
 msgid "Buscar"
 msgstr "Search"
 
-#: scr/templates/base.html:168
+#: scr/templates/base.html:174
 msgid "Una segunda oportunidad para cada alimento. Conectamos comercios, consumidores y organizaciones para reducir el desperdicio de comida."
 msgstr "A second chance for every food. We connect stores, consumers and organizations to reduce food waste."
 
-#: scr/templates/base.html:170
+#: scr/templates/base.html:176
 msgid "Lüp en Instagram"
 msgstr "Lüp on Instagram"
 
-#: scr/templates/base.html:170
+#: scr/templates/base.html:176
 msgid "@lupcomidas en Instagram"
 msgstr "@lupcomidas on Instagram"
 
-#: scr/templates/base.html:174
+#: scr/templates/base.html:180
 msgid "Explorar"
 msgstr "Explore"
 
-#: scr/templates/base.html:177
+#: scr/templates/base.html:183
 msgid "Donaciones"
 msgstr "Donations"
 
-#: scr/templates/base.html:182
+#: scr/templates/base.html:185
+#: scr/templates/panel/consumidor.html:22
+#: scr/templates/puntos/mis_puntos.html:5
+msgid "Puntos Lüp"
+msgstr "Lüp Points"
+
+#: scr/templates/base.html:190
 msgid "Sumate"
 msgstr "Join us"
 
-#: scr/templates/base.html:184
+#: scr/templates/base.html:192
 msgid "Soy consumidor"
 msgstr "I'm a consumer"
 
-#: scr/templates/base.html:185
+#: scr/templates/base.html:193
 msgid "Tengo un comercio"
 msgstr "I have a store"
 
-#: scr/templates/base.html:186
+#: scr/templates/base.html:194
 msgid "Soy una organización"
 msgstr "I'm an organization"
 
-#: scr/templates/base.html:190
+#: scr/templates/base.html:198
 msgid "Impacto"
 msgstr "Impact"
 
-#: scr/templates/base.html:191
+#: scr/templates/base.html:199
 msgid "🌿 Ambiental"
 msgstr "🌿 Environmental"
 
-#: scr/templates/base.html:191
+#: scr/templates/base.html:199
 msgid "🤝 Social"
 msgstr "🤝 Social"
 
-#: scr/templates/base.html:191
+#: scr/templates/base.html:199
 msgid "💰 Económico"
 msgstr "💰 Economic"
 
-#: scr/templates/base.html:194
+#: scr/templates/base.html:202
 msgid "Soporte al usuario"
 msgstr "User support"
 
-#: scr/templates/base.html:195
+#: scr/templates/base.html:203
 msgid "¿Tenés alguna duda o problema? Escribinos o llamanos."
 msgstr "Got a question or a problem? Message or call us."
 
-#: scr/templates/base.html:197
+#: scr/templates/base.html:205
 msgid "Chat de ayuda"
 msgstr "Help chat"
 
-#: scr/templates/base.html:198
+#: scr/templates/base.html:206
 msgid "WhatsApp"
 msgstr "WhatsApp"
 
-#: scr/templates/base.html:205
+#: scr/templates/base.html:213
+#: scr/templates/nosotros.html:131
 msgid "Más valor. Menos desperdicio."
 msgstr "More value. Less waste."
 
-#: scr/templates/base.html:206
+#: scr/templates/base.html:214
 msgid "Hecho con 💚 en Córdoba, Argentina"
 msgstr "Made with 💚 in Córdoba, Argentina"
 
@@ -289,6 +316,8 @@ msgid "Crear cuenta gratis"
 msgstr "Sign up for free"
 
 #: scr/templates/home.html:29
+#: scr/templates/nosotros.html:136
+#: scr/templates/nosotros.html:139
 msgid "Ver ofertas"
 msgstr "See offers"
 
@@ -565,6 +594,7 @@ msgid "Le mandamos esta charla al equipo de Lüp y te respondemos por email."
 msgstr "We'll send this chat to the Lüp team and reply by email."
 
 #: scr/templates/includes/_chat_soporte.html:48
+#: scr/bd_lup/users/forms.py:314
 msgid "Tu email"
 msgstr "Your email"
 
@@ -573,7 +603,7 @@ msgid "¿Querés agregar algo? (opcional)"
 msgstr "Anything to add? (optional)"
 
 #: scr/templates/includes/_chat_soporte.html:54
-#: scr/templates/panel/consumidor.html:43
+#: scr/templates/panel/consumidor.html:44
 #: scr/templates/products/confirmar_eliminacion.html:15
 msgid "Cancelar"
 msgstr "Cancel"
@@ -637,14 +667,14 @@ msgid "%(v)s de 5 estrellas"
 msgstr "%(v)s out of 5 stars"
 
 #: scr/templates/includes/_form_calificacion.html:9
-#: scr/templates/panel/consumidor.html:66
+#: scr/templates/panel/consumidor.html:67
 #: scr/templates/users/perfil.html:35
 msgid "Comercio"
 msgstr "Store"
 
 #: scr/templates/includes/_form_calificacion.html:9
 #: scr/templates/includes/_opinion.html:19
-#: scr/templates/panel/consumidor.html:66
+#: scr/templates/panel/consumidor.html:67
 msgid "Producto"
 msgstr "Product"
 
@@ -723,7 +753,7 @@ msgid "Mapa de %(nombre)s en Google Maps"
 msgstr "Map of %(nombre)s on Google Maps"
 
 #: scr/templates/includes/_mapa_comercio.html:12
-#: scr/templates/panel/consumidor.html:34
+#: scr/templates/panel/consumidor.html:35
 msgid "Cómo llegar"
 msgstr "Get directions"
 
@@ -801,6 +831,184 @@ msgid "%(n)s oferta"
 msgid_plural "%(n)s ofertas"
 msgstr[0] "%(n)s offer"
 msgstr[1] "%(n)s offers"
+
+#: scr/templates/nosotros.html:14
+msgid "Proyecto FAT 2026 · 7.º año, Informática · Alta Gracia"
+msgstr "FAT 2026 project · 7th year, Computer Science · Alta Gracia"
+
+#: scr/templates/nosotros.html:15
+msgid "Somos tres estudiantes que no queremos que en <span class=\"resaltado\">Alta Gracia</span> se tire comida"
+msgstr "We're three students who don't want food thrown away in <span class=\"resaltado\">Alta Gracia</span>"
+
+#: scr/templates/nosotros.html:16
+msgid "Lüp nació en el aula, buscando una solución tecnológica a un problema social y ambiental de nuestra ciudad: la comida apta para consumir que se descarta todos los días. Unimos tecnología, innovación y conciencia ambiental para darle a esos alimentos una segunda oportunidad."
+msgstr "Lüp was born in the classroom, looking for a tech solution to a social and environmental problem in our city: good food that gets thrown away every day. We bring together technology, innovation and environmental awareness to give that food a second chance."
+
+#: scr/templates/nosotros.html:24
+msgid "Por qué existe Lüp"
+msgstr "Why Lüp exists"
+
+#: scr/templates/nosotros.html:26
+msgid "toneladas de alimentos se pierden o desperdician por año en Argentina."
+msgstr "tons of food are lost or wasted every year in Argentina."
+
+#: scr/templates/nosotros.html:27
+msgid "Fuente: Ministerio de Agroindustria / FAO."
+msgstr "Source: Argentine Ministry of Agroindustry / FAO."
+
+#: scr/templates/nosotros.html:30
+msgid "Descartar comida apta también desperdicia todo lo que se usó para producirla, transportarla y conservarla. Para el comercio es plata perdida, para el ambiente son recursos tirados, y es comida que no llega a quien la necesita."
+msgstr "Throwing away good food also wastes everything used to produce, transport and store it. For stores it's lost money, for the environment it's wasted resources, and it's food that never reaches the people who need it."
+
+#: scr/templates/nosotros.html:31
+msgid "En Alta Gracia no había ninguna herramienta que resolviera esto. Por eso creamos Lüp: los comercios publican lo que está por vencer con descuento, los vecinos lo reservan y lo retiran, y lo que no se vende puede donarse a organizaciones sociales."
+msgstr "Alta Gracia had no tool to solve this. That's why we created Lüp: stores post what's about to expire at a discount, neighbors reserve it and pick it up, and what doesn't sell can be donated to social organizations."
+
+#: scr/templates/nosotros.html:38
+msgid "Qué buscamos lograr"
+msgstr "What we want to achieve"
+
+#: scr/templates/nosotros.html:39
+msgid "Nuestros objetivos"
+msgstr "Our goals"
+
+#: scr/templates/nosotros.html:41
+msgid "Reducir el desperdicio de alimentos."
+msgstr "Reduce food waste."
+
+#: scr/templates/nosotros.html:42
+msgid "Disminuir las pérdidas económicas de los comercios."
+msgstr "Cut stores' financial losses."
+
+#: scr/templates/nosotros.html:43
+msgid "Facilitar el acceso a alimentos a precios más accesibles."
+msgstr "Make food more affordable."
+
+#: scr/templates/nosotros.html:44
+msgid "Favorecer las donaciones a organizaciones sociales."
+msgstr "Encourage donations to social organizations."
+
+#: scr/templates/nosotros.html:45
+msgid "Promover hábitos de consumo responsable."
+msgstr "Promote responsible consumption."
+
+#: scr/templates/nosotros.html:46
+msgid "Contribuir a un modelo de economía circular."
+msgstr "Contribute to a circular economy."
+
+#: scr/templates/nosotros.html:52
+msgid "El equipo"
+msgstr "The team"
+
+#: scr/templates/nosotros.html:53
+msgid "Quiénes hacemos Lüp"
+msgstr "Who makes Lüp"
+
+#: scr/templates/nosotros.html:60
+msgid "Project Manager"
+msgstr "Project Manager"
+
+#: scr/templates/nosotros.html:61
+#: scr/templates/nosotros.html:73
+#: scr/templates/nosotros.html:85
+msgid "Desarrolladora backend y frontend"
+msgstr "Backend and frontend developer"
+
+#: scr/templates/nosotros.html:62
+msgid "Branding y comunicación visual"
+msgstr "Branding and visual communication"
+
+#: scr/templates/nosotros.html:63
+#: scr/templates/nosotros.html:75
+#: scr/templates/nosotros.html:87
+msgid "QA / Tester"
+msgstr "QA / Tester"
+
+#: scr/templates/nosotros.html:72
+msgid "Analista de sistemas"
+msgstr "Systems analyst"
+
+#: scr/templates/nosotros.html:74
+msgid "Diseño UX/UI"
+msgstr "UX/UI design"
+
+#: scr/templates/nosotros.html:84
+msgid "Desarrolladora de base de datos"
+msgstr "Database developer"
+
+#: scr/templates/nosotros.html:86
+msgid "Sostenibilidad y aspectos legales"
+msgstr "Sustainability and legal"
+
+#: scr/templates/nosotros.html:96
+msgid "Lo que viene"
+msgstr "What's next"
+
+#: scr/templates/nosotros.html:97
+msgid "Proyectos a futuro"
+msgstr "Future projects"
+
+#: scr/templates/nosotros.html:100
+#: scr/templates/nosotros.html:105
+msgid "Ya disponible"
+msgstr "Available now"
+
+#: scr/templates/nosotros.html:101
+msgid "Puntos Lüp y merchandising sustentable"
+msgstr "Lüp Points and sustainable merch"
+
+#: scr/templates/nosotros.html:102
+msgid "Cada compra suma puntos que se canjean por productos reutilizables, como bolsas, tuppers y botellas de vidrio."
+msgstr "Every purchase earns points you can redeem for reusable products like bags, food containers and glass bottles."
+
+#: scr/templates/nosotros.html:102
+msgid "Ver puntos"
+msgstr "See points"
+
+#: scr/templates/nosotros.html:106
+msgid "Inteligencia artificial al servicio de los comercios"
+msgstr "Artificial intelligence for stores"
+
+#: scr/templates/nosotros.html:107
+msgid "Un asistente que responde dudas al instante, y la carga de productos a partir de una foto."
+msgstr "An assistant that answers questions instantly, and posting products from a photo."
+
+#: scr/templates/nosotros.html:110
+msgid "Próximamente"
+msgstr "Coming soon"
+
+#: scr/templates/nosotros.html:111
+msgid "La app de Lüp en Google Play"
+msgstr "The Lüp app on Google Play"
+
+#: scr/templates/nosotros.html:112
+msgid "Para reservar, publicar y recibir avisos desde el celular."
+msgstr "To reserve, post and get notifications from your phone."
+
+#: scr/templates/nosotros.html:115
+#: scr/templates/nosotros.html:120
+msgid "A futuro"
+msgstr "Later on"
+
+#: scr/templates/nosotros.html:116
+msgid "Lüp para municipios e instituciones"
+msgstr "Lüp for municipalities and institutions"
+
+#: scr/templates/nosotros.html:117
+msgid "Datos de impacto para medir y reducir el desperdicio de alimentos de toda la ciudad."
+msgstr "Impact data to measure and reduce food waste across the whole city."
+
+#: scr/templates/nosotros.html:121
+msgid "Más comercios y organizaciones"
+msgstr "More stores and organizations"
+
+#: scr/templates/nosotros.html:122
+msgid "Sumar a cada panadería, verdulería, rotisería y comedor de Alta Gracia, y después llegar a otras ciudades."
+msgstr "Bring in every bakery, greengrocer, deli and soup kitchen in Alta Gracia, and then reach other cities."
+
+#: scr/templates/nosotros.html:132
+msgid "Sumate como consumidor, comercio u organización."
+msgstr "Join as a consumer, store or organization."
 
 #: scr/templates/panel/comercio.html:5
 msgid "Panel de comercio"
@@ -977,73 +1185,74 @@ msgstr "Reservations made"
 msgid "Ahorrado con Lüp"
 msgstr "Saved with Lüp"
 
-#: scr/templates/panel/consumidor.html:26
+#: scr/templates/panel/consumidor.html:27
+#: scr/bd_lup/puntos/models.py:58
 msgid "Para retirar"
 msgstr "To pick up"
 
-#: scr/templates/panel/consumidor.html:33
+#: scr/templates/panel/consumidor.html:34
 #, python-format
 msgid "hasta el %(fecha)s"
 msgstr "until %(fecha)s"
 
-#: scr/templates/panel/consumidor.html:37
+#: scr/templates/panel/consumidor.html:38
 msgid "Código de retiro"
 msgstr "Pickup code"
 
-#: scr/templates/panel/consumidor.html:39
+#: scr/templates/panel/consumidor.html:40
 msgid "Copiar"
 msgstr "Copy"
 
-#: scr/templates/panel/consumidor.html:42
+#: scr/templates/panel/consumidor.html:43
 msgid "¿Cancelar esta reserva?"
 msgstr "Cancel this reservation?"
 
-#: scr/templates/panel/consumidor.html:49
+#: scr/templates/panel/consumidor.html:50
 msgid "No tenés reservas pendientes."
 msgstr "You have no pending reservations."
 
-#: scr/templates/panel/consumidor.html:49
+#: scr/templates/panel/consumidor.html:50
 msgid "Explorar ofertas"
 msgstr "Browse offers"
 
-#: scr/templates/panel/consumidor.html:53
+#: scr/templates/panel/consumidor.html:54
 msgid "¿Qué tal te fue?"
 msgstr "How did it go?"
 
-#: scr/templates/panel/consumidor.html:63
+#: scr/templates/panel/consumidor.html:64
 msgid "Historial"
 msgstr "History"
 
-#: scr/templates/panel/consumidor.html:66
+#: scr/templates/panel/consumidor.html:67
 msgid "Fecha"
 msgstr "Date"
 
-#: scr/templates/panel/consumidor.html:66
+#: scr/templates/panel/consumidor.html:67
 msgid "Total"
 msgstr "Total"
 
-#: scr/templates/panel/consumidor.html:66
+#: scr/templates/panel/consumidor.html:67
 msgid "Estado"
 msgstr "Status"
 
-#: scr/templates/panel/consumidor.html:66
+#: scr/templates/panel/consumidor.html:67
 msgid "Tu opinión"
 msgstr "Your review"
 
-#: scr/templates/panel/consumidor.html:69
+#: scr/templates/panel/consumidor.html:70
 #: scr/templates/products/opinar.html:14
 msgid "Editar mi opinión"
 msgstr "Edit my review"
 
-#: scr/templates/panel/consumidor.html:69
+#: scr/templates/panel/consumidor.html:70
 msgid "Opinar"
 msgstr "Review"
 
-#: scr/templates/panel/consumidor.html:78
+#: scr/templates/panel/consumidor.html:79
 msgid "Te puede interesar"
 msgstr "You might like"
 
-#: scr/templates/panel/consumidor.html:80
+#: scr/templates/panel/consumidor.html:81
 msgid "Pronto habrá nuevas ofertas."
 msgstr "New offers coming soon."
 
@@ -1353,7 +1562,7 @@ msgid "breadcrumb"
 msgstr "breadcrumb"
 
 #: scr/templates/products/detalle.html:30
-#: scr/templates/products/detalle.html:129
+#: scr/templates/products/detalle.html:130
 msgid "Opiniones del producto"
 msgstr "Product reviews"
 
@@ -1440,35 +1649,47 @@ msgstr "Reserve now"
 msgid "Recibirás un código para mostrar al retirar."
 msgstr "You'll get a code to show when you pick up."
 
-#: scr/templates/products/detalle.html:99
+#: scr/templates/products/detalle.html:95
+msgid "Con esta compra sumás"
+msgstr "With this purchase you earn"
+
+#: scr/templates/products/detalle.html:95
+msgid "puntos Lüp al retirarla."
+msgstr "Lüp points when you pick it up."
+
+#: scr/templates/products/detalle.html:95
+msgid "¿Qué son?"
+msgstr "What are they?"
+
+#: scr/templates/products/detalle.html:100
 msgid "Ya enviaste una solicitud por esta donación. Podés seguirla desde"
 msgstr "You already sent a request for this donation. You can follow it from"
 
-#: scr/templates/products/detalle.html:99
+#: scr/templates/products/detalle.html:100
 msgid "tu panel"
 msgstr "your dashboard"
 
-#: scr/templates/products/detalle.html:103
+#: scr/templates/products/detalle.html:104
 msgid "Solicitar como donación"
 msgstr "Request as a donation"
 
-#: scr/templates/products/detalle.html:105
+#: scr/templates/products/detalle.html:106
 msgid "Enviar solicitud al comercio"
 msgstr "Send request to the store"
 
-#: scr/templates/products/detalle.html:111
+#: scr/templates/products/detalle.html:112
 msgid "Iniciá sesión como consumidor para reservar esta oferta."
 msgstr "Log in as a consumer to reserve this offer."
 
-#: scr/templates/products/detalle.html:120
+#: scr/templates/products/detalle.html:121
 msgid "Esta oferta no está marcada para donación."
 msgstr "This offer is not marked for donation."
 
-#: scr/templates/products/detalle.html:120
+#: scr/templates/products/detalle.html:121
 msgid "Las reservas están disponibles para cuentas de consumidor."
 msgstr "Reservations are available for consumer accounts."
 
-#: scr/templates/products/detalle.html:134
+#: scr/templates/products/detalle.html:135
 #: scr/templates/stores/detalle_tienda.html:16
 #, python-format
 msgid "%(n)s opinión"
@@ -1476,16 +1697,16 @@ msgid_plural "%(n)s opiniones"
 msgstr[0] "%(n)s review"
 msgstr[1] "%(n)s reviews"
 
-#: scr/templates/products/detalle.html:142
+#: scr/templates/products/detalle.html:143
 #, python-format
 msgid "Ver todas las opiniones de %(comercio)s"
 msgstr "See all reviews of %(comercio)s"
 
-#: scr/templates/products/detalle.html:144
+#: scr/templates/products/detalle.html:145
 msgid "Todavía no tiene opiniones. Las dejan las personas que reservan y retiran este producto."
 msgstr "No reviews yet. They're left by people who reserve and pick up this product."
 
-#: scr/templates/products/detalle.html:150
+#: scr/templates/products/detalle.html:151
 #, python-format
 msgid "Más de %(comercio)s"
 msgstr "More from %(comercio)s"
@@ -1507,49 +1728,57 @@ msgstr "Fill in the details and see live how your offer will look in the catalog
 msgid "¿Qué ofrecés?"
 msgstr "What are you offering?"
 
-#: scr/templates/products/form_producto.html:26
+#: scr/templates/products/form_producto.html:25
+msgid "Completar con IA"
+msgstr "Fill in with AI"
+
+#: scr/templates/products/form_producto.html:27
+msgid "Elegí una foto y la IA completa sola el título, la categoría, la descripción, el precio y la fecha. Después revisalos."
+msgstr "Choose a photo and AI fills in the title, category, description, price and date for you. Then review them."
+
+#: scr/templates/products/form_producto.html:36
 msgid "Precio"
 msgstr "Price"
 
-#: scr/templates/products/form_producto.html:32
+#: scr/templates/products/form_producto.html:42
 msgid "Descuento rápido:"
 msgstr "Quick discount:"
 
-#: scr/templates/products/form_producto.html:37
+#: scr/templates/products/form_producto.html:47
 msgid "El precio Lüp debe ser menor al original."
 msgstr "The Lüp price must be lower than the original."
 
-#: scr/templates/products/form_producto.html:39
+#: scr/templates/products/form_producto.html:49
 msgid "Disponibilidad"
 msgstr "Availability"
 
-#: scr/templates/products/form_producto.html:47
+#: scr/templates/products/form_producto.html:56
 msgid "Las organizaciones sociales podrán solicitarla sin costo."
 msgstr "Social organizations will be able to request it for free."
 
-#: scr/templates/products/form_producto.html:52
+#: scr/templates/products/form_producto.html:61
 #: scr/templates/products/opinar.html:45
 #: scr/templates/users/perfil.html:98
 msgid "Guardar cambios"
 msgstr "Save changes"
 
-#: scr/templates/products/form_producto.html:52
+#: scr/templates/products/form_producto.html:61
 msgid "Publicar oferta"
 msgstr "Post offer"
 
-#: scr/templates/products/form_producto.html:59
+#: scr/templates/products/form_producto.html:68
 msgid "VISTA PREVIA"
 msgstr "PREVIEW"
 
-#: scr/templates/products/form_producto.html:71
+#: scr/templates/products/form_producto.html:80
 msgid "Título de tu oferta"
 msgstr "Your offer's title"
 
-#: scr/templates/products/form_producto.html:80
+#: scr/templates/products/form_producto.html:89
 msgid "Tip:"
 msgstr "Tip:"
 
-#: scr/templates/products/form_producto.html:80
+#: scr/templates/products/form_producto.html:89
 #, python-format
 msgid "las ofertas con foto y un descuento de al menos 50%% se reservan mucho más rápido."
 msgstr "offers with a photo and a discount of at least 50%% get reserved much faster."
@@ -1589,6 +1818,111 @@ msgstr "Your name and review will be shown on the store's page. The store can re
 #: scr/templates/products/opinar.html:45
 msgid "Publicar opinión"
 msgstr "Publish review"
+
+#: scr/templates/puntos/mis_puntos.html:16
+msgid "punto para canjear"
+msgid_plural "puntos para canjear"
+msgstr[0] "point to redeem"
+msgstr[1] "points to redeem"
+
+#: scr/templates/puntos/mis_puntos.html:18
+msgid "Rescatá comida, sumá puntos y canjealos por merch"
+msgstr "Rescue food, earn points and redeem them for merch"
+
+#: scr/templates/puntos/mis_puntos.html:19
+msgid "Los puntos son para cuentas de consumidor."
+msgstr "Points are for consumer accounts."
+
+#: scr/templates/puntos/mis_puntos.html:20
+#: scr/templates/users/registro.html:66
+msgid "Crear mi cuenta"
+msgstr "Create my account"
+
+#: scr/templates/puntos/mis_puntos.html:24
+msgid "Cómo se ganan"
+msgstr "How to earn them"
+
+#: scr/templates/puntos/mis_puntos.html:25
+#, python-format
+msgid "Cada <strong>$%(monto)s</strong> de una compra retirada suman <strong>1 punto</strong>. Solo cuentan los bloques completos: lo que sobra no suma."
+msgstr "Every <strong>$%(monto)s</strong> of a picked-up purchase earns <strong>1 point</strong>. Only full blocks count: the remainder doesn't add up."
+
+#: scr/templates/puntos/mis_puntos.html:26
+msgid "Ejemplos de puntos por compra"
+msgstr "Examples of points per purchase"
+
+#: scr/templates/puntos/mis_puntos.html:27
+msgid "Compra"
+msgstr "Purchase"
+
+#: scr/templates/puntos/mis_puntos.html:28
+msgid "Puntos"
+msgstr "Points"
+
+#: scr/templates/puntos/mis_puntos.html:30
+msgid "Se suman cuando el comercio confirma que retiraste tu reserva."
+msgstr "They're added when the store confirms you picked up your reservation."
+
+#: scr/templates/puntos/mis_puntos.html:35
+msgid "Merch para canjear"
+msgstr "Merch to redeem"
+
+#: scr/templates/puntos/mis_puntos.html:36
+msgid "Cada producto se puede comprar con plata o canjear con puntos. Para comprarlo con plata, escribinos por WhatsApp."
+msgstr "Each item can be bought with money or redeemed with points. To buy one with money, message us on WhatsApp."
+
+#: scr/templates/puntos/mis_puntos.html:45
+msgid "o"
+msgstr "or"
+
+#: scr/templates/puntos/mis_puntos.html:48
+#, python-format
+msgid "Progreso para %(nombre)s"
+msgstr "Progress toward %(nombre)s"
+
+#: scr/templates/puntos/mis_puntos.html:50
+#, python-format
+msgid "¿Canjear %(nombre)s por %(n)s puntos?"
+msgstr "Redeem %(nombre)s for %(n)s points?"
+
+#: scr/templates/puntos/mis_puntos.html:52
+msgid "Canjear"
+msgstr "Redeem"
+
+#: scr/templates/puntos/mis_puntos.html:55
+#, python-format
+msgid "Te falta %(n)s punto"
+msgid_plural "Te faltan %(n)s puntos"
+msgstr[0] "You need %(n)s more point"
+msgstr[1] "You need %(n)s more points"
+
+#: scr/templates/puntos/mis_puntos.html:60
+msgid "Pronto vas a poder canjear tus puntos acá."
+msgstr "Soon you'll be able to redeem your points here."
+
+#: scr/templates/puntos/mis_puntos.html:68
+msgid "Mis canjes"
+msgstr "My redemptions"
+
+#: scr/templates/puntos/mis_puntos.html:78
+msgid "¿Cancelar este canje? Los puntos vuelven a tu cuenta."
+msgstr "Cancel this redemption? The points go back to your account."
+
+#: scr/templates/puntos/mis_puntos.html:85
+msgid "Todavía no canjeaste nada."
+msgstr "You haven't redeemed anything yet."
+
+#: scr/templates/puntos/mis_puntos.html:88
+msgid "Después de canjear, el equipo de Lüp te escribe para coordinar la entrega."
+msgstr "After you redeem, the Lüp team will contact you to arrange delivery."
+
+#: scr/templates/puntos/mis_puntos.html:93
+msgid "Historial de puntos"
+msgstr "Points history"
+
+#: scr/templates/puntos/mis_puntos.html:104
+msgid "Cuando retires tu primera compra, tus puntos van a aparecer acá."
+msgstr "Your points will show up here once you pick up your first purchase."
 
 #: scr/templates/stores/detalle_tienda.html:23
 #, python-format
@@ -1752,16 +2086,21 @@ msgstr "Choose your account type and enter your details."
 msgid "Tipo de cuenta"
 msgstr "Account type"
 
-#: scr/templates/users/login.html:54
+#: scr/templates/users/login.html:53
+#: scr/templates/users/recuperar.html:10
+msgid "¿Olvidaste tu contraseña?"
+msgstr "Forgot your password?"
+
+#: scr/templates/users/login.html:55
 #, python-format
 msgid "Ingresar como %(rol)s"
 msgstr "Log in as %(rol)s"
 
-#: scr/templates/users/login.html:59
+#: scr/templates/users/login.html:60
 msgid "¿No tenés cuenta?"
 msgstr "Don't have an account?"
 
-#: scr/templates/users/login.html:60
+#: scr/templates/users/login.html:61
 msgid "Registrate gratis"
 msgstr "Sign up for free"
 
@@ -1883,6 +2222,74 @@ msgstr "Username:"
 msgid "· Tipo de cuenta:"
 msgstr "· Account type:"
 
+#: scr/templates/users/recuperar.html:4
+msgid "Recuperar contraseña"
+msgstr "Reset password"
+
+#: scr/templates/users/recuperar.html:11
+msgid "Escribí el email de tu cuenta y te mandamos un link para elegir una nueva."
+msgstr "Enter your account email and we'll send you a link to choose a new one."
+
+#: scr/templates/users/recuperar.html:15
+msgid "Mandarme el link"
+msgstr "Send me the link"
+
+#: scr/templates/users/recuperar.html:17
+#: scr/templates/users/recuperar_enviado.html:12
+msgid "Volver a iniciar sesión"
+msgstr "Back to log in"
+
+#: scr/templates/users/recuperar_enviado.html:4
+#: scr/templates/users/recuperar_enviado.html:10
+msgid "Revisá tu email"
+msgstr "Check your email"
+
+#: scr/templates/users/recuperar_enviado.html:11
+msgid "Si ese email tiene una cuenta en Lüp, en unos minutos te llega un link para elegir una contraseña nueva. Fijate también en Spam o Promociones."
+msgstr "If that email has a Lüp account, you'll get a link to choose a new password in a few minutes. Also check Spam or Promotions."
+
+#: scr/templates/users/recuperar_listo.html:4
+msgid "Contraseña cambiada"
+msgstr "Password changed"
+
+#: scr/templates/users/recuperar_listo.html:10
+msgid "¡Listo! Cambiaste tu contraseña"
+msgstr "Done! You changed your password"
+
+#: scr/templates/users/recuperar_listo.html:11
+msgid "Ya podés ingresar con la contraseña nueva, en la web y en la app."
+msgstr "You can now log in with your new password, on the web and in the app."
+
+#: scr/templates/users/recuperar_nueva.html:4
+#: scr/bd_lup/users/forms.py:343
+msgid "Contraseña nueva"
+msgstr "New password"
+
+#: scr/templates/users/recuperar_nueva.html:11
+msgid "Elegí tu contraseña nueva"
+msgstr "Choose your new password"
+
+#: scr/templates/users/recuperar_nueva.html:12
+#: scr/bd_lup/users/forms.py:66
+msgid "Mínimo 8 caracteres, no solo números."
+msgstr "At least 8 characters, not only numbers."
+
+#: scr/templates/users/recuperar_nueva.html:17
+msgid "Guardar contraseña"
+msgstr "Save password"
+
+#: scr/templates/users/recuperar_nueva.html:22
+msgid "Este link ya no sirve"
+msgstr "This link no longer works"
+
+#: scr/templates/users/recuperar_nueva.html:23
+msgid "Puede que ya lo hayas usado o que haya vencido. Pedí uno nuevo."
+msgstr "You may have already used it or it may have expired. Request a new one."
+
+#: scr/templates/users/recuperar_nueva.html:24
+msgid "Pedir otro link"
+msgstr "Request another link"
+
 #: scr/templates/users/registro.html:4
 #, python-format
 msgid "Registro de %(rol)s"
@@ -1924,10 +2331,6 @@ msgstr "Contact person details"
 #: scr/templates/users/registro.html:57
 msgid "Acceso"
 msgstr "Access"
-
-#: scr/templates/users/registro.html:66
-msgid "Crear mi cuenta"
-msgstr "Create my account"
 
 #: scr/templates/users/registro.html:68
 #: scr/templates/users/registro_seleccion.html:26
@@ -2017,6 +2420,36 @@ msgstr "Rate the store from 1 to 5 stars."
 msgid "Calificá el producto con 1 a 5 estrellas."
 msgstr "Rate the product from 1 to 5 stars."
 
+#: scr/bd_lup/products/ia_fotos.py:80
+msgid "No pudimos analizar la foto ahora. Probá de nuevo en un rato o completá los datos a mano."
+msgstr "We couldn't analyze the photo right now. Try again later or fill in the details yourself."
+
+#: scr/bd_lup/products/ia_fotos.py:88
+msgid "Elegí o sacá una foto del producto."
+msgstr "Choose or take a photo of the product."
+
+#: scr/bd_lup/products/ia_fotos.py:90
+#: scr/bd_lup/users/forms.py:237
+#, python-format
+msgid "La foto no puede pesar más de %(mb)s MB."
+msgstr "The photo can't be larger than %(mb)s MB."
+
+#: scr/bd_lup/products/ia_fotos.py:96
+msgid "Ese archivo no es una imagen. Probá con una foto JPG o PNG."
+msgstr "That file isn't an image. Try a JPG or PNG photo."
+
+#: scr/bd_lup/products/ia_fotos.py:147
+msgid "\"Completar con IA\" no está activado en Lüp. Completá los datos a mano."
+msgstr "\"Fill in with AI\" isn't enabled on Lüp. Fill in the details yourself."
+
+#: scr/bd_lup/products/ia_fotos.py:150
+msgid "Usaste mucho \"Completar con IA\" en la última hora. Probá más tarde."
+msgstr "You used \"Fill in with AI\" a lot in the last hour. Try again later."
+
+#: scr/bd_lup/products/ia_fotos.py:186
+msgid "No reconocimos comida en la foto. Probá con otra foto o completá los datos a mano."
+msgstr "We didn't recognize any food in the photo. Try another photo or fill in the details yourself."
+
 #: scr/bd_lup/products/models.py:47
 msgid "Panificados"
 msgstr "Baked goods"
@@ -2054,6 +2487,7 @@ msgid "título"
 msgstr "title"
 
 #: scr/bd_lup/products/models.py:59
+#: scr/bd_lup/puntos/models.py:29
 #: scr/bd_lup/stores/models.py:27
 msgid "descripción"
 msgstr "description"
@@ -2098,47 +2532,47 @@ msgstr "Cancelled"
 msgid "retirada el"
 msgstr "picked up on"
 
-#: scr/bd_lup/products/models.py:183
+#: scr/bd_lup/products/models.py:186
 msgid "Pendiente"
 msgstr "Pending"
 
-#: scr/bd_lup/products/models.py:184
+#: scr/bd_lup/products/models.py:187
 msgid "Aprobada"
 msgstr "Approved"
 
-#: scr/bd_lup/products/models.py:185
+#: scr/bd_lup/products/models.py:188
 msgid "Rechazada"
 msgstr "Rejected"
 
-#: scr/bd_lup/products/models.py:200
+#: scr/bd_lup/products/models.py:203
 msgid "solicitud de donación"
 msgstr "donation request"
 
-#: scr/bd_lup/products/models.py:201
+#: scr/bd_lup/products/models.py:204
 msgid "solicitudes de donación"
 msgstr "donation requests"
 
-#: scr/bd_lup/products/models.py:224
+#: scr/bd_lup/products/models.py:227
 msgid "estrellas al comercio"
 msgstr "store stars"
 
-#: scr/bd_lup/products/models.py:227
+#: scr/bd_lup/products/models.py:230
 msgid "estrellas al producto"
 msgstr "product stars"
 
-#: scr/bd_lup/products/models.py:230
+#: scr/bd_lup/products/models.py:233
 msgid "comentario"
 msgstr "comment"
 
-#: scr/bd_lup/products/models.py:231
+#: scr/bd_lup/products/models.py:234
 msgid "respuesta del comercio"
 msgstr "store reply"
 
-#: scr/bd_lup/products/models.py:238
+#: scr/bd_lup/products/models.py:241
 msgid "calificación"
 msgstr "rating"
 
-#: scr/bd_lup/products/models.py:239
+#: scr/bd_lup/products/models.py:242
 msgid "calificaciones"
 msgstr "ratings"
 
@@ -2205,96 +2639,252 @@ msgstr "Complete your store details before posting."
 msgid "¡Excedente publicado! Ya aparece en el catálogo."
 msgstr "Surplus posted! It now appears in the catalog."
 
-#: scr/bd_lup/products/views.py:305
+#: scr/bd_lup/products/views.py:319
 msgid "Publicación actualizada."
 msgstr "Listing updated."
 
-#: scr/bd_lup/products/views.py:315
+#: scr/bd_lup/products/views.py:329
 msgid "Publicación eliminada."
 msgstr "Listing deleted."
 
-#: scr/bd_lup/products/views.py:321
+#: scr/bd_lup/products/views.py:335
 #, python-format
 msgid "\"%(titulo)s\" quedó marcado como vendido y ya no aparece en el catálogo."
 msgstr "\"%(titulo)s\" was marked as sold and no longer appears in the catalog."
 
-#: scr/bd_lup/products/views.py:322
+#: scr/bd_lup/products/views.py:336
 #, python-format
 msgid "\"%(titulo)s\" quedó como no disponible. Podés volver a publicarlo cuando quieras."
 msgstr "\"%(titulo)s\" is now unavailable. You can publish it again whenever you want."
 
-#: scr/bd_lup/products/views.py:323
+#: scr/bd_lup/products/views.py:337
 #, python-format
 msgid "\"%(titulo)s\" volvió a estar publicado en el catálogo."
 msgstr "\"%(titulo)s\" is back in the catalog."
 
-#: scr/bd_lup/products/views.py:334
+#: scr/bd_lup/products/views.py:348
 msgid "No se puede cambiar el estado de esta publicación."
 msgstr "The status of this listing can't be changed."
 
-#: scr/bd_lup/products/views.py:336
+#: scr/bd_lup/products/views.py:350
 msgid "No le queda stock. Editá la publicación para cargar unidades y volver a publicarla."
 msgstr "It's out of stock. Edit the listing to add units and publish it again."
 
-#: scr/bd_lup/products/views.py:339
+#: scr/bd_lup/products/views.py:353
 msgid "La fecha límite de retiro ya pasó. Actualizala para volver a publicarla."
 msgstr "The pickup deadline has passed. Update it to publish the listing again."
 
-#: scr/bd_lup/products/views.py:358
+#: scr/bd_lup/products/views.py:372
 #, python-format
 msgid "No encontramos una reserva con el código \"%(codigo)s\"."
 msgstr "We couldn't find a reservation with the code \"%(codigo)s\"."
 
-#: scr/bd_lup/products/views.py:360
+#: scr/bd_lup/products/views.py:374
 #, python-format
 msgid "La reserva %(codigo)s ya está %(estado)s."
 msgstr "Reservation %(codigo)s is already %(estado)s."
 
-#: scr/bd_lup/products/views.py:364
+#: scr/bd_lup/products/views.py:378
 #, python-format
 msgid "Retiro confirmado: %(cantidad)s × %(producto)s para %(cliente)s."
 msgstr "Pickup confirmed: %(cantidad)s × %(producto)s for %(cliente)s."
 
-#: scr/bd_lup/products/views.py:385
+#: scr/bd_lup/products/views.py:399
 msgid "Este producto ya no está disponible para donar (sin stock, vencido o ya donado)."
 msgstr "This product is no longer available to donate (out of stock, expired or already donated)."
 
-#: scr/bd_lup/products/views.py:395
+#: scr/bd_lup/products/views.py:409
 #, python-format
 msgid "Donación aprobada para %(org)s. ¡Gracias!"
 msgstr "Donation approved for %(org)s. Thank you!"
 
-#: scr/bd_lup/products/views.py:399
+#: scr/bd_lup/products/views.py:413
 msgid "Solicitud rechazada."
 msgstr "Request rejected."
 
-#: scr/bd_lup/products/views.py:491
+#: scr/bd_lup/products/views.py:505
 msgid "Completá los datos de tu comercio para ver tus estadísticas."
 msgstr "Complete your store details to see your statistics."
 
-#: scr/bd_lup/products/views.py:545
+#: scr/bd_lup/products/views.py:559
 msgid "7 días"
 msgstr "7 days"
 
-#: scr/bd_lup/products/views.py:545
+#: scr/bd_lup/products/views.py:559
 msgid "30 días"
 msgstr "30 days"
 
-#: scr/bd_lup/products/views.py:545
+#: scr/bd_lup/products/views.py:559
 msgid "90 días"
 msgstr "90 days"
 
-#: scr/bd_lup/products/views.py:582
+#: scr/bd_lup/products/views.py:596
 msgid "Ubicación inválida."
 msgstr "Invalid location."
 
-#: scr/bd_lup/products/views.py:608
+#: scr/bd_lup/products/views.py:622
 msgid "Escribí una dirección."
 msgstr "Type an address."
 
-#: scr/bd_lup/products/views.py:611
+#: scr/bd_lup/products/views.py:625
 msgid "No encontramos esa dirección. Probá agregando la ciudad."
 msgstr "We couldn't find that address. Try adding the city."
+
+#: scr/bd_lup/puntos/admin.py:25
+msgid "Marcar como entregados"
+msgstr "Mark as delivered"
+
+#: scr/bd_lup/puntos/admin.py:29
+#: scr/bd_lup/puntos/admin.py:38
+msgid "Listo."
+msgstr "Done."
+
+#: scr/bd_lup/puntos/admin.py:31
+msgid "Cancelar y devolver los puntos"
+msgstr "Cancel and refund the points"
+
+#: scr/bd_lup/puntos/models.py:28
+msgid "nombre"
+msgstr "name"
+
+#: scr/bd_lup/puntos/models.py:30
+msgid "precio en pesos"
+msgstr "price in pesos"
+
+#: scr/bd_lup/puntos/models.py:31
+msgid "puntos para canjearlo"
+msgstr "points to redeem it"
+
+#: scr/bd_lup/puntos/models.py:33
+msgid "ícono"
+msgstr "icon"
+
+#: scr/bd_lup/puntos/models.py:34
+msgid "Nombre de un ícono de Bootstrap Icons (se usa si no hay foto)."
+msgstr "Name of a Bootstrap Icons icon (used when there's no photo)."
+
+#: scr/bd_lup/puntos/models.py:36
+msgid "foto"
+msgstr "photo"
+
+#: scr/bd_lup/puntos/models.py:37
+msgid "disponible para canjear"
+msgstr "available to redeem"
+
+#: scr/bd_lup/puntos/models.py:38
+msgid "orden"
+msgstr "order"
+
+#: scr/bd_lup/puntos/models.py:42
+msgid "producto de merchandising"
+msgstr "merch item"
+
+#: scr/bd_lup/puntos/models.py:43
+msgid "productos de merchandising"
+msgstr "merch items"
+
+#: scr/bd_lup/puntos/models.py:59
+msgid "Entregado"
+msgstr "Delivered"
+
+#: scr/bd_lup/puntos/models.py:60
+msgid "Cancelado"
+msgstr "Cancelled"
+
+#: scr/bd_lup/puntos/models.py:65
+msgid "puntos usados"
+msgstr "points used"
+
+#: scr/bd_lup/puntos/models.py:66
+msgid "código"
+msgstr "code"
+
+#: scr/bd_lup/puntos/models.py:67
+msgid "estado"
+msgstr "status"
+
+#: scr/bd_lup/puntos/models.py:68
+msgid "pedido el"
+msgstr "requested on"
+
+#: scr/bd_lup/puntos/models.py:69
+msgid "entregado el"
+msgstr "delivered on"
+
+#: scr/bd_lup/puntos/models.py:73
+msgid "canje de puntos"
+msgstr "points redemption"
+
+#: scr/bd_lup/puntos/models.py:74
+msgid "canjes de puntos"
+msgstr "points redemptions"
+
+#: scr/bd_lup/puntos/models.py:86
+msgid "Compra retirada"
+msgstr "Purchase picked up"
+
+#: scr/bd_lup/puntos/models.py:87
+msgid "Canje de merchandising"
+msgstr "Merch redemption"
+
+#: scr/bd_lup/puntos/models.py:88
+msgid "Canje cancelado"
+msgstr "Redemption cancelled"
+
+#: scr/bd_lup/puntos/models.py:89
+msgid "Ajuste del equipo"
+msgstr "Adjustment by the team"
+
+#: scr/bd_lup/puntos/models.py:93
+msgid "puntos"
+msgstr "points"
+
+#: scr/bd_lup/puntos/models.py:94
+msgid "motivo"
+msgstr "reason"
+
+#: scr/bd_lup/puntos/models.py:95
+msgid "detalle"
+msgstr "detail"
+
+#: scr/bd_lup/puntos/models.py:101
+msgid "fecha"
+msgstr "date"
+
+#: scr/bd_lup/puntos/models.py:105
+msgid "movimiento de puntos"
+msgstr "points transaction"
+
+#: scr/bd_lup/puntos/models.py:106
+msgid "movimientos de puntos"
+msgstr "points transactions"
+
+#: scr/bd_lup/puntos/servicios.py:33
+msgid "Los canjes son para cuentas de consumidor."
+msgstr "Redemptions are for consumer accounts."
+
+#: scr/bd_lup/puntos/servicios.py:39
+msgid "Ese producto ya no está disponible para canjear."
+msgstr "That item is no longer available to redeem."
+
+#: scr/bd_lup/puntos/servicios.py:43
+#, python-format
+msgid "Te faltan %(faltan)s puntos para canjear %(producto)s."
+msgstr "You need %(faltan)s more points to redeem %(producto)s."
+
+#: scr/bd_lup/puntos/servicios.py:59
+msgid "Ese canje ya no se puede cancelar."
+msgstr "That redemption can no longer be cancelled."
+
+#: scr/bd_lup/puntos/views.py:49
+#, python-format
+msgid "¡Canjeaste %(producto)s! Tu código es %(codigo)s. Te vamos a escribir para coordinar la entrega."
+msgstr "You redeemed %(producto)s! Your code is %(codigo)s. We'll contact you to arrange delivery."
+
+#: scr/bd_lup/puntos/views.py:64
+#, python-format
+msgid "Cancelaste el canje. Los %(puntos)s puntos volvieron a tu cuenta."
+msgstr "You cancelled the redemption. The %(puntos)s points are back in your account."
 
 #: scr/bd_lup/soporte/models.py:13
 msgid "página desde la que escribió"
@@ -2328,24 +2918,23 @@ msgstr "User"
 msgid "Asistente"
 msgstr "Assistant"
 
-#: scr/bd_lup/soporte/views.py:67
-msgid "Escribí tu consulta."
-msgstr "Type your question."
-
-#: scr/bd_lup/soporte/views.py:71
-#: scr/bd_lup/soporte/views.py:146
+#: scr/bd_lup/soporte/views.py:77
 msgid "Mandaste muchos mensajes seguidos. Esperá un rato o escribinos por WhatsApp."
 msgstr "You've sent a lot of messages in a row. Wait a bit or message us on WhatsApp."
 
-#: scr/bd_lup/soporte/views.py:137
+#: scr/bd_lup/soporte/views.py:83
+msgid "Escribí tu consulta."
+msgstr "Type your question."
+
+#: scr/bd_lup/soporte/views.py:115
 msgid "Dejanos un email para poder responderte."
 msgstr "Leave us an email so we can reply."
 
-#: scr/bd_lup/soporte/views.py:141
+#: scr/bd_lup/soporte/views.py:119
 msgid "Ese email no parece válido."
 msgstr "That email doesn't look valid."
 
-#: scr/bd_lup/soporte/views.py:173
+#: scr/bd_lup/soporte/views.py:197
 #, python-format
 msgid "Listo, le pasamos tu consulta al equipo de Lüp. Te vamos a responder a %(email)s lo antes posible. Si es urgente, escribinos por WhatsApp al %(tel)s."
 msgstr "Done, we've passed your question to the Lüp team. We'll reply to %(email)s as soon as possible. If it's urgent, message us on WhatsApp at %(tel)s."
@@ -2388,7 +2977,7 @@ msgid "dirección"
 msgstr "address"
 
 #: scr/bd_lup/stores/models.py:29
-#: scr/bd_lup/users/forms.py:89
+#: scr/bd_lup/users/forms.py:96
 msgid "CUIT / CUIL"
 msgstr "CUIT / CUIL (tax ID)"
 
@@ -2412,154 +3001,159 @@ msgstr "stores"
 msgid "No tenés permiso para acceder a esta sección."
 msgstr "You don't have permission to access this section."
 
-#: scr/bd_lup/users/forms.py:35
+#: scr/bd_lup/users/forms.py:42
 msgid "El CUIT/CUIL debe tener 11 dígitos."
 msgstr "The CUIT/CUIL must have 11 digits."
 
-#: scr/bd_lup/users/forms.py:42
+#: scr/bd_lup/users/forms.py:49
 msgid "Acepto los términos y condiciones de Lüp"
 msgstr "I accept Lüp's terms and conditions"
 
-#: scr/bd_lup/users/forms.py:43
+#: scr/bd_lup/users/forms.py:50
 msgid "Tenés que aceptar los términos para continuar."
 msgstr "You must accept the terms to continue."
 
-#: scr/bd_lup/users/forms.py:49
-#: scr/bd_lup/users/forms.py:213
+#: scr/bd_lup/users/forms.py:56
+#: scr/bd_lup/users/forms.py:220
 msgid "Nombre"
 msgstr "First name"
 
-#: scr/bd_lup/users/forms.py:49
-#: scr/bd_lup/users/forms.py:213
+#: scr/bd_lup/users/forms.py:56
+#: scr/bd_lup/users/forms.py:220
 msgid "Apellido"
 msgstr "Last name"
 
-#: scr/bd_lup/users/forms.py:55
+#: scr/bd_lup/users/forms.py:62
 msgid "ej: juan_perez"
 msgstr "e.g.: juan_perez"
 
-#: scr/bd_lup/users/forms.py:56
+#: scr/bd_lup/users/forms.py:63
+#: scr/bd_lup/users/forms.py:315
 msgid "tu@email.com"
 msgstr "you@email.com"
 
-#: scr/bd_lup/users/forms.py:58
+#: scr/bd_lup/users/forms.py:65
 msgid "Ej: Alta Gracia"
 msgstr "E.g.: Alta Gracia"
 
-#: scr/bd_lup/users/forms.py:59
-msgid "Mínimo 8 caracteres, no solo números."
-msgstr "At least 8 characters, not only numbers."
-
-#: scr/bd_lup/users/forms.py:65
-#: scr/bd_lup/users/forms.py:223
+#: scr/bd_lup/users/forms.py:72
+#: scr/bd_lup/users/forms.py:230
 msgid "Ya existe una cuenta con este email."
 msgstr "An account with this email already exists."
 
-#: scr/bd_lup/users/forms.py:87
+#: scr/bd_lup/users/forms.py:94
 msgid "Nombre del comercio"
 msgstr "Store name"
 
-#: scr/bd_lup/users/forms.py:89
+#: scr/bd_lup/users/forms.py:96
 msgid "20-12345678-9"
 msgstr "20-12345678-9"
 
-#: scr/bd_lup/users/forms.py:90
+#: scr/bd_lup/users/forms.py:97
 msgid "Dirección del local"
 msgstr "Store address"
 
-#: scr/bd_lup/users/forms.py:90
-#: scr/bd_lup/users/forms.py:121
+#: scr/bd_lup/users/forms.py:97
+#: scr/bd_lup/users/forms.py:128
 msgid "Calle, número y ciudad"
 msgstr "Street, number and city"
 
-#: scr/bd_lup/users/forms.py:92
+#: scr/bd_lup/users/forms.py:99
 msgid "Horario de retiro"
 msgstr "Pickup hours"
 
-#: scr/bd_lup/users/forms.py:92
+#: scr/bd_lup/users/forms.py:99
 msgid "Ej: Lun a Sáb de 18 a 20 hs"
 msgstr "E.g.: Mon to Sat from 6 to 8 pm"
 
-#: scr/bd_lup/users/forms.py:96
+#: scr/bd_lup/users/forms.py:103
 msgid "Nombre del responsable"
 msgstr "Manager's first name"
 
-#: scr/bd_lup/users/forms.py:96
+#: scr/bd_lup/users/forms.py:103
 msgid "Apellido del responsable"
 msgstr "Manager's last name"
 
-#: scr/bd_lup/users/forms.py:101
+#: scr/bd_lup/users/forms.py:108
 msgid "Ya hay un comercio registrado con este CUIT."
 msgstr "A store with this CUIT is already registered."
 
-#: scr/bd_lup/users/forms.py:118
+#: scr/bd_lup/users/forms.py:125
 msgid "Nombre de la organización"
 msgstr "Organization name"
 
-#: scr/bd_lup/users/forms.py:119
+#: scr/bd_lup/users/forms.py:126
 msgid "Tipo de organización"
 msgstr "Organization type"
 
-#: scr/bd_lup/users/forms.py:120
+#: scr/bd_lup/users/forms.py:127
 #: scr/bd_lup/users/models.py:81
 msgid "CUIT / matrícula"
 msgstr "CUIT / registration number"
 
-#: scr/bd_lup/users/forms.py:120
+#: scr/bd_lup/users/forms.py:127
 msgid "30-12345678-9"
 msgstr "30-12345678-9"
 
-#: scr/bd_lup/users/forms.py:121
+#: scr/bd_lup/users/forms.py:128
 msgid "Dirección"
 msgstr "Address"
 
-#: scr/bd_lup/users/forms.py:122
+#: scr/bd_lup/users/forms.py:129
 msgid "Personas asistidas por semana"
 msgstr "People assisted per week"
 
-#: scr/bd_lup/users/forms.py:125
+#: scr/bd_lup/users/forms.py:132
 msgid "Nombre del referente"
 msgstr "Contact person's first name"
 
-#: scr/bd_lup/users/forms.py:125
+#: scr/bd_lup/users/forms.py:132
 msgid "Apellido del referente"
 msgstr "Contact person's last name"
 
-#: scr/bd_lup/users/forms.py:130
+#: scr/bd_lup/users/forms.py:137
 msgid "Ya hay una organización registrada con este CUIT."
 msgstr "An organization with this CUIT is already registered."
 
-#: scr/bd_lup/users/forms.py:158
+#: scr/bd_lup/users/forms.py:165
 msgid "Usuario/email o contraseña incorrectos."
 msgstr "Incorrect username/email or password."
 
-#: scr/bd_lup/users/forms.py:159
+#: scr/bd_lup/users/forms.py:166
 #, python-format
 msgid "Esta cuenta está registrada como %(rol)s. Elegí esa pestaña para ingresar."
 msgstr "This account is registered as %(rol)s. Choose that tab to log in."
 
-#: scr/bd_lup/users/forms.py:164
+#: scr/bd_lup/users/forms.py:171
 msgid "Usuario o email"
 msgstr "Username or email"
 
-#: scr/bd_lup/users/forms.py:165
+#: scr/bd_lup/users/forms.py:172
 msgid "tu_usuario o tu@email.com"
 msgstr "your_username or you@email.com"
 
-#: scr/bd_lup/users/forms.py:208
+#: scr/bd_lup/users/forms.py:215
 msgid "Quitar foto actual"
 msgstr "Remove current photo"
 
-#: scr/bd_lup/users/forms.py:230
-#, python-format
-msgid "La foto no puede pesar más de %(mb)s MB."
-msgstr "The photo can't be larger than %(mb)s MB."
+#: scr/bd_lup/users/forms.py:281
+msgid "Para cambiar el email, escribí tu contraseña actual."
+msgstr "To change your email, enter your current password."
 
-#: scr/bd_lup/users/forms.py:272
+#: scr/bd_lup/users/forms.py:283
+#: scr/bd_lup/users/forms.py:295
+msgid "La contraseña actual no es correcta."
+msgstr "Your current password is incorrect."
+
+#: scr/bd_lup/users/forms.py:343
+msgid "Repetí la contraseña nueva"
+msgstr "Repeat the new password"
+
+#: scr/bd_lup/users/forms.py:374
 msgid "La ubicación quedó incompleta. Volvé a marcarla."
 msgstr "The location is incomplete. Mark it again."
 
-#: scr/bd_lup/users/forms.py:274
+#: scr/bd_lup/users/forms.py:376
 msgid "La ubicación no es válida."
 msgstr "The location isn't valid."
 
@@ -2697,103 +3291,3 @@ msgstr "Your details were updated successfully."
 #: scr/bd_lup/users/views.py:145
 msgid "El link no es válido."
 msgstr "The link isn't valid."
-
-#: recuperar contraseña
-msgid "Contraseña nueva"
-msgstr "New password"
-
-#: recuperar contraseña
-msgid "Repetí la contraseña nueva"
-msgstr "Repeat the new password"
-
-#: recuperar contraseña
-msgid "Recuperar contraseña"
-msgstr "Reset password"
-
-#: recuperar contraseña
-msgid "¿Olvidaste tu contraseña?"
-msgstr "Forgot your password?"
-
-#: recuperar contraseña
-msgid "Escribí el email de tu cuenta y te mandamos un link para elegir una nueva."
-msgstr "Enter your account email and we'll send you a link to choose a new one."
-
-#: recuperar contraseña
-msgid "Mandarme el link"
-msgstr "Send me the link"
-
-#: recuperar contraseña
-msgid "Volver a iniciar sesión"
-msgstr "Back to log in"
-
-#: recuperar contraseña
-msgid "Revisá tu email"
-msgstr "Check your email"
-
-#: recuperar contraseña
-msgid "Si ese email tiene una cuenta en Lüp, en unos minutos te llega un link para elegir una contraseña nueva. Fijate también en Spam o Promociones."
-msgstr "If that email has a Lüp account, you'll get a link to choose a new password in a few minutes. Also check Spam or Promotions."
-
-#: recuperar contraseña
-msgid "Elegí tu contraseña nueva"
-msgstr "Choose your new password"
-
-#: recuperar contraseña
-msgid "Guardar contraseña"
-msgstr "Save password"
-
-#: recuperar contraseña
-msgid "Este link ya no sirve"
-msgstr "This link no longer works"
-
-#: recuperar contraseña
-msgid "Puede que ya lo hayas usado o que haya vencido. Pedí uno nuevo."
-msgstr "You may have already used it or it may have expired. Request a new one."
-
-#: recuperar contraseña
-msgid "Pedir otro link"
-msgstr "Request another link"
-
-#: recuperar contraseña
-msgid "Contraseña cambiada"
-msgstr "Password changed"
-
-#: recuperar contraseña
-msgid "¡Listo! Cambiaste tu contraseña"
-msgstr "Done! You changed your password"
-
-#: recuperar contraseña
-msgid "Ya podés ingresar con la contraseña nueva, en la web y en la app."
-msgstr "You can now log in with your new password, on the web and in the app."
-
-#: completar con IA
-msgid "Completar con IA"
-msgstr "Fill in with AI"
-
-#: completar con IA
-msgid "Elegí una foto y la IA sugiere título, categoría, descripción, precio y fecha. Después revisalos."
-msgstr "Choose a photo and the AI suggests the title, category, description, price and date. Then check them."
-
-#: completar con IA
-msgid "No pudimos analizar la foto ahora. Probá de nuevo en un rato o completá los datos a mano."
-msgstr "We couldn't analyze the photo right now. Try again later or fill in the details yourself."
-
-#: completar con IA
-msgid "Elegí o sacá una foto del producto."
-msgstr "Choose or take a photo of the product."
-
-#: completar con IA
-msgid "Ese archivo no es una imagen. Probá con una foto JPG o PNG."
-msgstr "That file isn't an image. Try a JPG or PNG photo."
-
-#: completar con IA
-msgid "\"Completar con IA\" no está activado en Lüp. Completá los datos a mano."
-msgstr "\"Fill in with AI\" isn't enabled on Lüp. Fill in the details yourself."
-
-#: completar con IA
-msgid "Usaste mucho \"Completar con IA\" en la última hora. Probá más tarde."
-msgstr "You used \"Fill in with AI\" a lot in the last hour. Try again later."
-
-#: completar con IA
-msgid "No reconocimos comida en la foto. Probá con otra foto o completá los datos a mano."
-msgstr "We didn't recognize any food in the photo. Try another photo or fill in the details yourself."

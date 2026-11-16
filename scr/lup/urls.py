@@ -2,6 +2,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path, re_path
+from django.views.generic import TemplateView
 from django.views.static import serve
 from rest_framework.routers import DefaultRouter
 from scr.bd_lup.stores import api as stores_api
@@ -29,6 +30,8 @@ urlpatterns = [
     path('ubicacion/buscar/', product_views.buscar_direccion, name='buscar_direccion'),
     path('usuarios/', include('scr.bd_lup.users.urls')),
     path('ayuda/', include('scr.bd_lup.soporte.urls')),  # chat de soporte
+    path('puntos/', include('scr.bd_lup.puntos.urls')),  # puntos Lüp y canje de merch
+    path('nosotros/', TemplateView.as_view(template_name='nosotros.html'), name='nosotros'),
     
     # API: comercios 
     path('api/comercios/', stores_api.comercios, name='api_comercios'),

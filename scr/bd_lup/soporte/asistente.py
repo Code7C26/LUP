@@ -58,6 +58,19 @@ Comercios:
   "Volver a publicar" o eliminar. Las reservas pendientes siguen valiendo aunque se marque vendido.
 - "Estadísticas" (en el panel): unidades rescatadas, ingresos, reservas, % de retiro, opiniones.
 - En "Mis datos" se carga la ubicación del local ("Usar la ubicación de este dispositivo") y el logo.
+- Al publicar, "Completar con IA": se elige la foto del producto y la IA completa sola título, categoría,
+  descripción, precio normal y fecha; el comercio los revisa y pone el precio Lüp. Si no reconoce comida,
+  se completa a mano.
+Puntos Lüp (solo consumidores):
+- Cada $2.000 de una compra retirada suman 1 punto (solo bloques completos: $1.900 = 0, $3.900 = 1,
+  $4.000 = 2). Se suman cuando el comercio confirma el retiro, no al reservar.
+- Se ven en la estrella de arriba, en "Mi panel" y en "Puntos Lüp" (menú de la foto > "Mis puntos").
+- Se canjean por merch: Lápiz de semillas 30 pts ($2.000), Imán 45 pts ($3.000), Bolsa 225 pts ($15.000),
+  Tupper 225 pts ($15.000), Botella de vidrio 300 pts ($20.000). Se pueden comprar con plata escribiendo
+  por WhatsApp. Al canjear se recibe un código y el equipo de Lüp escribe para coordinar la entrega.
+  Un canje no entregado se puede cancelar desde "Mis puntos" y los puntos vuelven.
+- Si faltan puntos de una compra retirada, derivar a "Hablar con una persona".
+- "Nosotros" (botón destacado del menú): quiénes somos, objetivos, equipo y proyectos a futuro.
 Organizaciones:
 - Ven las ofertas "Donables", piden la donación con un mensaje y el comercio la aprueba o rechaza.
   Siguen el estado en "Mi panel".
@@ -72,8 +85,8 @@ Para todos:
 - Botón de luna/sol arriba: modo oscuro o claro. Botón EN/ES: idioma inglés o español.
 - Iniciar sesión: con usuario o email y contraseña, eligiendo el tipo de cuenta correcto (pestaña).
   Si el sistema dice que la cuenta es de otro tipo, hay que elegir esa pestaña.
-- Olvido de contraseña: por ahora no hay recuperación automática en la web; hay que pedírsela al equipo
-  con "Hablar con una persona".
+- Olvido de contraseña: en "Iniciar sesión" tocar "¿Olvidaste tu contraseña?" y seguir el email que llega.
+  Si no llega, "Hablar con una persona".
 - La app para celular usa la misma cuenta que la web.
 Contacto humano: botón "Hablar con una persona" en este chat, o WhatsApp +54 9 3547 62-0629.
 
@@ -133,6 +146,11 @@ def contexto_usuario(usuario, pagina=''):
                 )
         else:
             lineas.append('No tiene reservas pendientes.')
+        from scr.bd_lup.puntos.models import saldo_de
+        canjes = list(usuario.canjes.filter(estado='pendiente').select_related('producto')[:3])
+        lineas.append(f'Puntos Lüp: {saldo_de(usuario)}.' + (
+            ' Canjes por entregar: ' + ', '.join(f'{c.producto.nombre} (código {c.codigo})' for c in canjes) + '.'
+            if canjes else ''))
     elif usuario.es_comercio:
         tienda = getattr(usuario, 'tienda', None)
         if tienda is None:
@@ -220,6 +238,13 @@ def _normalizar(texto):
 
 # (palabras clave, respuesta en español, respuesta en inglés)
 PREGUNTAS_FRECUENTES = [
+    (('punto', 'points', 'canje', 'canjear', 'redeem', 'merch'),
+     'Con los **Puntos Lüp** sumás 1 punto cada $2.000 de una compra retirada (solo bloques completos). '
+     'Los ves en la estrella de arriba y los canjeás por merch en **Puntos Lüp**: lápiz de semillas, imán, bolsa, '
+     'tupper o botella de vidrio. Al canjear recibís un código y el equipo te escribe para la entrega.',
+     'With **Lüp Points** you earn 1 point for every $2,000 of a picked-up purchase (full blocks only). '
+     'You see them on the star at the top and redeem them for merch in **Lüp Points**. When you redeem, you get a '
+     'code and the team contacts you to arrange delivery.'),
     (('no existe', 'not found', '404', 'no encontr', "doesn't exist", 'does not exist'),
      'Puede que esa oferta ya se haya vendido, vencido o que el comercio la haya sacado. Buscá ofertas parecidas en '
      '**Ofertas**. Si el link venía de un email nuestro y debería funcionar, tocá **Hablar con una persona**.',
@@ -252,9 +277,9 @@ PREGUNTAS_FRECUENTES = [
      '> Location > Allow, and reload.'),
     (('contrasena', 'password', 'clave', 'ingresar', 'login', 'iniciar sesion', 'entrar', 'log in'),
      'Para ingresar usá tu usuario o email y tu contraseña, en la pestaña de tu tipo de cuenta (consumidor, comercio u '
-     'organización). Si olvidaste la contraseña, tocá **Hablar con una persona** y el equipo te ayuda.',
+     'organización). Si olvidaste la contraseña, en **Iniciar sesión** tocá **¿Olvidaste tu contraseña?** y seguí el email.',
      'Log in with your username or email and password, on the tab for your account type. '
-     'If you forgot your password, tap **Talk to a person** and the team will help you.'),
+     'If you forgot your password, on **Log in** tap **Forgot your password?** and follow the email.'),
     (('pago', 'pagar', 'pague', 'pay', 'tarjeta', 'card', 'precio', 'price', 'cobr'),
      'En Lüp no se paga online: reservás gratis y pagás en el local al retirar, mostrando tu código. '
      'El precio que ves en la oferta es el que pagás.',

@@ -1,0 +1,10 @@
+PUNTOS LÜP: canjeaste {{ canje.producto.nombre }}.
+
+Usaste {{ canje.puntos }} puntos. El equipo de Lüp te va a escribir para coordinar la entrega.
+Código del canje: {{ canje.codigo }}
+
+Si cambiás de idea antes de recibirlo, podés cancelarlo desde "Mis puntos" y los puntos vuelven a tu cuenta: {{ url_puntos }}
+
+— Lüp
+Configurar avisos: {{ url_avisos }}
+Dejar de recibir avisos: {{ url_baja }}

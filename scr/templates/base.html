@@ -46,6 +46,8 @@
                 <li class="nav-item"><a class="nav-link {% if url == 'catalogo' %}active{% endif %}" href="{% url 'catalogo' %}"><i class="bi bi-basket2 me-1"></i>{% translate "Ofertas" %}</a></li>
                 <li class="nav-item"><a class="nav-link {% if url == 'lista_tiendas' or url == 'detalle_tienda' %}active{% endif %}" href="{% url 'lista_tiendas' %}"><i class="bi bi-shop me-1"></i>{% translate "Comercios" %}</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'home' %}#como-funciona">{% translate "Cómo funciona" %}</a></li>
+                {# Destacado: quiénes somos, objetivos y lo que viene #}
+                <li class="nav-item ms-lg-2"><a class="nav-link nav-destacado {% if url == 'nosotros' %}active{% endif %}" href="{% url 'nosotros' %}"><i class="bi bi-stars me-1" aria-hidden="true"></i>{% translate "Nosotros" %}</a></li>
             </ul>
 
             <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2 pb-3 pb-lg-0">
@@ -70,6 +72,9 @@
                     {% if user.es_comercio %}
                         <a href="{% url 'publicar_excedente' %}" class="btn btn-lup btn-sm"><i class="bi bi-plus-lg me-1"></i>{% translate "Publicar excedente" %}</a>
                     {% endif %}
+                    {% if user.es_consumidor %}
+                        <a href="{% url 'mis_puntos' %}" class="chip-puntos align-self-start align-self-lg-center" title="{% translate 'Mis puntos Lüp' %}"><i class="bi bi-star-fill" aria-hidden="true"></i> {{ SALDO_PUNTOS|default:0 }} <span>{% translate "pts" %}</span></a>
+                    {% endif %}
                     <div class="dropdown">
                         <button class="btn d-flex align-items-center gap-2 px-2 border-0" data-bs-toggle="dropdown" aria-expanded="false">
                             {% include 'includes/_avatar.html' with usuario=user %}
@@ -81,6 +86,7 @@
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 p-2">
                             <li><a class="dropdown-item rounded-3" href="{% url 'panel' %}"><i class="bi bi-grid me-2"></i>{% translate "Mi panel" %}</a></li>
+                            {% if user.es_consumidor %}<li><a class="dropdown-item rounded-3" href="{% url 'mis_puntos' %}"><i class="bi bi-star me-2"></i>{% translate "Mis puntos" %}</a></li>{% endif %}
                             <li><a class="dropdown-item rounded-3" href="{% url 'perfil' %}"><i class="bi bi-person-gear me-2"></i>{% translate "Mis datos" %}</a></li>
                             {% if user.is_staff %}<li><a class="dropdown-item rounded-3" href="{% url 'admin:index' %}"><i class="bi bi-shield-lock me-2"></i>{% translate "Administración" %}</a></li>{% endif %}
                             <li><hr class="dropdown-divider"></li>
@@ -176,6 +182,8 @@
                     <li><a href="{% url 'catalogo' %}">{% translate "Ofertas" %}</a></li>
                     <li><a href="{% url 'catalogo' %}?donacion=1">{% translate "Donaciones" %}</a></li>
                     <li><a href="{% url 'home' %}#como-funciona">{% translate "Cómo funciona" %}</a></li>
+                    <li><a href="{% url 'mis_puntos' %}">{% translate "Puntos Lüp" %}</a></li>
+                    <li><a href="{% url 'nosotros' %}">{% translate "Nosotros" %}</a></li>
                 </ul>
             </div>
             <div class="col-6 col-lg-2">

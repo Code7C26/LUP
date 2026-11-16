@@ -7,7 +7,9 @@ Contanos cómo fue tu experiencia: calificá al comercio y al producto y, si que
 Tu opinión ayuda a otras personas a elegir y al comercio a mejorar.
 
 Dejar mi opinión: {{ url_opinar }}
-
+{% if puntos_sumados %}
+Además sumaste {{ puntos_sumados }} punto{{ puntos_sumados|pluralize }} Lüp con esta compra: {{ url_puntos }}
+{% endif %}
 — Lüp
 Configurar avisos: {{ url_avisos }}
 Dejar de recibir avisos: {{ url_baja }}

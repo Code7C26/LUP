@@ -81,6 +81,7 @@ INSTALLED_APPS = [
     'scr.bd_lup.stores.apps.StoresConfig',
     'scr.bd_lup.products.apps.ProductsConfig',
     'scr.bd_lup.soporte.apps.SoporteConfig',
+    'scr.bd_lup.puntos.apps.PuntosConfig',
 ]
 
 MIDDLEWARE = [
@@ -121,6 +122,7 @@ TEMPLATES = [
                 'scr.bd_lup.products.context_processors.google_maps',
                 'scr.bd_lup.products.context_processors.opinion_pendiente',
                 'scr.bd_lup.soporte.context_processors.soporte',
+                'scr.bd_lup.puntos.context_processors.puntos',
             ],
         },
     },

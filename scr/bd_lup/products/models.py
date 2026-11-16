@@ -171,6 +171,9 @@ class Reserva(models.Model):
         self.estado = self.RETIRADA
         self.retirada_en = timezone.now()
         self.save(update_fields=['estado', 'retirada_en'])
+        # Puntos Lüp: 1 cada $2.000 de la compra (web y app pasan por acá)
+        from scr.bd_lup.puntos.servicios import acreditar_compra
+        acreditar_compra(self)
 
 
 class SolicitudDonacion(models.Model):
