@@ -56,6 +56,11 @@
                     <small class="text-muted-lup d-block mt-1 ms-4">{% translate "Las organizaciones sociales podrán solicitarla sin costo." %}</small>
                 </div>
 
+                <div class="declaracion mt-3">
+                    {% include 'includes/_campo.html' with campo=form.declara_apto clase='mb-0' %}
+                    <small class="text-muted-lup d-block mt-1 ms-4">{% url 'terminos' as terminos_url %}{% blocktranslate with url=terminos_url %}Sos responsable de la calidad y la conservación del producto, como indican los <a href="{{ url }}" target="_blank" rel="noopener">Términos y Condiciones</a>.{% endblocktranslate %}</small>
+                </div>
+
                 <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
                     <a href="{% url 'panel' %}" class="btn btn-light">{% translate "Cancelar" %}</a>
                     <button type="submit" class="btn btn-lup btn-lg">{% if editando %}{% translate "Guardar cambios" %}{% else %}<i class="bi bi-send me-2"></i>{% translate "Publicar oferta" %}{% endif %}</button>

@@ -8,6 +8,12 @@ from .models import Calificacion, Producto, Reserva, SolicitudDonacion
 
 
 class ProductoForm(EstiloBootstrapMixin, forms.ModelForm):
+    # Código Alimentario: solo se publica comida apta y no vencida (ver Términos y Condiciones)
+    declara_apto = forms.BooleanField(
+        label=_('Declaro que el producto es apto para el consumo y que no va a estar vencido antes de la fecha límite de retiro.'),
+        error_messages={'required': _('Para publicar tenés que confirmar que el producto es apto y no está vencido.')},
+    )
+
     class Meta:
         model = Producto
         fields = [
@@ -38,6 +44,9 @@ class ProductoForm(EstiloBootstrapMixin, forms.ModelForm):
             'precio_descuento': _('Precio Lüp ($)'),
             'stock': _('Unidades disponibles'),
             'es_donacion': _('También disponible para donación a organizaciones'),
+        }
+        help_texts = {
+            'fecha_vencimiento': _('No puede ser posterior a la fecha de vencimiento del producto.'),
         }
 
     def __init__(self, *args, **kwargs):

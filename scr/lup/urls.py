@@ -14,6 +14,8 @@ from scr.bd_lup.soporte import api as soporte_api
 from scr.bd_lup.stores import views as store_views
 from scr.bd_lup.users import api as users_api
 
+from . import paginas_legales
+
 router = DefaultRouter()
 router.register('productos', ProductoViewSet, basename='api-productos')
 router.register('mis-productos', products_api.MisProductosViewSet, basename='api-mis-productos')  # paso 30
@@ -32,6 +34,8 @@ urlpatterns = [
     path('ayuda/', include('scr.bd_lup.soporte.urls')),  # chat de soporte
     path('puntos/', include('scr.bd_lup.puntos.urls')),  # puntos Lüp y canje de merch
     path('nosotros/', TemplateView.as_view(template_name='nosotros.html'), name='nosotros'),
+    path('terminos/', paginas_legales.terminos, name='terminos'),
+    path('privacidad/', paginas_legales.privacidad, name='privacidad'),
     
     # API: comercios 
     path('api/comercios/', stores_api.comercios, name='api_comercios'),

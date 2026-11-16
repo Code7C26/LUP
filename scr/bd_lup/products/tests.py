@@ -57,7 +57,7 @@ class FlujoLupTests(TestCase):
         r = self.client.post(reverse('publicar_excedente'), {
             'titulo': 'Vianda', 'categoria': 'comidas', 'descripcion': 'Pollo con papas',
             'precio_original': '5000', 'precio_descuento': '2500', 'stock': '3',
-            'fecha_vencimiento': localdate().isoformat(),
+            'fecha_vencimiento': localdate().isoformat(), 'declara_apto': 'on',
         })
         self.assertRedirects(r, reverse('panel'))
         vianda = Producto.objects.get(titulo='Vianda')
@@ -66,7 +66,7 @@ class FlujoLupTests(TestCase):
         r = self.client.post(reverse('editar_excedente', args=[vianda.pk]), {
             'titulo': 'Vianda XL', 'categoria': 'comidas', 'descripcion': 'Pollo',
             'precio_original': '5000', 'precio_descuento': '2000', 'stock': '2',
-            'fecha_vencimiento': localdate().isoformat(),
+            'fecha_vencimiento': localdate().isoformat(), 'declara_apto': 'on',
         })
         self.assertRedirects(r, reverse('panel'))
         vianda.refresh_from_db()
@@ -134,6 +134,7 @@ class FlujoLupTests(TestCase):
         r = self.client.post(reverse('publicar_excedente'), {
             'titulo': 'Caro', 'categoria': 'otros', 'descripcion': 'x', 'precio_original': '100',
             'precio_descuento': '200', 'stock': '1', 'fecha_vencimiento': localdate().isoformat(),
+            'declara_apto': 'on',
         })
         self.assertEqual(r.status_code, 200)
         self.assertFalse(Producto.objects.filter(titulo='Caro').exists())

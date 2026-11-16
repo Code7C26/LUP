@@ -71,6 +71,10 @@ Puntos Lüp (solo consumidores):
   Un canje no entregado se puede cancelar desde "Mis puntos" y los puntos vuelven.
 - Si faltan puntos de una compra retirada, derivar a "Hablar con una persona".
 - "Nosotros" (botón destacado del menú): quiénes somos, objetivos, equipo y proyectos a futuro.
+- "Términos y Condiciones" y "Política de Privacidad": links en el pie de la página. Lüp no vende ni compra:
+  la venta es entre comercio y cliente. Al publicar, el comercio declara que el producto es apto y no va a
+  estar vencido antes de la fecha límite de retiro. Lo donado no se puede revender (Ley Donal).
+  Para borrar la cuenta o pedir una copia de los datos: "Hablar con una persona".
 Organizaciones:
 - Ven las ofertas "Donables", piden la donación con un mensaje y el comercio la aprueba o rechaza.
   Siguen el estado en "Mi panel".

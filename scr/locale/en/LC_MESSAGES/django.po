@@ -225,60 +225,68 @@ msgstr "Donations"
 msgid "Puntos Lüp"
 msgstr "Lüp Points"
 
-#: scr/templates/base.html:190
+#: scr/templates/base.html:187
+msgid "Términos y Condiciones"
+msgstr "Terms and Conditions"
+
+#: scr/templates/base.html:188
+msgid "Privacidad"
+msgstr "Privacy"
+
+#: scr/templates/base.html:192
 msgid "Sumate"
 msgstr "Join us"
 
-#: scr/templates/base.html:192
+#: scr/templates/base.html:194
 msgid "Soy consumidor"
 msgstr "I'm a consumer"
 
-#: scr/templates/base.html:193
+#: scr/templates/base.html:195
 msgid "Tengo un comercio"
 msgstr "I have a store"
 
-#: scr/templates/base.html:194
+#: scr/templates/base.html:196
 msgid "Soy una organización"
 msgstr "I'm an organization"
 
-#: scr/templates/base.html:198
+#: scr/templates/base.html:200
 msgid "Impacto"
 msgstr "Impact"
 
-#: scr/templates/base.html:199
+#: scr/templates/base.html:201
 msgid "🌿 Ambiental"
 msgstr "🌿 Environmental"
 
-#: scr/templates/base.html:199
+#: scr/templates/base.html:201
 msgid "🤝 Social"
 msgstr "🤝 Social"
 
-#: scr/templates/base.html:199
+#: scr/templates/base.html:201
 msgid "💰 Económico"
 msgstr "💰 Economic"
 
-#: scr/templates/base.html:202
+#: scr/templates/base.html:204
 msgid "Soporte al usuario"
 msgstr "User support"
 
-#: scr/templates/base.html:203
+#: scr/templates/base.html:205
 msgid "¿Tenés alguna duda o problema? Escribinos o llamanos."
 msgstr "Got a question or a problem? Message or call us."
 
-#: scr/templates/base.html:205
+#: scr/templates/base.html:207
 msgid "Chat de ayuda"
 msgstr "Help chat"
 
-#: scr/templates/base.html:206
+#: scr/templates/base.html:208
 msgid "WhatsApp"
 msgstr "WhatsApp"
 
-#: scr/templates/base.html:213
+#: scr/templates/base.html:215
 #: scr/templates/nosotros.html:131
 msgid "Más valor. Menos desperdicio."
 msgstr "More value. Less waste."
 
-#: scr/templates/base.html:214
+#: scr/templates/base.html:216
 msgid "Hecho con 💚 en Córdoba, Argentina"
 msgstr "Made with 💚 in Córdoba, Argentina"
 
@@ -1757,28 +1765,33 @@ msgid "Las organizaciones sociales podrán solicitarla sin costo."
 msgstr "Social organizations will be able to request it for free."
 
 #: scr/templates/products/form_producto.html:61
+#, python-format
+msgid "Sos responsable de la calidad y la conservación del producto, como indican los <a href=\"%(url)s\" target=\"_blank\" rel=\"noopener\">Términos y Condiciones</a>."
+msgstr "You are responsible for the quality and storage of the product, as stated in the <a href=\"%(url)s\" target=\"_blank\" rel=\"noopener\">Terms and Conditions</a>."
+
+#: scr/templates/products/form_producto.html:66
 #: scr/templates/products/opinar.html:45
 #: scr/templates/users/perfil.html:98
 msgid "Guardar cambios"
 msgstr "Save changes"
 
-#: scr/templates/products/form_producto.html:61
+#: scr/templates/products/form_producto.html:66
 msgid "Publicar oferta"
 msgstr "Post offer"
 
-#: scr/templates/products/form_producto.html:68
+#: scr/templates/products/form_producto.html:73
 msgid "VISTA PREVIA"
 msgstr "PREVIEW"
 
-#: scr/templates/products/form_producto.html:80
+#: scr/templates/products/form_producto.html:85
 msgid "Título de tu oferta"
 msgstr "Your offer's title"
 
-#: scr/templates/products/form_producto.html:89
+#: scr/templates/products/form_producto.html:94
 msgid "Tip:"
 msgstr "Tip:"
 
-#: scr/templates/products/form_producto.html:89
+#: scr/templates/products/form_producto.html:94
 #, python-format
 msgid "las ofertas con foto y un descuento de al menos 50%% se reservan mucho más rápido."
 msgstr "offers with a photo and a discount of at least 50%% get reserved much faster."
@@ -1834,7 +1847,7 @@ msgid "Los puntos son para cuentas de consumidor."
 msgstr "Points are for consumer accounts."
 
 #: scr/templates/puntos/mis_puntos.html:20
-#: scr/templates/users/registro.html:66
+#: scr/templates/users/registro.html:68
 msgid "Crear mi cuenta"
 msgstr "Create my account"
 
@@ -2332,12 +2345,17 @@ msgstr "Contact person details"
 msgid "Acceso"
 msgstr "Access"
 
-#: scr/templates/users/registro.html:68
+#: scr/templates/users/registro.html:66
+#, python-format
+msgid "Leé los <a href=\"%(url_terminos)s\" target=\"_blank\" rel=\"noopener\">Términos y Condiciones</a> y la <a href=\"%(url_privacidad)s\" target=\"_blank\" rel=\"noopener\">Política de Privacidad</a>."
+msgstr "Read the <a href=\"%(url_terminos)s\" target=\"_blank\" rel=\"noopener\">Terms and Conditions</a> and the <a href=\"%(url_privacidad)s\" target=\"_blank\" rel=\"noopener\">Privacy Policy</a>."
+
+#: scr/templates/users/registro.html:70
 #: scr/templates/users/registro_seleccion.html:26
 msgid "¿Ya tenés cuenta?"
 msgstr "Already have an account?"
 
-#: scr/templates/users/registro.html:68
+#: scr/templates/users/registro.html:70
 #: scr/templates/users/registro_seleccion.html:26
 msgid "Iniciá sesión"
 msgstr "Log in"
@@ -2363,60 +2381,72 @@ msgstr "Join as %(rol)s"
 msgid "Continuar"
 msgstr "Continue"
 
-#: scr/bd_lup/products/forms.py:25
+#: scr/bd_lup/products/forms.py:13
+msgid "Declaro que el producto es apto para el consumo y que no va a estar vencido antes de la fecha límite de retiro."
+msgstr "I declare that the product is fit for consumption and will not expire before the pickup deadline."
+
+#: scr/bd_lup/products/forms.py:14
+msgid "Para publicar tenés que confirmar que el producto es apto y no está vencido."
+msgstr "To post, you must confirm that the product is fit for consumption and not expired."
+
+#: scr/bd_lup/products/forms.py:31
 msgid "Ej: Docena de medialunas del día"
 msgstr "E.g.: A dozen of today's croissants"
 
-#: scr/bd_lup/products/forms.py:27
+#: scr/bd_lup/products/forms.py:33
 msgid "Contá qué incluye la oferta y cómo conservarla..."
 msgstr "Tell us what the offer includes and how to store it..."
 
-#: scr/bd_lup/products/forms.py:36
+#: scr/bd_lup/products/forms.py:42
 msgid "Título de la oferta"
 msgstr "Offer title"
 
-#: scr/bd_lup/products/forms.py:37
+#: scr/bd_lup/products/forms.py:43
 msgid "Precio original ($)"
 msgstr "Original price ($)"
 
-#: scr/bd_lup/products/forms.py:38
+#: scr/bd_lup/products/forms.py:44
 msgid "Precio Lüp ($)"
 msgstr "Lüp price ($)"
 
-#: scr/bd_lup/products/forms.py:39
+#: scr/bd_lup/products/forms.py:45
 msgid "Unidades disponibles"
 msgstr "Units available"
 
-#: scr/bd_lup/products/forms.py:40
+#: scr/bd_lup/products/forms.py:46
 msgid "También disponible para donación a organizaciones"
 msgstr "Also available for donation to organizations"
 
-#: scr/bd_lup/products/forms.py:50
+#: scr/bd_lup/products/forms.py:49
+msgid "No puede ser posterior a la fecha de vencimiento del producto."
+msgstr "It can't be later than the product's expiration date."
+
+#: scr/bd_lup/products/forms.py:59
 msgid "La fecha límite no puede estar en el pasado."
 msgstr "The pickup deadline can't be in the past."
 
-#: scr/bd_lup/products/forms.py:56
+#: scr/bd_lup/products/forms.py:65
 msgid "Publicá al menos una unidad."
 msgstr "Post at least one unit."
 
-#: scr/bd_lup/products/forms.py:74
+#: scr/bd_lup/products/forms.py:83
 #, python-format
 msgid "Solo quedan %(n)s unidades."
 msgstr "Only %(n)s units left."
 
-#: scr/bd_lup/products/forms.py:86
+#: scr/bd_lup/products/forms.py:95
 msgid "Contale al comercio a cuántas personas ayudaría y cuándo podés retirarlo..."
 msgstr "Tell the store how many people it would help and when you can pick it up..."
 
-#: scr/bd_lup/products/forms.py:90
+#: scr/bd_lup/products/forms.py:99
 msgid "Mensaje para el comercio"
 msgstr "Message for the store"
 
-#: scr/bd_lup/products/forms.py:101
+#: scr/bd_lup/products/forms.py:110
 msgid "Calificá al comercio con 1 a 5 estrellas."
 msgstr "Rate the store from 1 to 5 stars."
 
-#: scr/bd_lup/products/forms.py:105
+#: scr/bd_lup/products/forms.py:114
 msgid "Calificá el producto con 1 a 5 estrellas."
 msgstr "Rate the product from 1 to 5 stars."
 

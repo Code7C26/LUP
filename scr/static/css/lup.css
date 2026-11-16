@@ -1151,3 +1151,24 @@ h1, h2, h3, h4, h5, .h1, .h2, .h3, .h4, .h5 { color: var(--lup-titulo); font-wei
     background: var(--lup-oscuro); color: #fff; border-radius: 28px; padding: 2rem 2.2rem;
 }
 .nosotros-cta h2 { color: #fff; }
+
+/* ---------- Términos y privacidad ---------- */
+.legal { max-width: 760px; margin: 0 auto; background: var(--lup-superficie); border-radius: var(--lup-radio); padding: 2.2rem; box-shadow: var(--lup-sombra); }
+.legal h2 { font-size: 1.1rem; margin: 1.6rem 0 .5rem; }
+.legal p, .legal li { line-height: 1.65; }
+.legal ul { padding-left: 1.2rem; }
+.legal li + li { margin-top: .3rem; }
+@media (max-width: 575.98px) { .legal { padding: 1.4rem; } }
+.declaracion { border: 1px solid var(--lup-borde); border-radius: 16px; padding: .9rem 1rem; }
+
+/* Barra: que nada se parta en dos renglones cuando hay muchos botones (comercio con sesión) */
+.navbar-lup .nav-link, .navbar-lup .btn { white-space: nowrap; }
+@media (min-width: 992px) and (max-width: 1399.98px) {
+    .navbar-lup .navbar-nav .nav-link { padding: .45rem .55rem !important; font-size: .9rem; }
+    .navbar-lup .navbar-nav .nav-link > i:not(.bi-stars) { display: none; }
+    .navbar-lup .nav-link.nav-destacado { padding: .4rem .85rem !important; }
+}
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    .navbar-lup .nav-link.nav-destacado .bi-stars { display: none; }
+    .navbar-lup .usuario-nombre { display: none !important; }
+}

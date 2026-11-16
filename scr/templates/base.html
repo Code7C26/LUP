@@ -78,7 +78,7 @@
                     <div class="dropdown">
                         <button class="btn d-flex align-items-center gap-2 px-2 border-0" data-bs-toggle="dropdown" aria-expanded="false">
                             {% include 'includes/_avatar.html' with usuario=user %}
-                            <span class="text-start lh-sm">
+                            <span class="text-start lh-sm usuario-nombre">
                                 <span class="d-block fw-semibold small">{{ user.nombre_visible|truncatechars:22 }}</span>
                                 <span class="chip-rol {{ user.rol }}">{{ user.get_rol_display }}</span>
                             </span>
@@ -184,6 +184,8 @@
                     <li><a href="{% url 'home' %}#como-funciona">{% translate "Cómo funciona" %}</a></li>
                     <li><a href="{% url 'mis_puntos' %}">{% translate "Puntos Lüp" %}</a></li>
                     <li><a href="{% url 'nosotros' %}">{% translate "Nosotros" %}</a></li>
+                    <li><a href="{% url 'terminos' %}">{% translate "Términos y Condiciones" %}</a></li>
+                    <li><a href="{% url 'privacidad' %}">{% translate "Privacidad" %}</a></li>
                 </ul>
             </div>
             <div class="col-6 col-lg-2">

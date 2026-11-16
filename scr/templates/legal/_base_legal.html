@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block content %}
+<div class="container pt-4">
+    <article class="legal">
+        <span class="eyebrow">{% block eyebrow %}{% endblock %}</span>
+        <h1 class="h2 mt-1">{% block titulo %}{% endblock %}</h1>
+        <p class="small text-muted-lup">{% block actualizado %}{% endblock %}</p>
+        {% block texto %}{% endblock %}
+    </article>
+</div>
+{% endblock %}
