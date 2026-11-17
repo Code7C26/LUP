@@ -15,6 +15,7 @@ import BotonVolver from '../componentes/BotonVolver';
 import FotoSuave from '../componentes/FotoSuave';
 import Cargando from '../componentes/Cargando';
 import Icono from '../componentes/Icono';
+import IconoCategoria from '../componentes/IconoCategoria';
 import MensajeError from '../componentes/MensajeError';
 import ModalSolicitudDonacion from '../componentes/ModalSolicitudDonacion';
 import { mostrarAviso } from '../contexto/Aviso';
@@ -23,7 +24,7 @@ import { programarRecordatorio, textoHora } from '../servicios/recordatorios';
 import { useSesion } from '../contexto/Sesion';
 import { textoDeOpcion, useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, radio, sombra, tamanos, useTema } from '../tema';
-import { emojiCategoria, emojiRubro, formatoDiaMes, formatoPrecio, textoError, vibrar } from '../utilidades';
+import { formatoDiaMes, formatoPrecio, textoError, vibrar } from '../utilidades';
 
 // "2026-10-26" -> cuántos días faltan (0 = hoy, 1 = mañana), o null si no hay fecha
 function diasHasta(fecha) {
@@ -161,10 +162,12 @@ export default function DetalleProducto({ navigation, route }) {
           {producto.imagen ? (
             <FotoSuave uri={producto.imagen} estilo={StyleSheet.absoluteFill} etiqueta={t('detalleProducto.fotoDe', { titulo: producto.titulo })} />
           ) : (
-            <Text style={estilos.emoji}>{emojiCategoria(producto.categoria)}</Text>
+            <IconoCategoria categoria={producto.categoria} llenar tamano={72} />
           )}
           {producto.porcentaje_descuento > 0 ? (
-            <Text style={[estilos.descuento, { backgroundColor: colores.ambar }]}>-{producto.porcentaje_descuento}%</Text>
+            <Text style={[estilos.descuento, { backgroundColor: colores.suaves.durazno.fondo, color: colores.texto }]}>
+              -{producto.porcentaje_descuento}%
+            </Text>
           ) : null}
         </View>
 
@@ -173,9 +176,12 @@ export default function DetalleProducto({ navigation, route }) {
 
           {/* Título y precios */}
           <View style={{ gap: espacio(0.5) }}>
-            <Text style={[estilos.categoria, { color: colores.verdeHover }]}>
-              {emojiCategoria(producto.categoria)} {textoDeOpcion(t, 'categorias', producto.categoria, producto.categoria_texto)}
-            </Text>
+            <View style={estilos.filaCategoria}>
+              <IconoCategoria categoria={producto.categoria} tamano={22} />
+              <Text style={[estilos.categoria, { color: colores.verdeHover, flexShrink: 1 }]}>
+                {textoDeOpcion(t, 'categorias', producto.categoria, producto.categoria_texto)}
+              </Text>
+            </View>
             <Text style={[estilos.titulo, { color: colores.titulo }]}>{producto.titulo}</Text>
             <View style={estilos.precios}>
               <Text style={[estilos.precio, { color: colores.titulo }]}>{formatoPrecio(producto.precio_descuento)}</Text>
@@ -205,9 +211,7 @@ export default function DetalleProducto({ navigation, route }) {
               pressed && { opacity: 0.85 },
             ]}
           >
-            <View style={[estilos.avatarComercio, { backgroundColor: colores.menta }]}>
-              <Text style={{ fontSize: 22 }}>{emojiRubro(producto.rubro)}</Text>
-            </View>
+            <IconoCategoria rubro={producto.rubro} tamano={48} />
             <View style={{ flex: 1, gap: 2 }}>
               <Text style={[estilos.nombreComercio, { color: colores.titulo }]} numberOfLines={1}>
                 {producto.comercio}
@@ -364,14 +368,10 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  emoji: {
-    fontSize: 96,
-  },
   descuento: {
     position: 'absolute',
     bottom: espacio(2),
     left: espacio(2),
-    color: '#FFFFFF',
     fontFamily: fuentes.negrita,
     fontSize: tamanos.normal,
     paddingHorizontal: 12,
@@ -430,12 +430,10 @@ const estilos = StyleSheet.create({
     borderRadius: radio,
     padding: espacio(1.5),
   },
-  avatarComercio: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+  filaCategoria: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: 6,
   },
   nombreComercio: {
     fontFamily: fuentes.negrita,

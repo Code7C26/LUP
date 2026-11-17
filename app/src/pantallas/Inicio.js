@@ -3,7 +3,8 @@
 //   ver componentes/MenuLateral.js), al lado el botón "Ayuda" (abre el chat con Lü, como el de la web)
 //   y compartir / carrito (con el número de productos) a la derecha
 //   el mapa a todo lo ancho con los comercios y el logo en la esquina
-//   "Cerca tuyo" con el buscador chiquito, y los comercios con foto, km y "Ver catálogo"
+//   "Cerca tuyo" y los comercios con foto, km y "Ver catálogo" (para buscar está la pestaña "Buscar" de abajo:
+//   la lupa que había acá llevaba al mismo lugar que "Ver catálogo completo", así que se sacó)
 //   (agregado) "Vence hoy": las ofertas que hay que retirar hoy, si hay alguna
 //   "Ver catálogo completo" y las fotos de las ofertas con sus km
 //   (agregado) "Tus favoritos" al final, si marcaste alguno con el corazón
@@ -30,14 +31,15 @@ import CalificacionComercio, { textoCalificacion } from '../componentes/Califica
 import Chip from '../componentes/Chip';
 import Esqueleto from '../componentes/Esqueleto';
 import Icono from '../componentes/Icono';
+import IconoCategoria from '../componentes/IconoCategoria';
 import Logo from '../componentes/Logo';
 import MenuLateral from '../componentes/MenuLateral';
 import MensajeError from '../componentes/MensajeError';
 import { useBusquedas } from '../contexto/Busquedas';
 import { useFavoritos } from '../contexto/Favoritos';
 import { useIdioma } from '../contexto/Idioma';
-import { espacio, fuentes, useTema } from '../tema';
-import { emojiCategoria, textoKm } from '../utilidades';
+import { espacio, fuentes, radio, useTema } from '../tema';
+import { textoKm } from '../utilidades';
 
 // "1 km", "350 m" (sin el "a" de adelante, como el mockup)
 const km = (distancia) => textoKm(distancia) || null;
@@ -61,20 +63,51 @@ function Distancia({ valor }) {
   );
 }
 
-// Foto (o, si no hay, un cuadro gris con un ícono) con bordes redondeados
-function Foto({ uri, icono, emoji, estilo }) {
+// Foto con bordes redondeados. Sin foto: la ilustración de la categoría (producto) o del rubro (comercio)
+function Foto({ uri, icono, categoria, rubro, estilo }) {
   const { colores } = useTema();
   return (
     <View style={[estilo, { backgroundColor: colores.panel, overflow: 'hidden' }]}>
       {uri ? (
         <Image source={{ uri: urlCompleta(uri) }} style={StyleSheet.absoluteFill} />
       ) : (
-        <View style={estilos.sinFoto}>
-          {emoji ? <Text style={{ fontSize: 34 }}>{emoji}</Text> : <Icono nombre={icono} tamano={30} color={colores.gris} />}
-        </View>
+        categoria !== undefined || rubro !== undefined ? (
+          <IconoCategoria categoria={categoria} rubro={rubro} llenar tamano={34} />
+        ) : (
+          <View style={estilos.sinFoto}>
+            <Icono nombre={icono} tamano={30} color={colores.gris} />
+          </View>
+        )
       )}
     </View>
   );
+}
+
+// Título de sección con su ícono en un círculo de color suave (tema.js → suaves)
+function TituloSeccion({ icono, tono, texto, alTocar, estilo }) {
+  const { colores } = useTema();
+  const suave = colores.suaves[tono];
+  const contenido = (
+    <>
+      <View style={[estilos.circuloSeccion, { backgroundColor: suave.fondo }]}>
+        <Icono nombre={icono} tamano={16} color={suave.icono} />
+      </View>
+      <Text
+        style={[estilos.titulo, { color: colores.titulo, flexShrink: 1 }, alTocar && estilos.subrayado]}
+        accessibilityRole={alTocar ? undefined : 'header'}
+      >
+        {texto}
+      </Text>
+    </>
+  );
+  if (alTocar) {
+    return (
+      <Pressable onPress={alTocar} accessibilityRole="link" style={({ pressed }) => [estilos.filaSeccion, estilo, pressed && { opacity: 0.7 }]}>
+        {contenido}
+      </Pressable>
+    );
+  }
+  return <View style={[estilos.filaSeccion, estilo]}>{contenido}</View>;
 }
 
 // Tarjeta de oferta (foto + km), la de "Vence hoy" y "Ver catálogo completo"
@@ -86,7 +119,7 @@ function TarjetaOferta({ producto, onPress }) {
       accessibilityLabel={`${producto.titulo}, ${km(producto.distancia_km) || ''}`}
       style={({ pressed }) => [{ gap: 4 }, pressed && { opacity: 0.8 }]}
     >
-      <Foto uri={producto.imagen} emoji={emojiCategoria(producto.categoria)} estilo={estilos.fotoProducto} />
+      <Foto uri={producto.imagen} categoria={producto.categoria} estilo={estilos.fotoProducto} />
       <Distancia valor={km(producto.distancia_km)} />
     </Pressable>
   );
@@ -105,7 +138,7 @@ function TarjetaComercio({ comercio, foto, onPress }) {
       style={({ pressed }) => [estilos.comercio, pressed && { opacity: 0.8 }]}
     >
       <View>
-        <Foto uri={foto} icono="storefront-outline" estilo={estilos.fotoComercio} />
+        <Foto uri={foto} rubro={comercio.rubro} estilo={estilos.fotoComercio} />
         <BotonFavorito id={comercio.id} chico estilo={[estilos.corazon, { backgroundColor: colores.superficie }]} />
       </View>
       <Text style={[estilos.nombreComercio, { color: colores.titulo }]} numberOfLines={1}>
@@ -282,18 +315,9 @@ export default function Inicio({ navigation }) {
       <View style={estilos.cuerpo}>
         {error ? <MensajeError mensaje={error} alReintentar={cargar} /> : null}
 
-        {/* "Cerca tuyo" con el buscador */}
+        {/* "Cerca tuyo" */}
         <View style={estilos.filaTitulo}>
-          <Text style={[estilos.titulo, { color: colores.titulo }]}>{t('inicio.cercaTuyo')}</Text>
-          <Pressable
-            onPress={() => navigation?.navigate?.('Catalogo')}
-            accessibilityRole="search"
-            accessibilityLabel={t('inicio.buscar')}
-            style={estilos.buscar}
-          >
-            <View style={[estilos.cajaBuscar, { backgroundColor: colores.panel, borderColor: colores.borde }]} />
-            <Icono nombre="search" tamano={20} color={colores.texto} />
-          </Pressable>
+          <TituloSeccion icono="location-outline" tono="menta" texto={t('inicio.cercaTuyo')} estilo={{ flex: 1 }} />
         </View>
       </View>
 
@@ -332,33 +356,28 @@ export default function Inicio({ navigation }) {
 
       {/* Agregado: "Vence hoy" (si no hay ninguna, no se muestra) */}
       {vencenHoy.length ? (
-        <>
-          <View style={[estilos.cuerpo, estilos.filaVenceHoy]}>
-            <Icono nombre="time-outline" tamano={20} color={colores.ambar} />
-            <Text style={[estilos.titulo, { color: colores.titulo }]} accessibilityRole="header">
-              {t('inicio.venceHoy')}
-            </Text>
-          </View>
+        <View style={[estilos.bloqueVenceHoy, { backgroundColor: colores.suaves.ambar.fondo }]}>
+          <TituloSeccion icono="time-outline" tono="durazno" texto={t('inicio.venceHoy')} estilo={estilos.tituloVenceHoy} />
           <FlatList
             horizontal
             data={vencenHoy}
             keyExtractor={(p) => `hoy-${p.id}`}
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={estilos.carrusel}
+            contentContainerStyle={estilos.carruselVenceHoy}
             renderItem={({ item }) => <TarjetaOferta producto={item} onPress={() => abrirProducto(item)} />}
           />
-        </>
+        </View>
       ) : null}
 
       {/* "Ver catálogo completo" y las ofertas */}
       <View style={estilos.cuerpo}>
-        <Text
-          onPress={() => navigation?.navigate?.('Catalogo')}
-          accessibilityRole="link"
-          style={[estilos.titulo, estilos.subrayado, { color: colores.titulo, marginTop: espacio(3) }]}
-        >
-          {t('inicio.catalogoCompleto')}
-        </Text>
+        <TituloSeccion
+          icono="pricetags-outline"
+          tono="verde"
+          texto={t('inicio.catalogoCompleto')}
+          alTocar={() => navigation?.navigate?.('Catalogo')}
+          estilo={{ marginTop: espacio(3), marginBottom: espacio(1.5) }}
+        />
       </View>
 
       <FlatList
@@ -377,7 +396,12 @@ export default function Inicio({ navigation }) {
       {misFavoritos.length ? (
         <>
           <View style={estilos.cuerpo}>
-            <Text style={[estilos.titulo, { color: colores.titulo, marginTop: espacio(3) }]}>{t('inicio.tusFavoritos')}</Text>
+            <TituloSeccion
+              icono="heart-outline"
+              tono="durazno"
+              texto={t('inicio.tusFavoritos')}
+              estilo={{ marginTop: espacio(3), marginBottom: espacio(1.5) }}
+            />
           </View>
           <FlatList
             horizontal
@@ -472,27 +496,34 @@ const estilos = StyleSheet.create({
     fontFamily: fuentes.normal,
     fontSize: 18,
   },
-  filaVenceHoy: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: espacio(0.75),
-    marginTop: espacio(3),
-    marginBottom: espacio(1.5),
-  },
-  subrayado: {
-    textDecorationLine: 'underline',
-    marginBottom: espacio(1.5),
-  },
-  buscar: {
+  filaSeccion: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: espacio(1),
   },
-  cajaBuscar: {
-    width: 130,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 1,
+  circuloSeccion: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bloqueVenceHoy: {
+    marginHorizontal: espacio(2),
+    marginTop: espacio(3),
+    paddingVertical: espacio(1.5),
+    borderRadius: radio,
+  },
+  tituloVenceHoy: {
+    paddingHorizontal: espacio(1.5),
+    marginBottom: espacio(1.5),
+  },
+  carruselVenceHoy: {
+    paddingHorizontal: espacio(1.5),
+    gap: espacio(1.5),
+  },
+  subrayado: {
+    textDecorationLine: 'underline',
   },
   carrusel: {
     paddingHorizontal: espacio(2),
@@ -524,8 +555,10 @@ const estilos = StyleSheet.create({
   },
   filaDatos: {
     flexDirection: 'row',
+    flexWrap: 'wrap', // en inglés o con muchas opiniones, las estrellas bajan abajo de los km
     alignItems: 'center',
-    gap: espacio(1),
+    columnGap: espacio(1),
+    rowGap: 2,
   },
   distancia: {
     flexDirection: 'row',

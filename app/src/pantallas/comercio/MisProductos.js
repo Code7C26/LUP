@@ -1,14 +1,14 @@
 // PASO 45 · Comercio: pantalla principal (basada en la página 11 del mockup, con el estilo de Inicio).
 // Arriba la misma barra que Inicio: el menú ☰ (MenuLateral del comercio) y el botón verde "Ayuda" (chat con Lü).
 // Después el círculo con la inicial y el nombre del comercio, con un resumen abajo ("3 disponibles · 12 vendidos").
-// (agregado) "Publicar de nuevo": atajos a lo último publicado y a lo más vendido.
 // "Productos disponibles +" y cada producto en una tarjeta:
-//   arriba: foto o emoji, nombre, precio, cantidad, "hasta el dd/mm" y el estado como etiqueta de color
+//   arriba: foto o ícono de la categoría, nombre, precio, cantidad, "hasta el dd/mm" y el estado como etiqueta de color
 //           (Disponible verde, Vendido/Donado naranja, Vencido/No disponible gris)
 //   "Descuento" y "Donaciones" son datos (etiquetas suaves), no botones
 //   abajo, una fila de acciones del mismo alto: "Editar" (si está disponible) o "Publicar de nuevo" (copia con
-//   la fecha de hoy) y botones redondos: Duplicar, Marcar como vendido, No disponible, Volver a publicar y Eliminar.
-//   Si no entran en el ancho, bajan a otra línea.
+//   la fecha de hoy) y botones redondos: Duplicar (solo junto a "Editar": "Publicar de nuevo" ya copia),
+//   Marcar como vendido, No disponible, Volver a publicar y Eliminar. Si no entran en el ancho, bajan a otra línea.
+// Un solo acceso por acción: publicar uno nuevo es el "+"; copiar uno viejo, el botón de su tarjeta.
 // Usa GET /api/mis-productos/, POST /api/mis-productos/<id>/estado/ y DELETE /api/mis-productos/<id>/ (paso 30).
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, FlatList, Image, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
@@ -20,13 +20,13 @@ import CabeceraCuenta from '../../componentes/CabeceraCuenta';
 import Esqueleto from '../../componentes/Esqueleto';
 import { EtiquetaEstado, EtiquetaInfo } from '../../componentes/EtiquetaEstado';
 import Icono from '../../componentes/Icono';
+import IconoCategoria from '../../componentes/IconoCategoria';
 import MensajeError from '../../componentes/MensajeError';
-import PublicarDeNuevo from '../../componentes/PublicarDeNuevo';
 import Vacio from '../../componentes/Vacio';
 import { useSesion } from '../../contexto/Sesion';
 import { textoDeOpcion, useIdioma } from '../../contexto/Idioma';
 import { espacio, fuentes, radio, sombra, tamanos, useTema } from '../../tema';
-import { emojiCategoria, formatoDiaMes, formatoPrecio, textoError } from '../../utilidades';
+import { formatoDiaMes, formatoPrecio, textoError } from '../../utilidades';
 
 // Los estados (products/models.py) se muestran con t('estadosProducto.X'): ver idiomas/es.js
 
@@ -82,7 +82,7 @@ function FilaMiProducto({ producto, ocupado, alCambiarEstado, alEditar, alElimin
           {producto.imagen ? (
             <Image source={{ uri: urlCompleta(producto.imagen) }} style={StyleSheet.absoluteFill} accessibilityIgnoresInvertColors />
           ) : (
-            <Text style={estilos.emoji}>{emojiCategoria(producto.categoria)}</Text>
+            <IconoCategoria categoria={producto.categoria} llenar tamano={28} />
           )}
         </View>
 
@@ -131,8 +131,11 @@ function FilaMiProducto({ producto, ocupado, alCambiarEstado, alEditar, alElimin
             estilo={estilos.principal}
           />
         )}
-        {/* Duplicar: copia el producto (foto, precios, descripción) con la fecha de hoy */}
-        <BotonRedondo icono="copy-outline" etiqueta={t('misProductos.duplicar')} onPress={alCopiar} deshabilitado={ocupado} />
+        {/* Duplicar: copia el producto (foto, precios, descripción) con la fecha de hoy. Si el botón principal ya es
+            "Publicar de nuevo" (que hace lo mismo), no se repite */}
+        {disponible && !vencido ? (
+          <BotonRedondo icono="copy-outline" etiqueta={t('misProductos.duplicar')} onPress={alCopiar} deshabilitado={ocupado} />
+        ) : null}
         {disponible ? (
           <>
             <BotonRedondo
@@ -269,12 +272,6 @@ export default function MisProductos({ navigation }) {
 
           <CabeceraCuenta nombre={nombre} resumen={resumen} alTocar={() => navigation.navigate('Perfil')} />
 
-          {/* Atajos: volver a cargar lo último o lo más vendido */}
-          <PublicarDeNuevo
-            productos={productos}
-            alElegir={(p) => navigation.navigate('FormProducto', { copiarDe: p.id })}
-          />
-
           {/* "Productos disponibles +" (mismo estilo que los títulos de Inicio) */}
           <View style={estilos.filaNuevo}>
             <Text style={[estilos.tituloSeccion, { color: colores.titulo }]} accessibilityRole="header">
@@ -296,12 +293,8 @@ export default function MisProductos({ navigation }) {
       }
       ListEmptyComponent={
         !error ? (
-          <Vacio
-            icono="cube-outline"
-            texto={t('misProductos.vacio')}
-            boton={t('misProductos.publicarPrimero')}
-            alTocar={() => navigation.navigate('FormProducto')}
-          />
+          // Sin botón: para publicar ya está el "+" de arriba
+          <Vacio icono="cube-outline" texto={t('misProductos.vacio')} />
         ) : null
       }
       renderItem={({ item }) => (
@@ -369,9 +362,6 @@ const estilos = StyleSheet.create({
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  emoji: {
-    fontSize: 30,
   },
   datos: {
     flex: 1,

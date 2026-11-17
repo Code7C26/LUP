@@ -22,9 +22,11 @@ import Bienvenida from '../pantallas/Bienvenida';
 import Carrito from '../pantallas/Carrito';
 import DetalleProducto from '../pantallas/DetalleProducto';
 import CambiarClave from '../pantallas/CambiarClave';
+import Configuracion from '../pantallas/Configuracion';
 import EditarComercio from '../pantallas/EditarComercio';
 import EditarOrganizacion from '../pantallas/EditarOrganizacion';
 import EditarPerfil from '../pantallas/EditarPerfil';
+import ElegirIdioma from '../pantallas/ElegirIdioma';
 import Login from '../pantallas/Login';
 import Mapa from '../pantallas/Mapa';
 import MisFavoritos from '../pantallas/MisFavoritos';
@@ -38,7 +40,7 @@ import { useOpcionesStack, useTemaNavegacion } from './opciones';
 import TabsComercio from './TabsComercio';
 import TabsConsumidor from './TabsConsumidor';
 import TabsOrganizacion from './TabsOrganizacion';
-import { useIdioma } from '../contexto/Idioma';
+import { useIdioma, useIdiomaInicial } from '../contexto/Idioma';
 
 const Stack = createNativeStackNavigator();
 // Para abrir pantallas desde afuera de ellas (al tocar una notificación push)
@@ -55,6 +57,7 @@ function Pestanas() {
 export default function Navegacion() {
   const { usuario, cargando, invitado } = useSesion();
   const { t } = useIdioma();
+  const idiomaInicial = useIdiomaInicial(); // { cargado, elegido }: "Elegí tu idioma" la primera vez
   const bienvenida = useBienvenida();
   const tema = useTemaNavegacion();
   const opciones = useOpcionesStack();
@@ -74,7 +77,11 @@ export default function Navegacion() {
     }
   }, [ultimoAviso, listoParaAvisos]);
 
-  if (cargando || !bienvenida.cargada) return <Cargando texto={t('navegacion.abriendo')} />;
+  if (cargando || !bienvenida.cargada || !idiomaInicial.cargado) return <Cargando texto={t('navegacion.abriendo')} />;
+
+  // La primera vez que se abre la app (no hay idioma guardado), antes de todo: "Elegí tu idioma / Choose your
+  // language". Al elegir se guarda y se sigue con la portada o la bienvenida, como siempre.
+  if (!idiomaInicial.elegido) return <ElegirIdioma />;
 
   // Una bienvenida por cuenta (y una para el invitado): "Cerrar sesión" las borra, así que se ve cada vez que se entra
   const bienvenidaVista = bienvenida.vista(claveBienvenida(usuario));
@@ -112,6 +119,8 @@ export default function Navegacion() {
             <Stack.Screen name="MisFavoritos" component={MisFavoritos} options={{ title: '' }} />
             {/* Chat de ayuda con Lü (desde Inicio y Perfil, también como invitado). Tiene su propia cabecera */}
             <Stack.Screen name="Ayuda" component={Ayuda} options={{ headerShown: false }} />
+            {/* Configuración (apariencia, idioma y links legales): engranaje de Perfil y menú ☰, todos los roles */}
+            <Stack.Screen name="Configuracion" component={Configuracion} options={{ title: '' }} />
             {/* "Editar mis datos" de Perfil. El título grande está dentro de la pantalla */}
             {usuario ? (
               <>

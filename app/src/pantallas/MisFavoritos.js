@@ -8,6 +8,7 @@ import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'rea
 import { api } from '../api/cliente';
 import BotonFavorito from '../componentes/BotonFavorito';
 import CalificacionComercio from '../componentes/CalificacionComercio';
+import IconoCategoria from '../componentes/IconoCategoria';
 import Encabezado from '../componentes/Encabezado';
 import Esqueleto from '../componentes/Esqueleto';
 import FilaProducto from '../componentes/FilaProducto';
@@ -17,7 +18,6 @@ import Vacio from '../componentes/Vacio';
 import { useFavoritos } from '../contexto/Favoritos';
 import { textoDeOpcion, useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, radio, sombra, tamanos, useTema } from '../tema';
-import { emojiRubro } from '../utilidades';
 
 const OFERTAS_A_MOSTRAR = 3; // el resto, con "Ver las N ofertas" (abre el comercio)
 
@@ -38,8 +38,8 @@ function TarjetaFavorito({ comercio, ofertas, navigation }) {
           accessibilityLabel={t('favoritos.verComercio', { nombre: comercio.nombre_fantasia })}
           style={({ pressed }) => [estilos.filaComercio, pressed && { opacity: 0.8 }]}
         >
-          <View style={[estilos.icono, { backgroundColor: colores.panel }]}>
-            <Text style={{ fontSize: 24 }}>{emojiRubro(comercio.rubro)}</Text>
+          <View style={[estilos.icono, { overflow: 'hidden' }]}>
+            <IconoCategoria rubro={comercio.rubro} llenar tamano={24} />
           </View>
           <View style={{ flex: 1, gap: 2 }}>
             <Text style={[estilos.nombre, { color: colores.titulo }]} numberOfLines={1}>

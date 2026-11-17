@@ -7,7 +7,7 @@
 // el nombre en negrita con la flechita (despliega dirección, horario y "Cómo llegar")
 // y los productos en filas: foto a la izquierda y tarjeta gris con "Reservar".
 // Al final, "Opiniones": el promedio grande y las últimas 20 (con la respuesta del comercio, si hay).
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { FlatList, Image, Linking, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -35,7 +35,7 @@ function Opinion({ opinion, comercio }) {
   return (
     <View style={[estilos.opinion, { backgroundColor: colores.superficie }]}>
       <View style={estilos.filaEntre}>
-        <Estrellas valor={opinion.puntaje} tamano={15} />
+        <Estrellas valor={opinion.puntaje} tamano="chico" />
         <Text style={[estilos.mini, { color: colores.gris }]}>{formatoFecha(opinion.creada_en)}</Text>
       </View>
       <Text style={[estilos.autor, { color: colores.titulo }]} numberOfLines={1}>
@@ -48,13 +48,14 @@ function Opinion({ opinion, comercio }) {
             {opinion.producto}
           </Text>
           {opinion.puntaje_producto ? (
+            // Como la web: "· Producto ★★★★☆" con estrellas chicas
             <View
               style={estilos.linea}
               accessible
               accessibilityLabel={t('detalleComercio.productoEstrellas', { n: opinion.puntaje_producto })}
             >
-              <Icono nombre="star" tamano={11} color={colores.ambar} />
-              <Text style={[estilos.mini, { color: colores.gris }]}>{opinion.puntaje_producto}</Text>
+              <Text style={[estilos.mini, { color: colores.gris }]}>· {t('detalleComercio.producto')}</Text>
+              <Estrellas valor={opinion.puntaje_producto} tamano={11} />
             </View>
           ) : null}
         </View>
@@ -101,9 +102,11 @@ function Opiniones({ comercio }) {
           accessible
           accessibilityLabel={t('detalleComercio.promedioAccesible', { promedio: promedioTexto, cantidad: textoCantidad })}
         >
-          <Icono nombre="star" tamano={28} color={colores.ambar} />
           <Text style={[estilos.numeroPromedio, { color: colores.titulo }]}>{promedioTexto}</Text>
-          <Text style={[estilos.texto, { color: colores.gris }]}>· {textoCantidad}</Text>
+          <View style={{ gap: 2, flexShrink: 1 }}>
+            <Estrellas valor={promedio} tamano="grande" />
+            <Text style={[estilos.texto, { color: colores.gris }]}>{textoCantidad}</Text>
+          </View>
         </View>
       ) : null}
 
@@ -131,6 +134,7 @@ export default function DetalleComercio({ navigation, route }) {
   const [actualizando, setActualizando] = useState(false);
   const [error, setError] = useState('');
   const [verDatos, setVerDatos] = useState(false); // la flechita al lado del nombre
+  const lista = useRef(null); // para bajar a "Opiniones" (el pie de la lista) al tocar las estrellas
 
   const cargar = useCallback(async () => {
     setError('');
@@ -204,11 +208,13 @@ export default function DetalleComercio({ navigation, route }) {
           <Icono nombre={verDatos ? 'chevron-up' : 'chevron-down'} tamano={20} color={colores.texto} />
         </Pressable>
 
-        {/* "★ 4,6 (23)" (nada si todavía no tiene opiniones) */}
+        {/* Como la web: "★★★★½ 4,5 · 12 opiniones" (o "Nuevo"). Al tocar, baja a las opiniones */}
         <CalificacionComercio
           promedio={comercio.calificacion_promedio}
-          cantidad={comercio.calificaciones}
-          estilo={{ marginTop: 4 }}
+          cantidad={comercio.calificaciones || 0}
+          variante="completa"
+          alTocar={comercio.calificaciones ? () => lista.current?.scrollToEnd({ animated: true }) : undefined}
+          estilo={{ marginTop: 6 }}
         />
 
         {verDatos ? (
@@ -244,6 +250,7 @@ export default function DetalleComercio({ navigation, route }) {
   return (
     <View style={{ flex: 1, backgroundColor: colores.fondo }}>
       <FlatList
+        ref={lista}
         style={{ backgroundColor: colores.fondo }}
         contentContainerStyle={{ paddingBottom: espacio(10) }}
         data={productos}
@@ -268,7 +275,7 @@ export default function DetalleComercio({ navigation, route }) {
         }
         renderItem={({ item }) => (
           <View style={estilos.cuerpo}>
-            <FilaProducto producto={item} onPress={() => navigation.navigate('DetalleProducto', { id: item.id })} />
+            <FilaProducto producto={item} conBarraCarrito onPress={() => navigation.navigate('DetalleProducto', { id: item.id })} />
           </View>
         )}
         ItemSeparatorComponent={() => <View style={{ height: espacio(2) }} />}
@@ -336,7 +343,7 @@ const estilos = StyleSheet.create({
   promedio: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: espacio(1.5),
   },
   numeroPromedio: {
     fontFamily: fuentes.negrita,

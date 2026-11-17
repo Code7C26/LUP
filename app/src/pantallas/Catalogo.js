@@ -18,7 +18,7 @@ import MensajeError from '../componentes/MensajeError';
 import FilaProducto from '../componentes/FilaProducto';
 import { useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, radio, tamanos, useTema } from '../tema';
-import { emojiCategoria } from '../utilidades';
+import { tonoCategoria } from '../utilidades';
 
 // Mismas categorías que la web (products/models.py → CATEGORIAS). El texto es la clave de idiomas/es.js
 const CATEGORIAS = [
@@ -75,6 +75,8 @@ export default function Catalogo({ navigation, route }) {
   const [actualizando, setActualizando] = useState(false);
   const [error, setError] = useState('');
   const [coords, setCoords] = useState(null);
+  // Estrellas de cada comercio (la API de productos no las trae): { idComercio: { promedio, cantidad } }
+  const [calificaciones, setCalificaciones] = useState({});
 
   // Si se llegó desde "Ver catálogo" de un comercio
   useEffect(() => {
@@ -101,6 +103,23 @@ export default function Catalogo({ navigation, route }) {
     const espera = setTimeout(() => setBusqueda(texto.trim()), 500);
     return () => clearTimeout(espera);
   }, [texto]);
+
+  // Una sola vez al abrir: las estrellas de los comercios, para mostrarlas en cada producto.
+  // Si falla, el catálogo se ve igual, sin estrellas.
+  useEffect(() => {
+    let activo = true;
+    api('/comercios/')
+      .then((lista) => {
+        if (!activo) return;
+        setCalificaciones(
+          Object.fromEntries(lista.map((c) => [c.id, { promedio: c.calificacion_promedio, cantidad: c.calificaciones || 0 }]))
+        );
+      })
+      .catch(() => {});
+    return () => {
+      activo = false;
+    };
+  }, []);
 
   const cargar = useCallback(async () => {
     setError('');
@@ -203,7 +222,9 @@ export default function Catalogo({ navigation, route }) {
           <Chip
             key={clave || 'todas'}
             texto={t(nombre)}
-            emoji={clave ? emojiCategoria(clave) : null}
+            categoria={clave || undefined}
+            icono={clave ? undefined : 'apps-outline'}
+            tono={clave ? tonoCategoria(clave) : null}
             activo={categoria === clave}
             onPress={() => setCategoria(clave)}
           />
@@ -263,6 +284,8 @@ export default function Catalogo({ navigation, route }) {
           <FilaProducto
             producto={item}
             mostrarComercio
+            conBarraCarrito
+            calificacion={calificaciones[item.comercio_id]}
             onPress={() => navigation?.navigate?.('DetalleProducto', { id: item.id })}
           />
         )}
@@ -324,9 +347,6 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     gap: espacio(1),
     marginTop: espacio(4),
-  },
-  emojiVacio: {
-    fontSize: 40,
   },
   textoVacio: {
     fontFamily: fuentes.normal,

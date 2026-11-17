@@ -31,8 +31,23 @@ const paletaClara = {
   sobreVerde: '#FFFFFF',
   sobreVerdeProfundo: '#FFFFFF', // texto de los botones
   corazon: '#E0533D', // favoritos
+  // Bloques destacados (Perfil de invitado, tarjeta de Puntos): el verde de la marca en los DOS modos,
+  // con texto blanco y verde claro encima (contraste 13:1 y 8:1)
+  marca: '#073425',
+  sobreMarca: '#FFFFFF',
+  sobreMarcaSuave: '#B6D1A1',
   sombra: '#000000',
   velo: 'rgba(0, 0, 0, 0.45)',
+  // Fondos suaves de la paleta de la marca (#073425, #71A24D, #B6D1A1, #E0533D) para dar un poco de color
+  // sin perder lo minimalista: chips de categorías, íconos de secciones, "Vence hoy", descuentos y estados.
+  // "fondo" es el relleno; "icono" el color de un ícono o un punto encima (contraste de 3:1 o más).
+  // El TEXTO encima va siempre con colores.texto o colores.titulo, que se leen bien sobre todos.
+  suaves: {
+    verde: { fondo: '#B6D1A1', icono: '#073425' }, // verde claro de la marca
+    menta: { fondo: '#EEF4EA', icono: '#153D30' }, // verde muy suave
+    durazno: { fondo: '#FBE6E2', icono: '#E0533D' }, // suave del #E0533D
+    ambar: { fondo: '#FDF1DE', icono: '#E0533D' }, // ámbar suave (el ícono, del rojo de la marca)
+  },
 };
 
 // Modo oscuro: la misma estructura, con los verdes oscuros de la web
@@ -54,6 +69,13 @@ const paletaOscura = {
   error: '#F2B8B5',
   sobreVerdeProfundo: '#0E1713',
   velo: 'rgba(0, 0, 0, 0.55)',
+  // Las mismas, oscurecidas sobre el fondo oscuro (el texto claro encima se lee bien)
+  suaves: {
+    verde: { fondo: '#24392D', icono: '#B6D1A1' },
+    menta: { fondo: '#1F3329', icono: '#93C46E' },
+    durazno: { fondo: '#3B2320', icono: '#F0A193' },
+    ambar: { fondo: '#3A2B13', icono: '#F0A193' },
+  },
 };
 
 // Tipografías del mockup (se cargan en App.js):

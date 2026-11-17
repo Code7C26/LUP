@@ -7,10 +7,12 @@ import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { urlCompleta } from '../api/cliente';
 import { useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, radio, sombra, tamanos, useTema } from '../tema';
-import { emojiCategoria, formatoPrecio, textoKm } from '../utilidades';
+import { formatoPrecio, textoKm } from '../utilidades';
+import CalificacionComercio from './CalificacionComercio';
 import Icono from './Icono';
+import IconoCategoria from './IconoCategoria';
 
-// La foto (o el emoji de la categoría si no tiene) con el % de descuento encima
+// La foto (o el ícono de la categoría si no tiene) con el % de descuento encima
 function Foto({ producto, estilo }) {
   const { colores } = useTema();
   const { t } = useIdioma();
@@ -19,12 +21,12 @@ function Foto({ producto, estilo }) {
       {producto.imagen ? (
         <Image source={{ uri: urlCompleta(producto.imagen) }} style={StyleSheet.absoluteFill} />
       ) : (
-        <View style={estilos.sinFoto}>
-          <Text style={estilos.emoji}>{emojiCategoria(producto.categoria)}</Text>
-        </View>
+        <IconoCategoria categoria={producto.categoria} llenar tamano={32} />
       )}
       {producto.porcentaje_descuento > 0 ? (
-        <Text style={[estilos.descuento, { backgroundColor: colores.ambar }]}>-{producto.porcentaje_descuento}%</Text>
+        <Text style={[estilos.descuento, { backgroundColor: colores.suaves.durazno.fondo, color: colores.texto }]}>
+          -{producto.porcentaje_descuento}%
+        </Text>
       ) : null}
       {producto.es_donacion ? (
         <View style={[estilos.corazon, { backgroundColor: colores.superficie }]} accessibilityLabel={t('tarjeta.tambienDonacion')}>
@@ -35,7 +37,8 @@ function Foto({ producto, estilo }) {
   );
 }
 
-export default function TarjetaProducto({ producto, onPress, variante = 'fila', estilo }) {
+// "calificacion" (opcional): { promedio, cantidad } del comercio (de /api/comercios/) → estrellas o "Nuevo"
+export default function TarjetaProducto({ producto, onPress, variante = 'fila', estilo, calificacion }) {
   const { colores } = useTema();
   const { t } = useIdioma();
   const distancia = textoKm(producto.distancia_km);
@@ -70,6 +73,9 @@ export default function TarjetaProducto({ producto, onPress, variante = 'fila', 
             {producto.comercio}
           </Text>
         </View>
+        {calificacion ? (
+          <CalificacionComercio promedio={calificacion.promedio} cantidad={calificacion.cantidad} tamano={11} />
+        ) : null}
 
         <View style={estilos.precios}>
           <Text style={[estilos.precio, { color: colores.titulo }]}>{formatoPrecio(producto.precio_descuento)}</Text>
@@ -113,19 +119,10 @@ const estilos = StyleSheet.create({
     width: '100%',
     height: 120,
   },
-  sinFoto: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emoji: {
-    fontSize: 40,
-  },
   descuento: {
     position: 'absolute',
     top: 8,
     left: 8,
-    color: '#FFFFFF',
     fontFamily: fuentes.negrita,
     fontSize: tamanos.mini,
     paddingHorizontal: 7,

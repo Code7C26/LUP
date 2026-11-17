@@ -2,9 +2,9 @@
 // Con sesión: los datos del usuario (GET /api/auth/yo/) con "Editar mis datos" (EditarPerfil) y
 // "Cambiar contraseña" (CambiarClave), los de su comercio u organización (EditarComercio / EditarOrganizacion),
 // el recuadro de soporte ("Chatear con Lü" → pantalla Ayuda, y WhatsApp / teléfono / Instagram) y "Cerrar sesión".
-// Sin sesión: "Iniciar sesión" y "Registrarme".
-// PROPUESTA DE ESTÉTICA: cabecera con foto, filas con íconos (menos texto),
-// "Apariencia" para elegir claro / oscuro / automático y el soporte en 3 botones redondos.
+// Sin sesión: "Sumate a Lüp" con el logo, tres beneficios, "Crear cuenta gratis" e "Iniciar sesión".
+// PROPUESTA DE ESTÉTICA: cabecera con foto, filas con íconos (menos texto) y el soporte en 3 botones redondos.
+// Arriba a la derecha, el engranaje abre Configuración (apariencia, idioma, términos y privacidad).
 // "Tu impacto": consumidor → comidas rescatadas, comercios y calificaciones (de /api/mis-reservas/);
 //               organización → donaciones pedidas y recibidas (de /api/mis-solicitudes-donacion/).
 import { useCallback, useEffect, useState } from 'react';
@@ -15,12 +15,12 @@ import Boton from '../componentes/Boton';
 import Cifras from '../componentes/Cifras';
 import Icono from '../componentes/Icono';
 import MensajeError from '../componentes/MensajeError';
-import SelectorApariencia from '../componentes/SelectorApariencia';
-import SelectorIdioma from '../componentes/SelectorIdioma';
+import Logo from '../componentes/Logo';
 import { claveBienvenida, useBienvenida } from '../contexto/Bienvenida';
 import { t as traducir, textoDesdeEspanol, useIdioma } from '../contexto/Idioma';
 import { useSesion } from '../contexto/Sesion';
 import { espacio, fuentes, radio, sombra, tamanos, useTema } from '../tema';
+import { formatoPrecio, PESOS_POR_PUNTO } from '../utilidades';
 
 // Mismos datos que el pie de página de la web (scr/templates/base.html)
 const SOPORTE = {
@@ -92,6 +92,101 @@ function FilaAccion({ icono, texto, valor, alTocar }) {
       ) : null}
       <Icono nombre="chevron-forward" tamano={16} color={colores.gris} />
     </Pressable>
+  );
+}
+
+// Engranaje de arriba a la derecha: abre Configuración ("sobreMarca": blanco, para ir encima del bloque verde)
+function BotonConfiguracion({ navigation, sobreMarca, estilo }) {
+  const { colores } = useTema();
+  const { t } = useIdioma();
+  return (
+    <View style={[estilos.barraArriba, estilo]}>
+      <Pressable
+        onPress={() => navigation?.navigate?.('Configuracion')}
+        hitSlop={8}
+        accessibilityRole="button"
+        accessibilityLabel={t('configuracion.abrir')}
+        style={({ pressed }) => [
+          estilos.botonBarra,
+          { backgroundColor: sobreMarca ? 'rgba(255, 255, 255, 0.14)' : colores.panel },
+          pressed && { opacity: 0.7 },
+        ]}
+      >
+        <Icono nombre="settings-outline" tamano={20} color={sobreMarca ? colores.sobreMarca : colores.texto} />
+      </Pressable>
+    </View>
+  );
+}
+
+// Hojas del logo, muy suaves, de decoración en las esquinas de los bloques verdes
+function Hojas({ grande = 120 }) {
+  const { colores } = useTema();
+  return (
+    <View style={StyleSheet.absoluteFill} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      <Icono
+        nombre="leaf"
+        tamano={grande}
+        color={colores.sobreMarcaSuave}
+        estilo={[estilos.hoja, { top: -grande * 0.25, right: -grande * 0.2, transform: [{ rotate: '35deg' }] }]}
+      />
+      <Icono
+        nombre="leaf"
+        tamano={grande * 0.6}
+        color={colores.sobreMarcaSuave}
+        estilo={[estilos.hoja, { bottom: -grande * 0.1, left: -grande * 0.12, transform: [{ rotate: '-130deg' }] }]}
+      />
+    </View>
+  );
+}
+
+// Tarjeta de un beneficio (Perfil de invitado): ícono en un círculo, título y una línea
+function TarjetaBeneficio({ icono, titulo, texto, children }) {
+  const { colores } = useTema();
+  return (
+    <View style={[estilos.tarjetaBeneficio, { backgroundColor: colores.superficie }]}>
+      <View style={estilos.filaBeneficio}>
+        <View style={[estilos.circuloBeneficio, { backgroundColor: colores.suaves.verde.fondo }]}>
+          <Icono nombre={icono} tamano={21} color={colores.suaves.verde.icono} />
+        </View>
+        <View style={{ flex: 1, gap: 2 }}>
+          <Text style={[estilos.tituloBeneficio, { color: colores.titulo }]}>{titulo}</Text>
+          <Text style={[estilos.textoBeneficio, { color: colores.gris }]}>{texto}</Text>
+        </View>
+      </View>
+      {children}
+    </View>
+  );
+}
+
+// Consumidor: "Mis puntos" destacado arriba del Perfil, con el saldo grande y "Ver merch" (la única acción)
+function TarjetaPuntos({ saldo, alVerMerch }) {
+  const { colores } = useTema();
+  const { t } = useIdioma();
+  const cargado = saldo !== null && saldo !== undefined;
+  return (
+    <View style={[estilos.tarjetaPuntos, { backgroundColor: colores.marca }]}>
+      <Hojas grande={110} />
+      <View
+        style={{ flex: 1, minWidth: 140, gap: 2 }}
+        accessible
+        accessibilityLabel={cargado ? `${t('perfil.puntosLup')}: ${t('puntos.saldoAccesible', { n: saldo })}` : t('perfil.puntosLup')}
+      >
+        <Text style={[estilos.etiquetaPuntos, { color: colores.sobreMarcaSuave }]}>{t('perfil.puntosLup')}</Text>
+        <Text style={[estilos.saldoPuntos, { color: colores.sobreMarca }]} numberOfLines={1} adjustsFontSizeToFit>
+          {cargado ? saldo : '-'}
+          {cargado ? <Text style={estilos.unidadPuntos}> {t('puntos.unidad', { n: saldo })}</Text> : null}
+        </Text>
+      </View>
+      <Pressable
+        onPress={alVerMerch}
+        accessibilityRole="button"
+        accessibilityLabel={t('perfil.verMerch')}
+        style={({ pressed }) => [estilos.botonPuntos, { backgroundColor: colores.sobreMarca }, pressed && { opacity: 0.85 }]}
+      >
+        <Icono nombre="gift-outline" tamano={16} color={colores.marca} />
+        <Text style={[estilos.textoBotonPuntos, { color: colores.marca }]}>{t('perfil.verMerch')}</Text>
+      </Pressable>
+    </View>
   );
 }
 
@@ -196,6 +291,20 @@ export default function Perfil({ navigation }) {
 
   const [impacto, setImpacto] = useState(null); // los números de "Tu impacto"
   const [saldoPuntos, setSaldoPuntos] = useState(null); // Puntos Lüp (solo consumidor)
+  const [merch, setMerch] = useState([]); // invitado: el merch de Puntos Lüp, si la API lo da sin sesión
+
+  // Invitado: se intenta traer el merch real (GET /api/puntos/). Hoy esa API es solo para consumidores con
+  // sesión y responde 401: en ese caso se muestra la tarjeta de puntos sin la lista.
+  useEffect(() => {
+    if (usuario) return undefined;
+    let activo = true;
+    api('/puntos/')
+      .then((r) => activo && setMerch(Array.isArray(r?.merch) ? r.merch : []))
+      .catch(() => activo && setMerch([]));
+    return () => {
+      activo = false;
+    };
+  }, [usuario]);
 
   const cargar = useCallback(async () => {
     if (!usuario) return;
@@ -247,30 +356,56 @@ export default function Perfil({ navigation }) {
   }
 
   // ---- Sin sesión ----
+  // Arriba el bloque verde de la marca con el logo y el lema; tres tarjetas (precio, desperdicio, puntos);
+  // UN botón "Crear cuenta" y UN link "Ya tengo cuenta"; abajo, la ayuda.
   if (!usuario) {
     return (
       <ScrollView style={{ backgroundColor: colores.fondo }} contentContainerStyle={estilos.contenido}>
-        <View style={estilos.cabecera}>
-          <View style={[estilos.avatar, { backgroundColor: colores.menta }]}>
-            <Icono nombre="person-outline" tamano={40} color={colores.verdeHover} />
-          </View>
-          <Text style={[estilos.nombre, { color: colores.titulo }]}>{t('perfil.invitado')}</Text>
-          <Text style={[estilos.subtitulo, { color: colores.gris }]}>{t('perfil.invitadoTexto')}</Text>
+        <View style={[estilos.hero, { backgroundColor: colores.marca }]}>
+          <Hojas grande={150} />
+          <BotonConfiguracion navigation={navigation} sobreMarca estilo={estilos.engranajeHero} />
+          <Logo ancho={104} claro />
+          <Text style={[estilos.lema, { color: colores.sobreMarca }]} accessibilityRole="header">
+            {t('perfil.lema')}
+          </Text>
+          <Text style={[estilos.lemaTexto, { color: colores.sobreMarcaSuave }]}>{t('perfil.lemaTexto')}</Text>
         </View>
-        <Boton texto={t('login.iniciarSesion')} icono="log-in-outline" onPress={() => navigation.navigate('Login')} />
-        <Boton texto={t('perfil.crearCuenta')} variante="secundario" onPress={() => navigation.navigate('Registro')} />
-        <Grupo titulo={t('perfil.apariencia')}>
-          <View style={{ padding: espacio(1) }}>
-            <SelectorApariencia />
-          </View>
-        </Grupo>
-        <Grupo titulo={t('idioma.titulo')}>
-          <View style={{ padding: espacio(1) }}>
-            <SelectorIdioma />
-          </View>
-        </Grupo>
+
+        <View style={estilos.beneficios}>
+          <TarjetaBeneficio icono="pricetag-outline" titulo={t('perfil.ahorroTitulo')} texto={t('perfil.ahorroTexto')} />
+          <TarjetaBeneficio icono="leaf-outline" titulo={t('perfil.desperdicioTitulo')} texto={t('perfil.desperdicioTexto')} />
+          <TarjetaBeneficio
+            icono="star-outline"
+            titulo={t('perfil.puntosLup')}
+            texto={t('perfil.puntosTexto', { monto: formatoPrecio(PESOS_POR_PUNTO) })}
+          >
+            {merch.length ? (
+              <View style={estilos.merch}>
+                {merch.map((m) => (
+                  <View key={m.id} style={[estilos.itemMerch, { backgroundColor: colores.fondo }]}>
+                    <Text style={[estilos.textoMerch, { color: colores.texto }]} numberOfLines={1}>
+                      {m.nombre}
+                    </Text>
+                    <Text style={[estilos.ptsMerch, { color: colores.verdeHover }]}>{t('puntos.pts', { n: m.puntos })}</Text>
+                  </View>
+                ))}
+              </View>
+            ) : null}
+          </TarjetaBeneficio>
+        </View>
+
+        <View style={estilos.acciones}>
+          <Boton texto={t('perfil.crearCuenta')} onPress={() => navigation.navigate('Registro')} />
+          <Text
+            onPress={() => navigation.navigate('Login')}
+            accessibilityRole="link"
+            style={[estilos.yaTengoCuenta, { color: colores.verdeHover }]}
+          >
+            {t('perfil.yaTengoCuenta')}
+          </Text>
+        </View>
+
         <Soporte navigation={navigation} />
-        <Boton texto={t('perfil.verBienvenida')} icono="sparkles-outline" variante="texto" chico onPress={() => navigation.navigate('VerBienvenida', { rol: usuario?.rol || 'consumidor' })} />
       </ScrollView>
     );
   }
@@ -296,6 +431,8 @@ export default function Perfil({ navigation }) {
         />
       }
     >
+      <BotonConfiguracion navigation={navigation} />
+
       <View style={estilos.cabecera}>
         {foto ? (
           <Image source={{ uri: foto }} style={estilos.avatar} accessibilityLabel={t('perfil.tuFoto')} />
@@ -319,22 +456,16 @@ export default function Perfil({ navigation }) {
         />
       </View>
 
+      {/* Puntos Lüp destacado, arriba de todo lo demás */}
+      {datos?.rol === 'consumidor' ? (
+        <TarjetaPuntos saldo={saldoPuntos} alVerMerch={() => navigation.navigate('MisPuntos')} />
+      ) : null}
+
       <MensajeError mensaje={error} alReintentar={cargar} />
 
       {impacto ? (
         <Grupo titulo={t('perfil.tuImpacto')}>
           <Cifras datos={impacto.map((d) => ({ ...d, texto: t(d.texto) }))} />
-        </Grupo>
-      ) : null}
-
-      {datos?.rol === 'consumidor' ? (
-        <Grupo titulo={t('perfil.puntosLup')}>
-          <FilaAccion
-            icono="star-outline"
-            texto={t('perfil.misPuntos')}
-            valor={saldoPuntos === null ? null : t('puntos.pts', { n: saldoPuntos })}
-            alTocar={() => navigation.navigate('MisPuntos')}
-          />
         </Grupo>
       ) : null}
 
@@ -379,18 +510,6 @@ export default function Perfil({ navigation }) {
         </Grupo>
       ) : null}
 
-      <Grupo titulo={t('perfil.apariencia')}>
-        <View style={{ padding: espacio(1) }}>
-          <SelectorApariencia />
-        </View>
-      </Grupo>
-
-      <Grupo titulo={t('idioma.titulo')}>
-        <View style={{ padding: espacio(1) }}>
-          <SelectorIdioma />
-        </View>
-      </Grupo>
-
       <Soporte navigation={navigation} />
 
       <Boton texto={t('perfil.verBienvenida')} icono="sparkles-outline" variante="texto" chico onPress={() => navigation.navigate('VerBienvenida', { rol: usuario?.rol || 'consumidor' })} />
@@ -408,7 +527,147 @@ const estilos = StyleSheet.create({
   cabecera: {
     alignItems: 'center',
     gap: espacio(1),
+    marginTop: -espacio(2), // el engranaje queda en la misma altura que la foto, a la derecha
+  },
+  barraArriba: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginBottom: -espacio(1.5),
+  },
+  botonBarra: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  hero: {
+    alignItems: 'center',
+    gap: espacio(1.25),
+    marginHorizontal: -espacio(2),
+    marginTop: -espacio(2),
+    paddingTop: espacio(2),
+    paddingBottom: espacio(4),
+    paddingHorizontal: espacio(3),
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
+    overflow: 'hidden',
+  },
+  engranajeHero: {
+    alignSelf: 'stretch',
+    marginBottom: -espacio(1),
+  },
+  hoja: {
+    position: 'absolute',
+    opacity: 0.12,
+  },
+  lema: {
+    fontFamily: fuentes.marca,
+    fontSize: tamanos.grande,
+    lineHeight: 32,
+    textAlign: 'center',
     marginTop: espacio(1),
+  },
+  lemaTexto: {
+    fontFamily: fuentes.normal,
+    fontSize: tamanos.normal,
+    lineHeight: 21,
+    textAlign: 'center',
+  },
+  beneficios: {
+    gap: espacio(1.25),
+  },
+  tarjetaBeneficio: {
+    borderRadius: radio + 4,
+    padding: espacio(2),
+    gap: espacio(1.5),
+  },
+  filaBeneficio: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: espacio(1.5),
+  },
+  circuloBeneficio: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tituloBeneficio: {
+    fontFamily: fuentes.marca,
+    fontSize: tamanos.normal,
+  },
+  textoBeneficio: {
+    fontFamily: fuentes.normal,
+    fontSize: tamanos.chico,
+    lineHeight: 18,
+  },
+  merch: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: espacio(1),
+  },
+  itemMerch: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    maxWidth: '100%',
+    paddingHorizontal: espacio(1.25),
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
+  textoMerch: {
+    flexShrink: 1,
+    fontFamily: fuentes.normal,
+    fontSize: tamanos.chico,
+  },
+  ptsMerch: {
+    fontFamily: fuentes.negrita,
+    fontSize: tamanos.chico,
+  },
+  acciones: {
+    gap: espacio(1.5),
+  },
+  yaTengoCuenta: {
+    alignSelf: 'center',
+    fontFamily: fuentes.botonMedio,
+    fontSize: tamanos.normal,
+    textDecorationLine: 'underline',
+    paddingVertical: espacio(0.5),
+  },
+  tarjetaPuntos: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: espacio(1.5),
+    borderRadius: radio + 4,
+    padding: espacio(2),
+    overflow: 'hidden',
+  },
+  etiquetaPuntos: {
+    fontFamily: fuentes.media,
+    fontSize: tamanos.chico,
+  },
+  saldoPuntos: {
+    fontFamily: fuentes.marca,
+    fontSize: 34,
+  },
+  unidadPuntos: {
+    fontFamily: fuentes.botonMedio,
+    fontSize: tamanos.normal,
+  },
+  botonPuntos: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    height: 38,
+    paddingHorizontal: espacio(2),
+    borderRadius: 999,
+  },
+  textoBotonPuntos: {
+    fontFamily: fuentes.boton,
+    fontSize: 13,
   },
   avatar: {
     width: 96,

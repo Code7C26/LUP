@@ -73,35 +73,22 @@ export function puntosPorMonto(monto) {
   return numero > 0 ? Math.floor(numero / PESOS_POR_PUNTO) : 0;
 }
 
-// Mismo emoji por categoría que usa la web (templatetags/lup_tags.py)
-const EMOJIS_CATEGORIA = {
-  panificados: '🥐',
-  comidas: '🍲',
-  frutas_verduras: '🥕',
-  lacteos: '🧀',
-  carnes: '🍗',
-  almacen: '🥫',
-  bolsa_sorpresa: '🛍️',
-  otros: '🍽️',
+// Las ilustraciones de cada categoría y rubro están en componentes/ilustraciones.js.
+
+// Fondo suave de cada categoría (tema.js → colores.suaves[tono]), para los chips del catálogo
+const TONOS_CATEGORIA = {
+  panificados: 'ambar',
+  comidas: 'durazno',
+  frutas_verduras: 'verde',
+  lacteos: 'menta',
+  carnes: 'durazno',
+  almacen: 'ambar',
+  bolsa_sorpresa: 'verde',
+  otros: 'menta',
 };
 
-export function emojiCategoria(categoria) {
-  return EMOJIS_CATEGORIA[categoria] || '🍽️';
-}
-
-// Emoji por rubro del comercio (stores/models.py → RUBROS)
-const EMOJIS_RUBRO = {
-  panaderia: '🥐',
-  restaurante: '🍲',
-  verduleria: '🥕',
-  supermercado: '🛒',
-  cafeteria: '☕',
-  carniceria: '🥩',
-  otro: '🏪',
-};
-
-export function emojiRubro(rubro) {
-  return EMOJIS_RUBRO[rubro] || '🏪';
+export function tonoCategoria(categoria) {
+  return TONOS_CATEGORIA[categoria] || 'menta';
 }
 
 // "350 m" o "1,2 km" ("1.2 km" en inglés), sin el "a" de adelante (como el mockup)

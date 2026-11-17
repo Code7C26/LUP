@@ -4,6 +4,8 @@
 // Tocar la fila abre el detalle; el selector abre la lista de 1 hasta el stock que queda
 // y el botón suma esa cantidad al carrito.
 // Uso:  <FilaProducto producto={p} onPress={() => navigation.navigate('DetalleProducto', { id: p.id })} />
+//       <FilaProducto ... mostrarComercio calificacion={{ promedio, cantidad }} />  ← estrellas del comercio
+//       (de /api/comercios/; la API de productos no las trae). Sin opiniones: "Nuevo".
 import { useEffect, useRef, useState } from 'react';
 import { Animated, FlatList, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -13,11 +15,14 @@ import { useCarrito } from '../contexto/Carrito';
 import { useSesion } from '../contexto/Sesion';
 import { useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, radio, sombra, tamanos, useTema } from '../tema';
-import { emojiCategoria, formatoPrecio, textoKm, vibrar } from '../utilidades';
+import { formatoPrecio, textoKm, vibrar } from '../utilidades';
+import CalificacionComercio from './CalificacionComercio';
 import FotoSuave from './FotoSuave';
+import IconoCategoria from './IconoCategoria';
 import Icono from './Icono';
 
-export default function FilaProducto({ producto, onPress, mostrarComercio }) {
+// "conBarraCarrito": la pantalla ya tiene la barra "Ver carrito" abajo, así que el aviso no repite el botón "Ver"
+export default function FilaProducto({ producto, onPress, mostrarComercio, calificacion, conBarraCarrito }) {
   const { colores } = useTema();
   const { t } = useIdioma();
   const { usuario } = useSesion();
@@ -41,11 +46,11 @@ export default function FilaProducto({ producto, onPress, mostrarComercio }) {
   function agregarAlCarrito() {
     agregar(producto, elegida);
     vibrar();
-    mostrarAviso({
-      texto: t('fila.agregados', { n: elegida }),
-      boton: t('fila.ver'),
-      alTocar: () => navigation.navigate('Carrito'),
-    });
+    mostrarAviso(
+      conBarraCarrito
+        ? { texto: t('fila.agregados', { n: elegida }) }
+        : { texto: t('fila.agregados', { n: elegida }), boton: t('fila.ver'), alTocar: () => navigation.navigate('Carrito') }
+    );
     setCantidad(1);
   }
   const distancia = textoKm(producto.distancia_km);
@@ -67,7 +72,7 @@ export default function FilaProducto({ producto, onPress, mostrarComercio }) {
         {producto.imagen ? (
           <FotoSuave uri={producto.imagen} estilo={StyleSheet.absoluteFill} />
         ) : (
-          <Text style={estilos.emoji}>{emojiCategoria(producto.categoria)}</Text>
+          <IconoCategoria categoria={producto.categoria} llenar tamano={34} />
         )}
       </View>
 
@@ -80,6 +85,9 @@ export default function FilaProducto({ producto, onPress, mostrarComercio }) {
             {producto.comercio}
             {distancia ? ` · ${distancia}` : ''}
           </Text>
+        ) : null}
+        {mostrarComercio && calificacion ? (
+          <CalificacionComercio promedio={calificacion.promedio} cantidad={calificacion.cantidad} tamano={11} />
         ) : null}
         <View style={estilos.abajo}>
           <View style={estilos.precios}>
@@ -215,9 +223,6 @@ const estilos = StyleSheet.create({
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  emoji: {
-    fontSize: 36,
   },
   tarjeta: {
     flex: 1,

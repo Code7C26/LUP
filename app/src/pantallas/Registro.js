@@ -22,6 +22,7 @@ import { espacio, fuentes, radio, tamanos, useTema } from '../tema';
 import { textoError } from '../utilidades';
 import { TIPOS_DE_CUENTA } from './RegistroSeleccion';
 import Icono from '../componentes/Icono';
+import { abrirPrivacidad, abrirTerminos } from '../componentes/LinksLegales';
 
 // Pantallas de cuenta de la navegación (paso 37): se cierran juntas al terminar el registro
 const PANTALLAS_DE_CUENTA = ['Login', 'Registro', 'RegistroFormulario'];
@@ -221,6 +222,12 @@ export default function Registro({ navigation, route }) {
           onPress={() => setValores((v) => ({ ...v, acepta_terminos: !v.acepta_terminos }))}
           accessibilityRole="checkbox"
           accessibilityState={{ checked: valores.acepta_terminos }}
+          // Con lector de pantalla, los dos links se abren desde las acciones de la casilla
+          accessibilityActions={[
+            { name: 'terminos', label: t('legal.terminos') },
+            { name: 'privacidad', label: t('legal.privacidad') },
+          ]}
+          onAccessibilityAction={(e) => (e.nativeEvent.actionName === 'terminos' ? abrirTerminos() : abrirPrivacidad())}
           style={estilos.terminos}
         >
           <View
@@ -232,8 +239,24 @@ export default function Registro({ navigation, route }) {
           >
             {valores.acepta_terminos ? <Icono nombre="checkmark" tamano={16} color={colores.sobreVerdeProfundo} /> : null}
           </View>
+          {/* "Acepto los {terminos} y la {privacidad} de Lüp": las dos partes son links a la web */}
           <Text style={[estilos.textoTerminos, { color: colores.texto }]}>
-            {t('registro.terminos')}
+            {t('registro.terminos')
+              .split(/(\{terminos\}|\{privacidad\})/)
+              .map((parte, i) =>
+                parte === '{terminos}' || parte === '{privacidad}' ? (
+                  <Text
+                    key={i}
+                    onPress={parte === '{terminos}' ? abrirTerminos : abrirPrivacidad}
+                    accessibilityRole="link"
+                    style={[estilos.linkTerminos, { color: colores.verdeHover }]}
+                  >
+                    {t(parte === '{terminos}' ? 'registro.linkTerminos' : 'registro.linkPrivacidad')}
+                  </Text>
+                ) : (
+                  parte
+                )
+              )}
           </Text>
         </Pressable>
         {errores.acepta_terminos ? (
@@ -312,6 +335,10 @@ const estilos = StyleSheet.create({
     flex: 1,
     fontFamily: fuentes.normal,
     fontSize: tamanos.normal,
+  },
+  linkTerminos: {
+    fontFamily: fuentes.media,
+    textDecorationLine: 'underline',
   },
   error: {
     fontFamily: fuentes.normal,

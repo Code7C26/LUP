@@ -13,12 +13,13 @@ import Boton from '../componentes/Boton';
 import BotonFavorito from '../componentes/BotonFavorito';
 import BotonVolver from '../componentes/BotonVolver';
 import CalificacionComercio from '../componentes/CalificacionComercio';
+import IconoCategoria from '../componentes/IconoCategoria';
 import Cargando from '../componentes/Cargando';
 import Icono from '../componentes/Icono';
 import MensajeError from '../componentes/MensajeError';
 import { useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, sombra, tamanos, useTema } from '../tema';
-import { emojiRubro, textoKm } from '../utilidades';
+import { textoKm } from '../utilidades';
 
 // Córdoba, por si no hay ubicación ni comercios con pin
 const CENTRO_POR_DEFECTO = { latitude: -31.4201, longitude: -64.1888 };
@@ -114,8 +115,8 @@ export default function Mapa({ navigation }) {
       {elegido ? (
         <View style={[estilos.tarjeta, { backgroundColor: colores.fondo, bottom: bottom + espacio(2) }, sombra(colores, 3)]}>
           <View style={estilos.fila}>
-            <View style={[estilos.icono, { backgroundColor: colores.panel }]}>
-              <Text style={{ fontSize: 26 }}>{emojiRubro(elegido.rubro)}</Text>
+            <View style={[estilos.icono, { overflow: 'hidden' }]}>
+              <IconoCategoria rubro={elegido.rubro} llenar tamano={26} />
             </View>
             <View style={{ flex: 1, gap: 2 }}>
               <Text style={[estilos.nombre, { color: colores.texto }]} numberOfLines={1}>

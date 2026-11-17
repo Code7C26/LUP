@@ -13,6 +13,7 @@ import Campo from '../componentes/Campo';
 import Esqueleto from '../componentes/Esqueleto';
 import Encabezado from '../componentes/Encabezado';
 import Estrellas from '../componentes/Estrellas';
+import { EtiquetaEstado } from '../componentes/EtiquetaEstado';
 import Icono from '../componentes/Icono';
 import MensajeError from '../componentes/MensajeError';
 import Vacio from '../componentes/Vacio';
@@ -50,6 +51,7 @@ function TarjetaPendiente({ reserva, alCancelar, cancelando }) {
         </Text>
         <Text style={[estilos.total, { color: colores.titulo }]}>{formatoPrecio(reserva.precio_total)}</Text>
       </View>
+      <EtiquetaEstado texto={t('misReservas.paraRetirar')} tono="naranja" />
       <Linea icono="storefront-outline" texto={reserva.comercio} />
       <Linea icono="location-outline" texto={reserva.direccion} />
       <Linea icono="time-outline" texto={reserva.horario} />
@@ -213,10 +215,10 @@ function FilaHistorial({ reserva, alEnviarOpinion }) {
           </Text>
         </View>
         <View style={estilos.estadoHistorial}>
-          <View style={estilos.linea}>
-            <View style={[estilos.punto, { backgroundColor: retirada ? colores.verde : colores.borde }]} />
-            <Text style={[estilos.detalle, { color: colores.gris }]}>{retirada ? t('misReservas.retirada') : t('misReservas.cancelada')}</Text>
-          </View>
+          <EtiquetaEstado
+            texto={retirada ? t('misReservas.retirada') : t('misReservas.cancelada')}
+            tono={retirada ? 'verde' : 'gris'}
+          />
           {/* Puntos Lüp que sumó esta compra (Django manda "puntos_sumados" solo en las retiradas) */}
           {retirada && reserva.puntos_sumados > 0 ? (
             <View style={estilos.linea}>
@@ -470,11 +472,6 @@ const estilos = StyleSheet.create({
   textoFila: {
     fontFamily: fuentes.media,
     fontSize: tamanos.normal,
-  },
-  punto: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
   },
   calificar: {
     borderTopWidth: StyleSheet.hairlineWidth,

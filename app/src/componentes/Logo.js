@@ -1,6 +1,7 @@
 // Logo de Lüp. En modo oscuro usa la versión con letras claras (assets/logo-claro.png),
 // así no queda un recuadro ni letras verde oscuro sobre fondo oscuro.
 // Uso:  <Logo ancho={120} />
+//       <Logo ancho={110} claro />   ← siempre la versión de letras claras (sobre el verde de la marca)
 import { Image } from 'react-native';
 
 import { useTema } from '../tema';
@@ -10,11 +11,12 @@ const PROPORCION = 490 / 600; // alto / ancho de logo.png
 // Se corre la imagen un 4,5 % a la derecha para que las LETRAS queden centradas.
 const CORRER = 0.045;
 
-export default function Logo({ ancho = 120, estilo }) {
+export default function Logo({ ancho = 120, estilo, claro = false }) {
   const { esOscuro } = useTema();
+  const letrasClaras = claro || esOscuro;
   return (
     <Image
-      source={esOscuro ? require('../../assets/logo-claro.png') : require('../../assets/logo.png')}
+      source={letrasClaras ? require('../../assets/logo-claro.png') : require('../../assets/logo.png')}
       style={[
         { width: ancho, height: ancho * PROPORCION, alignSelf: 'center', transform: [{ translateX: ancho * CORRER }] },
         estilo,

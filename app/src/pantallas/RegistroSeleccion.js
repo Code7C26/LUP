@@ -10,21 +10,18 @@ import Icono from '../componentes/Icono';
 export const TIPOS_DE_CUENTA = [
   {
     rol: 'consumidor',
-    emoji: '🛍️',
     icono: 'bag-handle-outline',
     titulo: 'tiposCuenta.consumidor', // claves de idiomas/es.js: se muestran con t()
     descripcion: 'tiposCuenta.consumidorDesc',
   },
   {
     rol: 'comercio',
-    emoji: '🏪',
     icono: 'storefront-outline',
     titulo: 'tiposCuenta.comercio',
     descripcion: 'tiposCuenta.comercioDesc',
   },
   {
     rol: 'organizacion',
-    emoji: '🤝',
     icono: 'heart-outline',
     titulo: 'tiposCuenta.organizacion',
     descripcion: 'tiposCuenta.organizacionDesc',
