@@ -11,12 +11,14 @@ import Cargando from '../../componentes/Cargando';
 import MensajeError from '../../componentes/MensajeError';
 import ModalSolicitudDonacion from '../../componentes/ModalSolicitudDonacion';
 import TarjetaProducto from '../../componentes/TarjetaProducto';
+import { useIdioma } from '../../contexto/Idioma';
 import { espacio, fuentes, tamanos, useTema } from '../../tema';
 import Encabezado from '../../componentes/Encabezado';
 import Vacio from '../../componentes/Vacio';
 
 export default function Donaciones({ navigation }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const [productos, setProductos] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [actualizando, setActualizando] = useState(false);
@@ -45,12 +47,12 @@ export default function Donaciones({ navigation }) {
     setProductos((lista) => lista.map((p) => (p.id === solicitud.producto_id ? { ...p, ya_solicitado: true } : p)));
     setPidiendo(null);
     Alert.alert(
-      'Solicitud enviada',
-      `${solicitud.comercio} recibió tu pedido. Vas a ver su respuesta en "Mis solicitudes".`
+      t('donaciones.enviadaTitulo'),
+      t('donaciones.enviadaTexto', { comercio: solicitud.comercio })
     );
   }
 
-  if (cargando) return <Cargando texto="Buscando donaciones…" />;
+  if (cargando) return <Cargando texto={t('donaciones.buscando')} />;
 
   return (
     <>
@@ -71,13 +73,13 @@ export default function Donaciones({ navigation }) {
         }
         ListHeaderComponent={
           <View style={{ gap: espacio(1), marginBottom: espacio(1.5) }}>
-            <Encabezado titulo="Donaciones" subtitulo="Disponibles cerca" />
+            <Encabezado titulo={t('donaciones.titulo')} subtitulo={t('donaciones.subtitulo')} />
             <MensajeError mensaje={error} alReintentar={cargar} />
           </View>
         }
         ListEmptyComponent={
           !error ? (
-            <Vacio icono="heart-outline" texto="No hay donaciones ahora. Los comercios publican durante el día." />
+            <Vacio icono="heart-outline" texto={t('donaciones.vacio')} />
           ) : null
         }
         renderItem={({ item }) => (
@@ -87,9 +89,9 @@ export default function Donaciones({ navigation }) {
               onPress={() => navigation.navigate('DetalleProducto', { id: item.id })}
             />
             {item.ya_solicitado ? (
-              <Boton texto="Ya lo pediste" icono="checkmark" variante="texto" chico deshabilitado />
+              <Boton texto={t('donaciones.yaLoPediste')} icono="checkmark" variante="texto" chico deshabilitado />
             ) : (
-              <Boton texto="Pedir" icono="heart" chico onPress={() => setPidiendo(item)} />
+              <Boton texto={t('donaciones.pedir')} icono="heart" chico onPress={() => setPidiendo(item)} />
             )}
           </View>
         )}

@@ -37,6 +37,7 @@ import { useOpcionesStack, useTemaNavegacion } from './opciones';
 import TabsComercio from './TabsComercio';
 import TabsConsumidor from './TabsConsumidor';
 import TabsOrganizacion from './TabsOrganizacion';
+import { useIdioma } from '../contexto/Idioma';
 
 const Stack = createNativeStackNavigator();
 // Para abrir pantallas desde afuera de ellas (al tocar una notificación push)
@@ -52,6 +53,7 @@ function Pestanas() {
 
 export default function Navegacion() {
   const { usuario, cargando, invitado } = useSesion();
+  const { t } = useIdioma();
   const bienvenida = useBienvenida();
   const tema = useTemaNavegacion();
   const opciones = useOpcionesStack();
@@ -71,7 +73,7 @@ export default function Navegacion() {
     }
   }, [ultimoAviso, listoParaAvisos]);
 
-  if (cargando || !bienvenida.cargada) return <Cargando texto="Abriendo Lüp…" />;
+  if (cargando || !bienvenida.cargada) return <Cargando texto={t('navegacion.abriendo')} />;
 
   // Una bienvenida por cuenta (y una para el invitado): "Cerrar sesión" las borra, así que se ve cada vez que se entra
   const bienvenidaVista = bienvenida.vista(claveBienvenida(usuario));

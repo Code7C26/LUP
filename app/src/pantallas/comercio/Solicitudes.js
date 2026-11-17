@@ -8,6 +8,7 @@ import { api } from '../../api/cliente';
 import Boton from '../../componentes/Boton';
 import Cargando from '../../componentes/Cargando';
 import MensajeError from '../../componentes/MensajeError';
+import { textoDeOpcion, useIdioma } from '../../contexto/Idioma';
 import { espacio, fuentes, radio, tamanos, useTema } from '../../tema';
 import { textoError } from '../../utilidades';
 import Encabezado from '../../componentes/Encabezado';
@@ -15,6 +16,7 @@ import Vacio from '../../componentes/Vacio';
 
 function TarjetaSolicitud({ solicitud, ocupado, alResponder }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const pendiente = solicitud.estado === 'pendiente';
   const aprobada = solicitud.estado === 'aprobada';
 
@@ -33,7 +35,7 @@ function TarjetaSolicitud({ solicitud, ocupado, alResponder }) {
                 : { backgroundColor: colores.fondo, color: colores.gris },
             ]}
           >
-            {solicitud.estado_texto}
+            {textoDeOpcion(t, 'estadosSolicitud', solicitud.estado, solicitud.estado_texto)}
           </Text>
         ) : null}
       </View>
@@ -44,9 +46,9 @@ function TarjetaSolicitud({ solicitud, ocupado, alResponder }) {
 
       {pendiente ? (
         <View style={estilos.botones}>
-          <Boton texto="Aprobar" icono="checkmark" chico onPress={() => alResponder('aprobar')} cargando={ocupado} estilo={{ flex: 1 }} />
+          <Boton texto={t('solicitudes.aprobar')} icono="checkmark" chico onPress={() => alResponder('aprobar')} cargando={ocupado} estilo={{ flex: 1 }} />
           <Boton
-            texto="Rechazar"
+            texto={t('solicitudes.rechazar')}
             chico
             variante="secundario"
             onPress={() => alResponder('rechazar')}
@@ -61,6 +63,7 @@ function TarjetaSolicitud({ solicitud, ocupado, alResponder }) {
 
 export default function Solicitudes({ navigation }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const [solicitudes, setSolicitudes] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [actualizando, setActualizando] = useState(false);
@@ -92,7 +95,7 @@ export default function Solicitudes({ navigation }) {
       // Al aprobar, el resto de los pedidos por ese producto quedan rechazados: se recarga todo
       await cargar();
     } catch (e) {
-      Alert.alert('No se pudo responder', textoError(e) || 'Probá de nuevo.');
+      Alert.alert(t('solicitudes.noSePudo'), textoError(e) || t('solicitudes.probaDeNuevo'));
     } finally {
       setOcupado(null);
     }
@@ -104,21 +107,20 @@ export default function Solicitudes({ navigation }) {
       return;
     }
     Alert.alert(
-      '¿Aprobar la donación?',
-      `"${solicitud.producto}" queda marcado como donado a ${solicitud.organizacion} y sale del catálogo. ` +
-        'Si otras organizaciones lo pidieron, sus solicitudes se rechazan.',
+      t('solicitudes.aprobarTitulo'),
+      t('solicitudes.aprobarTexto', { producto: solicitud.producto, organizacion: solicitud.organizacion }),
       [
-        { text: 'No', style: 'cancel' },
-        { text: 'Sí, aprobar', onPress: () => enviarRespuesta(solicitud, accion) },
+        { text: t('solicitudes.no'), style: 'cancel' },
+        { text: t('solicitudes.siAprobar'), onPress: () => enviarRespuesta(solicitud, accion) },
       ]
     );
   }
 
-  if (cargando) return <Cargando texto="Cargando solicitudes…" />;
+  if (cargando) return <Cargando texto={t('solicitudes.cargando')} />;
 
   const secciones = [
-    { titulo: 'Para responder', data: solicitudes.filter((s) => s.estado === 'pendiente') },
-    { titulo: 'Respondidas', data: solicitudes.filter((s) => s.estado !== 'pendiente') },
+    { titulo: t('solicitudes.paraResponder'), data: solicitudes.filter((s) => s.estado === 'pendiente') },
+    { titulo: t('solicitudes.respondidas'), data: solicitudes.filter((s) => s.estado !== 'pendiente') },
   ].filter((s) => s.data.length > 0);
 
   return (
@@ -140,13 +142,13 @@ export default function Solicitudes({ navigation }) {
       }
       ListHeaderComponent={
         <View style={{ gap: espacio(1.5) }}>
-          <Encabezado titulo="Donaciones" />
+          <Encabezado titulo={t('solicitudes.titulo')} />
           <MensajeError mensaje={error} alReintentar={cargar} />
         </View>
       }
       ListEmptyComponent={
         !error ? (
-          <Vacio icono="heart-outline" texto="Sin pedidos todavía. Marcá productos como donables para recibirlos." />
+          <Vacio icono="heart-outline" texto={t('solicitudes.vacio')} />
         ) : null
       }
       renderSectionHeader={({ section }) => (

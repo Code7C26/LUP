@@ -11,11 +11,13 @@ import Campo from '../componentes/Campo';
 import Icono from '../componentes/Icono';
 import MensajeError from '../componentes/MensajeError';
 import { useSesion } from '../contexto/Sesion';
+import { useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, tamanos, useTema } from '../tema';
 import { vibrar } from '../utilidades';
 
 export default function CambiarClave({ navigation }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const { usuario } = useSesion();
 
   const [actual, setActual] = useState('');
@@ -30,12 +32,12 @@ export default function CambiarClave({ navigation }) {
     setErrorGeneral('');
     setGuardando(true);
     try {
-      const r = await api('/auth/cambiar-clave/', {
+      await api('/auth/cambiar-clave/', {
         metodo: 'POST',
         datos: { clave_actual: actual, clave_nueva: nueva, clave_nueva2: repetir },
       });
       vibrar('exito');
-      Alert.alert('Contraseña cambiada', r.mensaje || 'Listo, cambiaste tu contraseña.');
+      Alert.alert(t('cambiarClave.cambiada'), t('cambiarClave.listo'));
       navigation.goBack();
     } catch (e) {
       if (e?.sinConexion || e?.error || e?.detail) {
@@ -57,13 +59,13 @@ export default function CambiarClave({ navigation }) {
         <View style={estilos.cabecera}>
           <Icono nombre="key-outline" tamano={28} color={colores.titulo} />
           <Text style={[estilos.titulo, { color: colores.titulo }]} accessibilityRole="header">
-            Cambiar contraseña
+            {t('cambiarClave.titulo')}
           </Text>
         </View>
 
         <View style={estilos.campos}>
           <Campo
-            etiqueta="Contraseña actual"
+            etiqueta={t('cambiarClave.actual')}
             value={actual}
             onChangeText={setActual}
             error={errores.clave_actual}
@@ -77,10 +79,10 @@ export default function CambiarClave({ navigation }) {
             accessibilityRole="link"
             style={estilos.olvide}
           >
-            <Text style={[estilos.textoOlvide, { color: colores.verdeHover }]}>¿No te acordás de la actual?</Text>
+            <Text style={[estilos.textoOlvide, { color: colores.verdeHover }]}>{t('cambiarClave.noTeAcordas')}</Text>
           </Pressable>
           <Campo
-            etiqueta="Contraseña nueva"
+            etiqueta={t('cambiarClave.nueva')}
             value={nueva}
             onChangeText={setNueva}
             error={errores.clave_nueva}
@@ -89,10 +91,10 @@ export default function CambiarClave({ navigation }) {
             textContentType="newPassword"
           />
           {!errores.clave_nueva ? (
-            <Text style={[estilos.ayuda, { color: colores.gris }]}>Mínimo 8 caracteres, no solo números.</Text>
+            <Text style={[estilos.ayuda, { color: colores.gris }]}>{t('cambiarClave.reglas')}</Text>
           ) : null}
           <Campo
-            etiqueta="Repetí la contraseña nueva"
+            etiqueta={t('cambiarClave.repetir')}
             value={repetir}
             onChangeText={setRepetir}
             error={errores.clave_nueva2}
@@ -105,14 +107,14 @@ export default function CambiarClave({ navigation }) {
 
         <MensajeError mensaje={errorGeneral} />
         <Boton
-          texto="Guardar contraseña"
+          texto={t('cambiarClave.guardar')}
           onPress={guardar}
           cargando={guardando}
           deshabilitado={!actual || !nueva || !repetir}
           estilo={estilos.boton}
         />
         <Text style={[estilos.ayuda, { color: colores.gris, textAlign: 'center' }]}>
-          Vas a seguir con la sesión abierta en este celular.
+          {t('cambiarClave.sesionSigue')}
         </Text>
       </ScrollView>
     </KeyboardAvoidingView>

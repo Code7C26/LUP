@@ -29,6 +29,7 @@ import Campo from '../componentes/Campo';
 import Chip from '../componentes/Chip';
 import Icono from '../componentes/Icono';
 import { useSesion } from '../contexto/Sesion';
+import { t as traducir, useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, radio, sombra, tamanos, useTema } from '../tema';
 import { textoError } from '../utilidades';
 
@@ -59,18 +60,16 @@ const nuevoMensaje = (rol, texto) => ({ id: String(siguienteId++), rol, texto })
 // Mismas sugerencias que el widget de la web (templates/includes/_chat_soporte.html)
 function sugerencias(rol) {
   const porRol = {
-    comercio: ['¿Cómo confirmo un retiro?', '¿Cómo marco algo como vendido?'],
-    organizacion: ['¿Cómo pido una donación?'],
-  }[rol] || ['¿Cómo cancelo una reserva?', '¿Dónde está mi código de retiro?'];
-  return [...porRol, 'No me llegan los emails', 'No funciona la ubicación'];
+    comercio: ['ayuda.confirmoRetiro', 'ayuda.marcoVendido'],
+    organizacion: ['ayuda.pidoDonacion'],
+  }[rol] || ['ayuda.canceloReserva', 'ayuda.miCodigo'];
+  return [...porRol, 'ayuda.noLleganEmails', 'ayuda.noFuncionaUbicacion'].map((clave) => traducir(clave));
 }
 
+// El saludo se arma al dibujarlo (rol "saludo"), así cambia si se cambia el idioma
 function saludo(usuario) {
   const nombre = usuario?.nombre?.split(' ')[0];
-  return (
-    `¡Hola${nombre ? `, ${nombre}` : ''}! Soy Lü, el asistente de Lüp. ` +
-    'Contame qué problema tenés o qué querés hacer y te ayudo.'
-  );
+  return `${nombre ? traducir('ayuda.holaNombre', { nombre }) : traducir('ayuda.hola')} ${traducir('ayuda.contame')}`;
 }
 
 // Lü marca los botones con **negrita**: se muestran en negrita (sin los asteriscos)
@@ -91,8 +90,9 @@ function TextoConNegritas({ texto, estilo }) {
   );
 }
 
-function Burbuja({ mensaje }) {
+function Burbuja({ mensaje, usuario }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
 
   if (mensaje.rol === 'aviso') {
     return (
@@ -104,10 +104,11 @@ function Burbuja({ mensaje }) {
   }
 
   const mio = mensaje.rol === 'usuario';
+  const texto = mensaje.rol === 'saludo' ? saludo(usuario) : mensaje.texto;
   return (
     <View
       accessible
-      accessibilityLabel={`${mio ? 'Vos' : 'Lü'}: ${mensaje.texto.replace(/\*\*/g, '')}`}
+      accessibilityLabel={`${mio ? t('ayuda.vos') : 'Lü'}: ${texto.replace(/\*\*/g, '')}`}
       style={[
         estilos.burbuja,
         mio
@@ -116,7 +117,7 @@ function Burbuja({ mensaje }) {
       ]}
     >
       <TextoConNegritas
-        texto={mensaje.texto}
+        texto={texto}
         estilo={[estilos.textoBurbuja, { color: mio ? colores.sobreVerdeProfundo : colores.texto }]}
       />
     </View>
@@ -125,10 +126,11 @@ function Burbuja({ mensaje }) {
 
 function Escribiendo() {
   const { colores } = useTema();
+  const { t } = useIdioma();
   return (
     <View style={[estilos.burbuja, estilos.burbujaLu, estilos.escribiendo, { backgroundColor: colores.campo }]}>
       <ActivityIndicator size="small" color={colores.verde} />
-      <Text style={[estilos.textoEscribiendo, { color: colores.gris }]}>Lü está escribiendo…</Text>
+      <Text style={[estilos.textoEscribiendo, { color: colores.gris }]}>{t('ayuda.escribiendo')}</Text>
     </View>
   );
 }
@@ -136,17 +138,18 @@ function Escribiendo() {
 // "Hablar con una persona": le pasa la charla al equipo, que responde por email
 function PanelPersona({ usuario, enviando, error, alEnviar, alCancelar }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const [email, setEmail] = useState(usuario?.email || '');
   const [detalle, setDetalle] = useState('');
 
   return (
     <View style={[estilos.panelPersona, { backgroundColor: colores.superficie, borderColor: colores.borde }, sombra(colores, 2)]}>
-      <Text style={[estilos.tituloPersona, { color: colores.titulo }]}>Hablar con una persona</Text>
+      <Text style={[estilos.tituloPersona, { color: colores.titulo }]}>{t('ayuda.hablarConPersona')}</Text>
       <Text style={[estilos.textoPersona, { color: colores.gris }]}>
-        Le mandamos esta charla al equipo de Lüp y te respondemos por email.
+        {t('ayuda.leMandamos')}
       </Text>
       <Campo
-        placeholder={usuario ? 'Tu email (vacío = el de tu cuenta)' : 'Tu email'}
+        placeholder={usuario ? t('ayuda.tuEmailCuenta') : t('ayuda.tuEmail')}
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
@@ -155,7 +158,7 @@ function PanelPersona({ usuario, enviando, error, alEnviar, alCancelar }) {
         maxLength={254}
       />
       <Campo
-        placeholder="¿Querés agregar algo? (opcional)"
+        placeholder={t('ayuda.agregarAlgo')}
         value={detalle}
         onChangeText={setDetalle}
         multiline
@@ -166,11 +169,11 @@ function PanelPersona({ usuario, enviando, error, alEnviar, alCancelar }) {
       <View style={estilos.botonesPersona}>
         <Pressable onPress={() => Linking.openURL(WHATSAPP).catch(() => {})} hitSlop={8} accessibilityRole="link" style={estilos.whatsapp}>
           <Icono nombre="logo-whatsapp" tamano={16} color={colores.verdeHover} />
-          <Text style={[estilos.textoWhatsapp, { color: colores.verdeHover }]}>¿Urgente?</Text>
+          <Text style={[estilos.textoWhatsapp, { color: colores.verdeHover }]}>{t('ayuda.urgente')}</Text>
         </Pressable>
         <View style={{ flex: 1 }} />
-        <Boton texto="Cancelar" variante="texto" chico onPress={alCancelar} deshabilitado={enviando} />
-        <Boton texto="Enviar al equipo" chico cargando={enviando} onPress={() => alEnviar(email.trim(), detalle.trim())} />
+        <Boton texto={t('comun.cancelar')} variante="texto" chico onPress={alCancelar} deshabilitado={enviando} />
+        <Boton texto={t('ayuda.enviarAlEquipo')} chico cargando={enviando} onPress={() => alEnviar(email.trim(), detalle.trim())} />
       </View>
     </View>
   );
@@ -178,13 +181,14 @@ function PanelPersona({ usuario, enviando, error, alEnviar, alCancelar }) {
 
 export default function Ayuda({ navigation, route }) {
   const { colores } = useTema();
+  const { t, idioma } = useIdioma();
   const { usuario } = useSesion();
   const { top, bottom } = useSafeAreaInsets();
   const desde = route?.params?.desde || '';
 
   const claveCharla = usuario ? `usuario-${usuario.id}` : 'invitado';
   const guardada = charlas.get(claveCharla);
-  const [mensajes, setMensajes] = useState(guardada?.mensajes || [nuevoMensaje('asistente', saludo(usuario))]);
+  const [mensajes, setMensajes] = useState(guardada?.mensajes || [nuevoMensaje('saludo', '')]);
   const [conversacion, setConversacion] = useState(guardada?.conversacion || null);
   const [conIa, setConIa] = useState(guardada?.conIa ?? null); // null = todavía no se sabe
 
@@ -206,6 +210,7 @@ export default function Ayuda({ navigation, route }) {
     return {
       conversacion,
       pagina: desde,
+      idioma, // 'es' o 'en': para que Lü conteste en el idioma de la app (ver la nota en contexto/Idioma.js)
       ...(usuario ? {} : { invitado: await leerClaveInvitado() }),
     };
   }
@@ -227,7 +232,7 @@ export default function Ayuda({ navigation, route }) {
       setConIa(r.con_ia);
       agregar('asistente', r.respuesta);
     } catch (e) {
-      agregar('aviso', textoError(e) || 'No pudimos mandar tu mensaje. Probá de nuevo.');
+      agregar('aviso', textoError(e) || t('ayuda.noSeMando'));
       setTexto((actual) => actual || limpio); // para reintentar sin volver a escribir
     } finally {
       setEnviando(false);
@@ -248,19 +253,19 @@ export default function Ayuda({ navigation, route }) {
       agregar('asistente', r.respuesta);
       setVerPersona(false);
     } catch (e) {
-      setErrorPersona(textoError(e) || 'No pudimos avisarle al equipo. Probá de nuevo.');
+      setErrorPersona(textoError(e) || t('ayuda.noSeAviso'));
     } finally {
       setDerivando(false);
     }
   }
 
   function empezarDeNuevo() {
-    Alert.alert('¿Empezar de nuevo?', 'Se borra esta charla de la pantalla.', [
-      { text: 'Cancelar', style: 'cancel' },
+    Alert.alert(t('ayuda.empezarDeNuevoPregunta'), t('ayuda.seBorra'), [
+      { text: t('comun.cancelar'), style: 'cancel' },
       {
-        text: 'Empezar de nuevo',
+        text: t('ayuda.empezarDeNuevo'),
         onPress: () => {
-          setMensajes([nuevoMensaje('asistente', saludo(usuario))]);
+          setMensajes([nuevoMensaje('saludo', '')]);
           setConversacion(null);
           setVerPersona(false);
           setTexto('');
@@ -271,7 +276,7 @@ export default function Ayuda({ navigation, route }) {
 
   const soloSaludo = mensajes.length === 1;
   const subtitulo =
-    conIa === true ? 'Asistente con IA · responde al instante' : conIa === false ? 'Respuestas automáticas' : 'Asistente de soporte de Lüp';
+    conIa === true ? t('ayuda.conIa') : conIa === false ? t('ayuda.automaticas') : t('ayuda.asistente');
 
   return (
     <KeyboardAvoidingView
@@ -284,7 +289,7 @@ export default function Ayuda({ navigation, route }) {
           onPress={() => navigation.goBack()}
           hitSlop={8}
           accessibilityRole="button"
-          accessibilityLabel="Volver"
+          accessibilityLabel={t('comun.volver')}
           style={[estilos.botonRedondo, { backgroundColor: colores.panel }]}
         >
           <Icono nombre="chevron-back" tamano={22} color={colores.texto} />
@@ -294,7 +299,7 @@ export default function Ayuda({ navigation, route }) {
         </View>
         <View style={{ flex: 1 }}>
           <Text style={[estilos.titulo, { color: colores.titulo }]} accessibilityRole="header">
-            Ayuda
+            {t('ayuda.titulo')}
           </Text>
           <View style={estilos.filaSubtitulo}>
             {conIa ? <View style={[estilos.punto, { backgroundColor: colores.verde }]} /> : null}
@@ -308,7 +313,7 @@ export default function Ayuda({ navigation, route }) {
             onPress={empezarDeNuevo}
             hitSlop={8}
             accessibilityRole="button"
-            accessibilityLabel="Empezar de nuevo"
+            accessibilityLabel={t('ayuda.empezarDeNuevo')}
             style={[estilos.botonRedondo, { backgroundColor: colores.panel }]}
           >
             <Icono nombre="refresh-outline" tamano={20} color={colores.texto} />
@@ -321,7 +326,8 @@ export default function Ayuda({ navigation, route }) {
         ref={lista}
         data={mensajes}
         keyExtractor={(m) => m.id}
-        renderItem={({ item }) => <Burbuja mensaje={item} />}
+        renderItem={({ item }) => <Burbuja mensaje={item} usuario={usuario} />}
+        extraData={idioma} // el saludo cambia con el idioma
         contentContainerStyle={estilos.mensajes}
         keyboardShouldPersistTaps="handled"
         onContentSizeChange={() => lista.current?.scrollToEnd({ animated: true })}
@@ -360,16 +366,16 @@ export default function Ayuda({ navigation, route }) {
             style={({ pressed }) => [estilos.persona, { borderColor: colores.verdeProfundo }, pressed && { opacity: 0.7 }]}
           >
             <Icono nombre="person-outline" tamano={15} color={colores.verdeHover} />
-            <Text style={[estilos.textoPersonaBoton, { color: colores.verdeHover }]}>Hablar con una persona</Text>
+            <Text style={[estilos.textoPersonaBoton, { color: colores.verdeHover }]}>{t('ayuda.hablarConPersona')}</Text>
           </Pressable>
         ) : null}
         <View style={estilos.filaEscribir}>
           <TextInput
             value={texto}
             onChangeText={setTexto}
-            placeholder="Escribí tu consulta…"
+            placeholder={t('ayuda.escribiConsulta')}
             placeholderTextColor={colores.gris}
-            accessibilityLabel="Escribí tu consulta"
+            accessibilityLabel={t('ayuda.escribiConsultaAccesible')}
             multiline
             maxLength={MAX_CARACTERES}
             style={[estilos.input, { backgroundColor: colores.campo, borderColor: colores.borde, color: colores.texto }]}
@@ -378,7 +384,7 @@ export default function Ayuda({ navigation, route }) {
             onPress={() => enviar(texto)}
             disabled={!texto.trim() || enviando}
             accessibilityRole="button"
-            accessibilityLabel="Enviar"
+            accessibilityLabel={t('comun.enviar')}
             accessibilityState={{ disabled: !texto.trim() || enviando }}
             style={({ pressed }) => [
               estilos.enviar,
@@ -391,7 +397,8 @@ export default function Ayuda({ navigation, route }) {
           </Pressable>
         </View>
         <Text style={[estilos.nota, { color: colores.gris }]}>
-          {conIa ? 'Lü usa inteligencia artificial y puede equivocarse. ' : ''}No compartas contraseñas ni datos de tarjeta.
+          {conIa ? t('ayuda.notaIa') : ''}
+          {t('ayuda.notaDatos')}
         </Text>
       </View>
     </KeyboardAvoidingView>

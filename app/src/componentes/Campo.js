@@ -9,12 +9,14 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, tamanos, useTema } from '../tema';
 import { textoError } from '../utilidades';
 import Icono from './Icono';
 
 export default function Campo({ etiqueta, error, icono, estilo, estiloInput, secureTextEntry, ...propsDelInput }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const mensaje = textoError(error);
   const [enfocado, setEnfocado] = useState(false);
   const [verClave, setVerClave] = useState(false);
@@ -52,7 +54,7 @@ export default function Campo({ etiqueta, error, icono, estilo, estiloInput, sec
             onPress={() => setVerClave((v) => !v)}
             hitSlop={10}
             accessibilityRole="button"
-            accessibilityLabel={verClave ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+            accessibilityLabel={verClave ? t('campo.ocultarClave') : t('campo.mostrarClave')}
           >
             <Icono nombre={verClave ? 'eye-off-outline' : 'eye-outline'} tamano={20} color={colores.gris} />
           </Pressable>

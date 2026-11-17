@@ -17,18 +17,13 @@ import MensajeError from '../../componentes/MensajeError';
 import PublicarDeNuevo from '../../componentes/PublicarDeNuevo';
 import Vacio from '../../componentes/Vacio';
 import { useSesion } from '../../contexto/Sesion';
+import { textoDeOpcion, useIdioma } from '../../contexto/Idioma';
 import { espacio, fuentes, sombra, useTema } from '../../tema';
-import { emojiCategoria, formatoPrecio, textoError } from '../../utilidades';
+import { emojiCategoria, formatoDiaMes, formatoPrecio, textoError } from '../../utilidades';
 
 const WHATSAPP_SOPORTE = 'https://wa.me/5493547620629';
 
-// Mismos estados que products/models.py
-const ESTADOS = {
-  DISPONIBLE: 'Disponible',
-  AGOTADO: 'Vendido',
-  PAUSADO: 'No disponible',
-  DONADO: 'Donado',
-};
+// Los estados (products/models.py) se muestran con t('estadosProducto.X'): ver idiomas/es.js
 
 function hoyIso() {
   const hoy = new Date();
@@ -38,6 +33,7 @@ function hoyIso() {
 // Etiqueta "Descuento" / "Donaciones": verde oscuro si aplica, solo texto si no (como el mockup)
 function Etiqueta({ texto, activa }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   return (
     <Text
       style={[
@@ -82,10 +78,10 @@ function Pildora({ texto, fondo, onPress, deshabilitado }) {
 
 function FilaMiProducto({ producto, ocupado, alCambiarEstado, alEditar, alEliminar, alCopiar }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const vencido = producto.fecha_vencimiento < hoyIso();
   const disponible = producto.estado === 'DISPONIBLE';
-  const textoEstado = disponible && vencido ? 'Vencido' : ESTADOS[producto.estado] || producto.estado;
-  const [, mes, dia] = producto.fecha_vencimiento.split('-');
+  const textoEstado = disponible && vencido ? t('estadosProducto.vencido') : textoDeOpcion(t, 'estadosProducto', producto.estado, producto.estado);
 
   return (
     <View style={estilos.fila}>
@@ -104,7 +100,11 @@ function FilaMiProducto({ producto, ocupado, alCambiarEstado, alEditar, alElimin
               {producto.titulo}
             </Text>
             <Text style={[estilos.chico, { color: colores.gris }]} numberOfLines={1}>
-              {formatoPrecio(producto.precio_descuento)} · {producto.stock} u. · hasta el {dia}/{mes}
+              {t('misProductos.resumen', {
+                precio: formatoPrecio(producto.precio_descuento),
+                n: producto.stock,
+                fecha: formatoDiaMes(producto.fecha_vencimiento),
+              })}
             </Text>
             {!disponible || vencido ? (
               <Text style={[estilos.chico, { color: colores.ambar, fontFamily: fuentes.negrita }]}>{textoEstado}</Text>
@@ -116,7 +116,7 @@ function FilaMiProducto({ producto, ocupado, alCambiarEstado, alEditar, alElimin
                 icono="ban-outline"
                 color={colores.error}
                 fondo="transparent"
-                etiqueta="Marcar como producto no disponible"
+                etiqueta={t('misProductos.marcarNoDisponible')}
                 onPress={() => alCambiarEstado('PAUSADO')}
                 deshabilitado={ocupado}
               />
@@ -124,7 +124,7 @@ function FilaMiProducto({ producto, ocupado, alCambiarEstado, alEditar, alElimin
                 icono="checkmark"
                 color={colores.sobreVerdeProfundo}
                 fondo={colores.verdeProfundo}
-                etiqueta="Marcar como vendido/reservado"
+                etiqueta={t('misProductos.marcarVendido')}
                 onPress={() => alCambiarEstado('AGOTADO')}
                 deshabilitado={ocupado}
               />
@@ -134,7 +134,7 @@ function FilaMiProducto({ producto, ocupado, alCambiarEstado, alEditar, alElimin
               icono="play"
               color={colores.sobreVerdeProfundo}
               fondo={colores.verdeProfundo}
-              etiqueta="Volver a publicar"
+              etiqueta={t('misProductos.volverAPublicar')}
               onPress={() => alCambiarEstado('DISPONIBLE')}
               deshabilitado={ocupado}
             />
@@ -144,7 +144,7 @@ function FilaMiProducto({ producto, ocupado, alCambiarEstado, alEditar, alElimin
             icono="copy-outline"
             color={colores.texto}
             fondo="transparent"
-            etiqueta="Duplicar producto"
+            etiqueta={t('misProductos.duplicar')}
             onPress={alCopiar}
             deshabilitado={ocupado}
           />
@@ -152,17 +152,17 @@ function FilaMiProducto({ producto, ocupado, alCambiarEstado, alEditar, alElimin
 
         <View style={estilos.abajo}>
           <View style={estilos.etiquetas}>
-            <Etiqueta texto="Descuento" activa={producto.porcentaje_descuento > 0} />
-            <Etiqueta texto="Donaciones" activa={producto.es_donacion} />
+            <Etiqueta texto={t('misProductos.descuento')} activa={producto.porcentaje_descuento > 0} />
+            <Etiqueta texto={t('misProductos.donaciones')} activa={producto.es_donacion} />
           </View>
           <View style={estilos.etiquetas}>
             {!disponible || vencido ? (
               // Vendido, donado o vencido: el botón principal es volver a publicarlo (copia con la fecha de hoy)
-              <Pildora texto="Publicar de nuevo" fondo="#4E8A2E" onPress={alCopiar} deshabilitado={ocupado} />
+              <Pildora texto={t('misProductos.publicarDeNuevo')} fondo="#4E8A2E" onPress={alCopiar} deshabilitado={ocupado} />
             ) : (
-              <Pildora texto="Editar producto" fondo="#073425" onPress={alEditar} deshabilitado={ocupado} />
+              <Pildora texto={t('misProductos.editarProducto')} fondo="#073425" onPress={alEditar} deshabilitado={ocupado} />
             )}
-            <Pildora texto="Eliminar" fondo="#E02424" onPress={alEliminar} deshabilitado={ocupado} />
+            <Pildora texto={t('misProductos.eliminar')} fondo="#E02424" onPress={alEliminar} deshabilitado={ocupado} />
           </View>
         </View>
       </View>
@@ -172,6 +172,7 @@ function FilaMiProducto({ producto, ocupado, alCambiarEstado, alEditar, alElimin
 
 export default function MisProductos({ navigation }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const { usuario } = useSesion();
   const [productos, setProductos] = useState([]);
   const [cargando, setCargando] = useState(true);
@@ -205,7 +206,7 @@ export default function MisProductos({ navigation }) {
       const actualizado = await api(`/mis-productos/${producto.id}/estado/`, { metodo: 'POST', datos: { estado } });
       setProductos((lista) => lista.map((p) => (p.id === producto.id ? actualizado : p)));
     } catch (e) {
-      Alert.alert('No se pudo cambiar el estado', textoError(e) || 'Probá de nuevo.');
+      Alert.alert(t('misProductos.noSeCambio'), textoError(e) || t('misProductos.probaDeNuevo'));
     } finally {
       setOcupado(null);
     }
@@ -213,12 +214,12 @@ export default function MisProductos({ navigation }) {
 
   function eliminar(producto) {
     Alert.alert(
-      '¿Eliminar la publicación?',
-      `"${producto.titulo}" se borra del catálogo junto con sus reservas. Esto no se puede deshacer.`,
+      t('misProductos.eliminarPregunta'),
+      t('misProductos.eliminarTexto', { titulo: producto.titulo }),
       [
-        { text: 'No', style: 'cancel' },
+        { text: t('misProductos.no'), style: 'cancel' },
         {
-          text: 'Sí, eliminar',
+          text: t('misProductos.siEliminar'),
           style: 'destructive',
           onPress: async () => {
             setOcupado(producto.id);
@@ -226,7 +227,7 @@ export default function MisProductos({ navigation }) {
               await api(`/mis-productos/${producto.id}/`, { metodo: 'DELETE' });
               setProductos((lista) => lista.filter((p) => p.id !== producto.id));
             } catch (e) {
-              Alert.alert('No se pudo eliminar', textoError(e) || 'Probá de nuevo.');
+              Alert.alert(t('misProductos.noSeElimino'), textoError(e) || t('misProductos.probaDeNuevo'));
             } finally {
               setOcupado(null);
             }
@@ -238,7 +239,7 @@ export default function MisProductos({ navigation }) {
 
   if (cargando) return <Esqueleto tipo="filas" />;
 
-  const nombre = usuario?.nombre || 'Mi comercio';
+  const nombre = usuario?.nombre || t('misProductos.miComercio');
 
   return (
     <FlatList
@@ -264,7 +265,7 @@ export default function MisProductos({ navigation }) {
               onPress={() => setVerSoporte((v) => !v)}
               hitSlop={8}
               accessibilityRole="button"
-              accessibilityLabel="Soporte al Comercio"
+              accessibilityLabel={t('misProductos.soporte')}
               style={[estilos.botonBarra, { backgroundColor: colores.panel }]}
             >
               <Icono nombre="headset-outline" tamano={20} color={colores.texto} />
@@ -275,9 +276,9 @@ export default function MisProductos({ navigation }) {
               onPress={() => Linking.openURL(WHATSAPP_SOPORTE).catch(() => {})}
               style={[estilos.soporte, { backgroundColor: colores.panel }]}
             >
-              <Text style={[estilos.tituloSoporte, { color: colores.titulo }]}>Soporte al Comercio</Text>
+              <Text style={[estilos.tituloSoporte, { color: colores.titulo }]}>{t('misProductos.soporte')}</Text>
               <Text style={[estilos.chico, { color: colores.titulo }]}>
-                Por cualquier duda, consulta o inquietud, comuníquese al{' '}
+                {t('misProductos.soporteTexto')}{' '}
                 <Text style={{ textDecorationLine: 'underline' }}>+54 9 3547620629</Text>
               </Text>
             </Pressable>
@@ -288,7 +289,7 @@ export default function MisProductos({ navigation }) {
             <View style={[estilos.circulo, { backgroundColor: colores.verdeProfundo }]}>
               <Text style={[estilos.inicial, { color: colores.sobreVerdeProfundo }]}>{nombre.charAt(0).toUpperCase()}</Text>
             </View>
-            <Text style={[estilos.miPerfil, { color: colores.titulo }]}>Mi Perfil</Text>
+            <Text style={[estilos.miPerfil, { color: colores.titulo }]}>{t('misProductos.miPerfil')}</Text>
           </Pressable>
 
           {/* Atajos: volver a cargar lo último o lo más vendido */}
@@ -301,10 +302,10 @@ export default function MisProductos({ navigation }) {
           <Pressable
             onPress={() => navigation.navigate('FormProducto')}
             accessibilityRole="button"
-            accessibilityLabel="Nuevo producto"
+            accessibilityLabel={t('misProductos.nuevoProducto')}
             style={estilos.filaNuevo}
           >
-            <Text style={[estilos.productos, { color: colores.titulo }]}>Productos disponibles</Text>
+            <Text style={[estilos.productos, { color: colores.titulo }]}>{t('misProductos.disponibles')}</Text>
             <Icono nombre="add" tamano={24} color={colores.titulo} />
           </Pressable>
 
@@ -315,8 +316,8 @@ export default function MisProductos({ navigation }) {
         !error ? (
           <Vacio
             icono="cube-outline"
-            texto="Todavía no publicaste nada"
-            boton="Publicar el primero"
+            texto={t('misProductos.vacio')}
+            boton={t('misProductos.publicarPrimero')}
             alTocar={() => navigation.navigate('FormProducto')}
           />
         ) : null

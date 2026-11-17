@@ -19,38 +19,40 @@ import Icono from '../componentes/Icono';
 import Logo from '../componentes/Logo';
 import MensajeError from '../componentes/MensajeError';
 import { useSesion } from '../contexto/Sesion';
+import { useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, tamanos, useTema } from '../tema';
 
-// Los textos son los del mockup
+// Los textos son los del mockup (claves de idiomas/es.js, se muestran con t())
 const ROLES = [
   {
     id: 'consumidor',
-    titulo: 'Consumidor',
+    titulo: 'login.consumidor',
     icono: 'cart-outline',
-    frase: 'Accedé para comprar productos con descuento cerca tuyo.',
-    usuario: 'Usuario o Email',
-    boton: 'Ingresar como Consumidor',
+    frase: 'login.consumidorFrase',
+    usuario: 'login.consumidorUsuario',
+    boton: 'login.consumidorBoton',
   },
   {
     id: 'organizacion',
-    titulo: 'Fundación',
+    titulo: 'login.fundacion',
     icono: 'heart-outline',
-    frase: 'Accedé para solicitar o recibir donaciones de alimentos.',
-    usuario: 'Email Institucional o Usuario',
-    boton: 'Ingresar como Fundación',
+    frase: 'login.fundacionFrase',
+    usuario: 'login.fundacionUsuario',
+    boton: 'login.fundacionBoton',
   },
   {
     id: 'comercio',
-    titulo: 'Comercio',
+    titulo: 'login.comercio',
     icono: 'storefront-outline',
-    frase: 'Gestioná tus productos en oferta y donaciones publicadas.',
-    usuario: 'Usuario del Comercio',
-    boton: 'Ingresar a mi Comercio',
+    frase: 'login.comercioFrase',
+    usuario: 'login.comercioUsuario',
+    boton: 'login.comercioBoton',
   },
 ];
 
 export default function Login({ navigation, route }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const { iniciarSesion, entrarComoInvitado, invitado } = useSesion();
   // Si ya estaba como invitado, el login se abrió como ventana (desde Perfil o "Reservar"): al terminar se cierra.
   // Si no, al entrar la navegación cambia sola a las pestañas.
@@ -67,7 +69,7 @@ export default function Login({ navigation, route }) {
   async function ingresar() {
     setError('');
     if (!usuario.trim() || !clave) {
-      setError('Completá tu usuario y contraseña.');
+      setError(t('login.completa'));
       return;
     }
     setEnviando(true);
@@ -79,8 +81,8 @@ export default function Login({ navigation, route }) {
       if (enVentana) navigation.replace('VerBienvenida', { rol: datos.rol });
     } catch (e) {
       if (e?.rolReal) {
-        const real = ROLES.find((r) => r.id === e.rolReal)?.titulo || e.rolReal;
-        setError(`Esta cuenta es de ${real}. Elegí "${real}" arriba y volvé a ingresar.`);
+        const tituloReal = ROLES.find((r) => r.id === e.rolReal)?.titulo;
+        setError(t('login.otroRol', { rol: tituloReal ? t(tituloReal) : e.rolReal }));
       } else {
         setError(e);
       }
@@ -105,12 +107,12 @@ export default function Login({ navigation, route }) {
           accessibilityRole="button"
           style={[estilos.omitir, { backgroundColor: colores.borde }]}
         >
-          <Text style={estilos.textoOmitir}>Omitir</Text>
+          <Text style={estilos.textoOmitir}>{t('login.omitir')}</Text>
         </Pressable>
 
         <Logo ancho={120} />
 
-        <Text style={[estilos.titulo, { color: colores.titulo }]}>Ingresá a tu cuenta</Text>
+        <Text style={[estilos.titulo, { color: colores.titulo }]}>{t('login.ingresaATuCuenta')}</Text>
 
         {/* Barra verde claro con los roles */}
         <View style={[estilos.roles, { backgroundColor: colores.verdeClaro, borderColor: colores.borde }]}>
@@ -133,7 +135,7 @@ export default function Login({ navigation, route }) {
                   numberOfLines={1}
                   style={[estilos.textoRol, { color, fontFamily: activo ? fuentes.negrita : fuentes.normal }]}
                 >
-                  {r.titulo}
+                  {t(r.titulo)}
                 </Text>
               </Pressable>
             );
@@ -142,12 +144,12 @@ export default function Login({ navigation, route }) {
 
         {/* Recuadro gris con la frase del rol */}
         <View style={[estilos.frase, { backgroundColor: colores.panel, borderColor: colores.borde }]}>
-          <Text style={[estilos.textoFrase, { color: colores.texto }]}>{rolElegido.frase}</Text>
+          <Text style={[estilos.textoFrase, { color: colores.texto }]}>{t(rolElegido.frase)}</Text>
         </View>
 
         <View style={estilos.campos}>
           <Campo
-            etiqueta={rolElegido.usuario}
+            etiqueta={t(rolElegido.usuario)}
             autoCapitalize="none"
             autoCorrect={false}
             keyboardType="email-address"
@@ -156,7 +158,7 @@ export default function Login({ navigation, route }) {
             onChangeText={setUsuario}
           />
           <Campo
-            etiqueta="Contraseña"
+            etiqueta={t('login.contrasena')}
             secureTextEntry
             textContentType="password"
             value={clave}
@@ -169,18 +171,18 @@ export default function Login({ navigation, route }) {
             accessibilityRole="link"
             style={estilos.olvide}
           >
-            <Text style={[estilos.textoOlvide, { color: colores.verdeHover }]}>¿Olvidaste tu contraseña?</Text>
+            <Text style={[estilos.textoOlvide, { color: colores.verdeHover }]}>{t('login.olvidaste')}</Text>
           </Pressable>
         </View>
 
         <MensajeError mensaje={error} />
 
-        <Boton texto={rolElegido.boton} onPress={ingresar} cargando={enviando} estilo={estilos.boton} />
+        <Boton texto={t(rolElegido.boton)} onPress={ingresar} cargando={enviando} estilo={estilos.boton} />
 
         <Pressable onPress={() => navigation?.navigate('Registro')} accessibilityRole="link" style={estilos.registro}>
-          <Text style={[estilos.textoRegistro, { color: colores.titulo }]}>¿Todavía no tenés una cuenta?</Text>
+          <Text style={[estilos.textoRegistro, { color: colores.titulo }]}>{t('login.sinCuenta')}</Text>
           <Text style={[estilos.textoRegistro, { color: colores.verdeHover, fontFamily: fuentes.negrita }]}>
-            Regístrate gratis acá
+            {t('login.registrate')}
           </Text>
         </Pressable>
       </ScrollView>

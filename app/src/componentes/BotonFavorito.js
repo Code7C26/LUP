@@ -5,12 +5,14 @@ import { useRef } from 'react';
 import { Animated, Pressable, StyleSheet } from 'react-native';
 
 import { useFavoritos } from '../contexto/Favoritos';
+import { useIdioma } from '../contexto/Idioma';
 import { sombra, useTema } from '../tema';
 import { vibrar } from '../utilidades';
 import Icono from './Icono';
 
 export default function BotonFavorito({ id, chico, estilo }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const { esFavorito, alternar } = useFavoritos();
   const marcado = esFavorito(id);
   const escala = useRef(new Animated.Value(1)).current;
@@ -29,7 +31,7 @@ export default function BotonFavorito({ id, chico, estilo }) {
       hitSlop={10}
       accessibilityRole="button"
       accessibilityState={{ selected: marcado }}
-      accessibilityLabel={marcado ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+      accessibilityLabel={marcado ? t('componentes.quitarFavorito') : t('componentes.agregarFavorito')}
       style={({ pressed }) => [
         chico ? estilos.chico : [estilos.grande, { backgroundColor: colores.superficie }, sombra(colores)],
         pressed && { transform: [{ scale: 0.9 }] },

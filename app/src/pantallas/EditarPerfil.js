@@ -28,6 +28,7 @@ import Cargando from '../componentes/Cargando';
 import Icono from '../componentes/Icono';
 import MensajeError from '../componentes/MensajeError';
 import { useSesion } from '../contexto/Sesion';
+import { useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, tamanos, useTema } from '../tema';
 import { textoError, vibrar } from '../utilidades';
 
@@ -35,6 +36,7 @@ const CAMPOS = ['first_name', 'last_name', 'email', 'telefono', 'ciudad'];
 
 export default function EditarPerfil({ navigation }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const { usuario, actualizarUsuario } = useSesion();
   const responsable = usuario?.rol === 'comercio' || usuario?.rol === 'organizacion';
 
@@ -71,7 +73,7 @@ export default function EditarPerfil({ navigation }) {
   async function usarCamara() {
     const permiso = await ImagePicker.requestCameraPermissionsAsync();
     if (!permiso.granted) {
-      Alert.alert('Sin permiso', 'Dale permiso a Lüp para usar la cámara, o elegí una foto de la galería.');
+      Alert.alert(t('comun.sinPermiso'), t('foto.sinPermisoCamara'));
       return;
     }
     const r = await ImagePicker.launchCameraAsync({ quality: 0.7, allowsEditing: true, aspect: [1, 1] });
@@ -100,12 +102,12 @@ export default function EditarPerfil({ navigation }) {
 
   function opcionesFoto() {
     const opciones = [
-      { text: 'Sacar una foto', onPress: usarCamara },
-      { text: 'Elegir de la galería', onPress: usarGaleria },
+      { text: t('foto.sacarUna'), onPress: usarCamara },
+      { text: t('foto.galeria'), onPress: usarGaleria },
     ];
     if (foto) {
       opciones.push({
-        text: 'Quitar la foto',
+        text: t('foto.quitar'),
         style: 'destructive',
         onPress: () => {
           setFotoNueva(null);
@@ -113,8 +115,8 @@ export default function EditarPerfil({ navigation }) {
         },
       });
     }
-    opciones.push({ text: 'Cancelar', style: 'cancel' });
-    Alert.alert('Foto de perfil', responsable ? 'Puede ser el logo de tu comercio u organización.' : undefined, opciones);
+    opciones.push({ text: t('comun.cancelar'), style: 'cancel' });
+    Alert.alert(t('editarPerfil.fotoDePerfil'), responsable ? t('editarPerfil.puedeSerLogo') : undefined, opciones);
   }
 
   async function guardar() {
@@ -137,7 +139,7 @@ export default function EditarPerfil({ navigation }) {
       await actualizarUsuario(actualizado); // el nombre y la foto nuevos se ven en toda la app
       setClaveActual('');
       vibrar('exito');
-      Alert.alert('Listo', 'Tus datos se actualizaron.');
+      Alert.alert(t('comun.listo'), t('editarPerfil.datosActualizados'));
       navigation.goBack();
     } catch (e) {
       if (e?.sinConexion || e?.error || e?.detail) {
@@ -145,14 +147,14 @@ export default function EditarPerfil({ navigation }) {
       } else {
         // Errores de Django por campo: { "telefono": ["Asegúrese de que este valor tenga como máximo 20 caracteres..."] }
         setErrores(e || {});
-        setErrorGeneral(e?.foto ? '' : 'Revisá los campos marcados en rojo.');
+        setErrorGeneral(e?.foto ? '' : t('comun.revisaCampos'));
       }
     } finally {
       setGuardando(false);
     }
   }
 
-  if (cargando) return <Cargando texto="Cargando tus datos…" />;
+  if (cargando) return <Cargando texto={t('editarPerfil.cargando')} />;
 
   return (
     <KeyboardAvoidingView
@@ -163,7 +165,7 @@ export default function EditarPerfil({ navigation }) {
         <View style={estilos.cabecera}>
           <Icono nombre="person-circle-outline" tamano={30} color={colores.titulo} />
           <Text style={[estilos.titulo, { color: colores.titulo }]} accessibilityRole="header">
-            Editar mis datos
+            {t('editarPerfil.titulo')}
           </Text>
         </View>
 
@@ -172,7 +174,7 @@ export default function EditarPerfil({ navigation }) {
           <Pressable
             onPress={opcionesFoto}
             accessibilityRole="button"
-            accessibilityLabel={foto ? 'Cambiar o quitar la foto de perfil' : 'Agregar una foto de perfil'}
+            accessibilityLabel={foto ? t('editarPerfil.cambiarOQuitarFoto') : t('editarPerfil.agregarFotoAccesible')}
             style={({ pressed }) => pressed && { opacity: 0.8 }}
           >
             <View style={[estilos.foto, { backgroundColor: colores.campo }]}>
@@ -187,7 +189,7 @@ export default function EditarPerfil({ navigation }) {
               <Icono nombre="camera" tamano={15} color={colores.sobreVerdeProfundo} />
             </View>
           </Pressable>
-          <Boton texto={foto ? 'Cambiar foto' : 'Agregar foto'} variante="texto" chico onPress={opcionesFoto} />
+          <Boton texto={foto ? t('editarPerfil.cambiarFoto') : t('editarPerfil.agregarFoto')} variante="texto" chico onPress={opcionesFoto} />
           {errores.foto ? (
             <Text style={[estilos.errorFoto, { color: colores.error }]}>{textoError(errores.foto)}</Text>
           ) : null}
@@ -195,7 +197,7 @@ export default function EditarPerfil({ navigation }) {
 
         <View style={estilos.campos}>
           <Campo
-            etiqueta={responsable ? 'Nombre del responsable' : 'Nombre'}
+            etiqueta={responsable ? t('editarPerfil.nombreResponsable') : t('editarPerfil.nombre')}
             value={valores.first_name}
             onChangeText={cambiar('first_name')}
             error={errores.first_name}
@@ -203,7 +205,7 @@ export default function EditarPerfil({ navigation }) {
             maxLength={150}
           />
           <Campo
-            etiqueta={responsable ? 'Apellido del responsable' : 'Apellido'}
+            etiqueta={responsable ? t('editarPerfil.apellidoResponsable') : t('editarPerfil.apellido')}
             value={valores.last_name}
             onChangeText={cambiar('last_name')}
             error={errores.last_name}
@@ -211,8 +213,8 @@ export default function EditarPerfil({ navigation }) {
             maxLength={150}
           />
           <Campo
-            etiqueta="Email"
-            placeholder="tu@email.com"
+            etiqueta={t('editarPerfil.email')}
+            placeholder={t('editarPerfil.emailEjemplo')}
             value={valores.email}
             onChangeText={cambiar('email')}
             error={errores.email}
@@ -225,8 +227,8 @@ export default function EditarPerfil({ navigation }) {
           {cambioEmail ? (
             <View style={{ gap: espacio(0.5) }}>
               <Campo
-                etiqueta="Tu contraseña actual"
-                placeholder="Para confirmar el cambio de email"
+                etiqueta={t('editarPerfil.claveActual')}
+                placeholder={t('editarPerfil.claveActualEjemplo')}
                 value={claveActual}
                 onChangeText={setClaveActual}
                 error={errores.clave_actual}
@@ -235,12 +237,12 @@ export default function EditarPerfil({ navigation }) {
                 textContentType="password"
               />
               <Text style={[estilos.ayuda, { color: colores.gris }]}>
-                A partir de ahora los avisos y los links para recuperar la contraseña llegan al email nuevo.
+                {t('editarPerfil.emailNuevoAviso')}
               </Text>
             </View>
           ) : null}
           <Campo
-            etiqueta="Teléfono"
+            etiqueta={t('editarPerfil.telefono')}
             placeholder="351 555 1234"
             value={valores.telefono}
             onChangeText={cambiar('telefono')}
@@ -250,8 +252,8 @@ export default function EditarPerfil({ navigation }) {
             maxLength={20}
           />
           <Campo
-            etiqueta="Ciudad"
-            placeholder="Ej: Alta Gracia"
+            etiqueta={t('editarPerfil.ciudad')}
+            placeholder={t('editarPerfil.ciudadEjemplo')}
             value={valores.ciudad}
             onChangeText={cambiar('ciudad')}
             error={errores.ciudad}
@@ -266,15 +268,15 @@ export default function EditarPerfil({ navigation }) {
             <Icono nombre="mail-outline" tamano={18} color={colores.verdeHover} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={[estilos.tituloAvisos, { color: colores.texto }]}>Recibir avisos por email</Text>
+            <Text style={[estilos.tituloAvisos, { color: colores.texto }]}>{t('editarPerfil.avisos')}</Text>
             <Text style={[estilos.ayuda, { color: colores.gris }]}>
-              Reservas, retiros, opiniones y donaciones. La bienvenida y los emails de contraseña llegan siempre.
+              {t('editarPerfil.avisosAyuda')}
             </Text>
           </View>
           <Switch
             value={avisos}
             onValueChange={setAvisos}
-            accessibilityLabel="Recibir avisos por email"
+            accessibilityLabel={t('editarPerfil.avisos')}
             trackColor={{ false: colores.borde, true: colores.verde }}
             thumbColor={Platform.OS === 'android' ? (avisos ? colores.verdeProfundo : colores.fondo) : undefined}
             ios_backgroundColor={colores.borde}
@@ -286,7 +288,7 @@ export default function EditarPerfil({ navigation }) {
 
         <MensajeError mensaje={errorGeneral} />
 
-        <Boton texto="Guardar cambios" onPress={guardar} cargando={guardando} estilo={estilos.boton} />
+        <Boton texto={t('comun.guardarCambios')} onPress={guardar} cargando={guardando} estilo={estilos.boton} />
       </ScrollView>
     </KeyboardAvoidingView>
   );

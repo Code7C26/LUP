@@ -10,12 +10,14 @@ import { api } from '../../api/cliente';
 import Boton from '../../componentes/Boton';
 import Campo from '../../componentes/Campo';
 import MensajeError from '../../componentes/MensajeError';
+import { useIdioma } from '../../contexto/Idioma';
 import { espacio, fuentes, radio, tamanos, useTema } from '../../tema';
 import { formatoPrecio, textoError } from '../../utilidades';
 import Encabezado from '../../componentes/Encabezado';
 
 export default function ConfirmarRetiro({ navigation }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const [permiso, pedirPermiso] = useCameraPermissions();
 
   const [escaneando, setEscaneando] = useState(false);
@@ -48,7 +50,7 @@ export default function ConfirmarRetiro({ navigation }) {
   async function confirmar(texto) {
     const limpio = texto.trim().toUpperCase();
     if (!limpio) {
-      setResultado({ ok: false, texto: 'Escribí el código que te muestra el cliente.' });
+      setResultado({ ok: false, texto: t('retiros.escribiCodigo') });
       return;
     }
     setEnviando(true);
@@ -59,7 +61,7 @@ export default function ConfirmarRetiro({ navigation }) {
       setCodigo('');
       cargarPendientes();
     } catch (e) {
-      setResultado({ ok: false, texto: textoError(e) || 'No se pudo confirmar el retiro.' });
+      setResultado({ ok: false, texto: textoError(e) || t('retiros.noSePudo') });
     } finally {
       setEnviando(false);
     }
@@ -70,7 +72,7 @@ export default function ConfirmarRetiro({ navigation }) {
     if (!permiso?.granted) {
       const respuesta = await pedirPermiso();
       if (!respuesta.granted) {
-        setResultado({ ok: false, texto: 'Sin permiso para la cámara. Podés escribir el código a mano.' });
+        setResultado({ ok: false, texto: t('retiros.sinCamara') });
         return;
       }
     }
@@ -101,8 +103,8 @@ export default function ConfirmarRetiro({ navigation }) {
         />
       }
     >
-      <Encabezado titulo="Retiros" />
-      <Text style={[estilos.texto, { color: colores.gris }]}>Escaneá el QR del cliente o escribí su código.</Text>
+      <Encabezado titulo={t('retiros.titulo')} />
+      <Text style={[estilos.texto, { color: colores.gris }]}>{t('retiros.explicacion')}</Text>
 
       {escaneando ? (
         <View style={{ gap: espacio(1) }}>
@@ -114,15 +116,15 @@ export default function ConfirmarRetiro({ navigation }) {
               onBarcodeScanned={alEscanear}
             />
           </View>
-          <Boton texto="Cerrar cámara" icono="close" variante="texto" onPress={() => setEscaneando(false)} />
+          <Boton texto={t('retiros.cerrarCamara')} icono="close" variante="texto" onPress={() => setEscaneando(false)} />
         </View>
       ) : (
-        <Boton texto="Escanear QR" icono="scan-outline" onPress={abrirCamara} cargando={enviando} />
+        <Boton texto={t('retiros.escanear')} icono="scan-outline" onPress={abrirCamara} cargando={enviando} />
       )}
 
       <View style={estilos.fila}>
         <Campo
-          placeholder="Código, ej: A1B2C3"
+          placeholder={t('retiros.codigoEjemplo')}
           value={codigo}
           onChangeText={setCodigo}
           autoCapitalize="characters"
@@ -132,7 +134,7 @@ export default function ConfirmarRetiro({ navigation }) {
           onSubmitEditing={() => confirmar(codigo)}
           estilo={{ flex: 1 }}
         />
-        <Boton icono="checkmark" etiqueta="Confirmar código" variante="secundario" onPress={() => confirmar(codigo)} deshabilitado={enviando} />
+        <Boton icono="checkmark" etiqueta={t('retiros.confirmarCodigo')} variante="secundario" onPress={() => confirmar(codigo)} deshabilitado={enviando} />
       </View>
 
       {resultado ? (
@@ -151,10 +153,10 @@ export default function ConfirmarRetiro({ navigation }) {
         </View>
       ) : null}
 
-      <Text style={[estilos.subtitulo, { color: colores.gris }]}>Pendientes</Text>
+      <Text style={[estilos.subtitulo, { color: colores.gris }]}>{t('retiros.pendientes')}</Text>
       <MensajeError mensaje={errorLista} alReintentar={cargarPendientes} />
       {!errorLista && pendientes.length === 0 ? (
-        <Text style={[estilos.texto, { color: colores.gris }]}>Nadie esperando por ahora.</Text>
+        <Text style={[estilos.texto, { color: colores.gris }]}>{t('retiros.nadie')}</Text>
       ) : null}
       {pendientes.map((reserva) => (
         <View

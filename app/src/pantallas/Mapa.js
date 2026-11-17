@@ -16,14 +16,16 @@ import CalificacionComercio from '../componentes/CalificacionComercio';
 import Cargando from '../componentes/Cargando';
 import Icono from '../componentes/Icono';
 import MensajeError from '../componentes/MensajeError';
+import { useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, sombra, tamanos, useTema } from '../tema';
-import { emojiRubro, textoDistancia } from '../utilidades';
+import { emojiRubro, textoKm } from '../utilidades';
 
 // Córdoba, por si no hay ubicación ni comercios con pin
 const CENTRO_POR_DEFECTO = { latitude: -31.4201, longitude: -64.1888 };
 
 export default function Mapa({ navigation }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const { top, bottom } = useSafeAreaInsets();
   const mapa = useRef(null);
 
@@ -57,12 +59,12 @@ export default function Mapa({ navigation }) {
     })();
   }, []);
 
-  if (cargando) return <Cargando texto="Abriendo el mapa…" />;
+  if (cargando) return <Cargando texto={t('mapa.abriendo')} />;
 
   const primero = comercios[0];
   const centro =
     coords || (primero ? { latitude: Number(primero.latitud), longitude: Number(primero.longitud) } : CENTRO_POR_DEFECTO);
-  const distancia = elegido ? textoDistancia(elegido.distancia_km) : null;
+  const distancia = elegido ? textoKm(elegido.distancia_km) : null;
 
   return (
     <View style={{ flex: 1, backgroundColor: colores.fondo }}>
@@ -95,7 +97,7 @@ export default function Mapa({ navigation }) {
         <Pressable
           onPress={() => mapa.current?.animateToRegion({ ...coords, latitudeDelta: 0.02, longitudeDelta: 0.02 }, 400)}
           accessibilityRole="button"
-          accessibilityLabel="Ir a mi ubicación"
+          accessibilityLabel={t('mapa.miUbicacion')}
           style={[estilos.miUbicacion, { top: top + espacio(1), backgroundColor: colores.superficie }, sombra(colores)]}
         >
           <Icono nombre="locate" tamano={20} color={colores.texto} />
@@ -121,23 +123,23 @@ export default function Mapa({ navigation }) {
               </Text>
               <CalificacionComercio promedio={elegido.calificacion_promedio} cantidad={elegido.calificaciones} />
               <Text style={[estilos.detalle, { color: colores.gris }]} numberOfLines={1}>
-                {[distancia?.replace('a ', ''), elegido.rubro_texto, elegido.horario_atencion].filter(Boolean).join(' · ')}
+                {[distancia, elegido.rubro_texto, elegido.horario_atencion].filter(Boolean).join(' · ')}
               </Text>
               <Text style={[estilos.detalle, { color: elegido.ofertas ? colores.verde : colores.gris, fontFamily: fuentes.negrita }]}>
-                {elegido.ofertas ? `${elegido.ofertas} ${elegido.ofertas === 1 ? 'oferta' : 'ofertas'}` : 'Sin ofertas por ahora'}
+                {elegido.ofertas ? t('mapa.ofertas', { n: elegido.ofertas }) : t('mapa.sinOfertas')}
               </Text>
             </View>
             <BotonFavorito id={elegido.id} chico />
           </View>
           <View style={estilos.fila}>
             <Boton
-              texto="Ver catálogo"
+              texto={t('mapa.verCatalogo')}
               chico
               onPress={() => navigation.navigate('DetalleComercio', { id: elegido.id })}
               estilo={{ flex: 1 }}
             />
             <Boton
-              texto="Cómo llegar"
+              texto={t('mapa.comoLlegar')}
               icono="navigate"
               variante="secundario"
               chico
@@ -150,7 +152,7 @@ export default function Mapa({ navigation }) {
         <View style={[estilos.ayuda, { backgroundColor: colores.fondo, bottom: bottom + espacio(2) }, sombra(colores, 2)]}>
           <Icono nombre="hand-left-outline" tamano={16} color={colores.gris} />
           <Text style={[estilos.detalle, { color: colores.gris }]}>
-            {comercios.length ? 'Tocá un pin para ver el comercio' : 'Todavía no hay comercios en el mapa'}
+            {comercios.length ? t('mapa.tocaUnPin') : t('mapa.sinComercios')}
           </Text>
         </View>
       )}

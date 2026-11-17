@@ -35,11 +35,12 @@ import MenuLateral from '../componentes/MenuLateral';
 import MensajeError from '../componentes/MensajeError';
 import { useBusquedas } from '../contexto/Busquedas';
 import { useFavoritos } from '../contexto/Favoritos';
+import { useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, useTema } from '../tema';
-import { emojiCategoria, textoDistancia } from '../utilidades';
+import { emojiCategoria, textoKm } from '../utilidades';
 
 // "1 km", "350 m" (sin el "a" de adelante, como el mockup)
-const km = (distancia) => textoDistancia(distancia)?.replace('a ', '') || null;
+const km = (distancia) => textoKm(distancia) || null;
 
 // La fecha de hoy en la hora del celular, como la manda Django: "2026-11-12"
 // (no se usa toISOString() porque está en UTC y a la noche ya daría "mañana")
@@ -94,12 +95,13 @@ function TarjetaOferta({ producto, onPress }) {
 // Tarjeta de comercio del carrusel "Cerca tuyo": foto, nombre, km, estrellas y "Ver catálogo"
 function TarjetaComercio({ comercio, foto, onPress }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const estrellas = textoCalificacion(comercio.calificacion_promedio, comercio.calificaciones);
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={[comercio.nombre_fantasia, estrellas, 'Ver catálogo'].filter(Boolean).join('. ')}
+      accessibilityLabel={[comercio.nombre_fantasia, estrellas, t('inicio.verCatalogo')].filter(Boolean).join('. ')}
       style={({ pressed }) => [estilos.comercio, pressed && { opacity: 0.8 }]}
     >
       <View>
@@ -114,7 +116,7 @@ function TarjetaComercio({ comercio, foto, onPress }) {
         <CalificacionComercio promedio={comercio.calificacion_promedio} cantidad={comercio.calificaciones} tamano={10} />
       </View>
       <Text style={[estilos.verCatalogo, { color: colores.titulo }]}>
-        {comercio.ofertas ? 'Ver catálogo' : 'Sin ofertas por ahora'}
+        {comercio.ofertas ? t('inicio.verCatalogo') : t('inicio.sinOfertas')}
       </Text>
     </Pressable>
   );
@@ -122,6 +124,7 @@ function TarjetaComercio({ comercio, foto, onPress }) {
 
 export default function Inicio({ navigation }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const { favoritos } = useFavoritos();
   const { recientes } = useBusquedas();
 
@@ -164,7 +167,7 @@ export default function Inicio({ navigation }) {
   const abrirComercio = (c) => navigation?.navigate?.('DetalleComercio', { id: c.id });
 
   function compartir() {
-    Share.share({ message: 'Rescatá comida rica con descuento cerca tuyo con Lüp 🌱' }).catch(() => {});
+    Share.share({ message: t('inicio.compartirMensaje') }).catch(() => {});
   }
 
   if (cargando) return <Esqueleto tipo="inicio" />;
@@ -206,7 +209,7 @@ export default function Inicio({ navigation }) {
           onPress={() => setVerMenu(true)}
           hitSlop={8}
           accessibilityRole="button"
-          accessibilityLabel="Abrir el menú"
+          accessibilityLabel={t('inicio.abrirMenu')}
           style={[estilos.botonBarra, { backgroundColor: colores.panel }]}
         >
           <Icono nombre="menu" tamano={22} color={colores.texto} />
@@ -216,7 +219,7 @@ export default function Inicio({ navigation }) {
           onPress={() => navigation?.navigate?.('Ayuda', { desde: 'Inicio' })}
           hitSlop={8}
           accessibilityRole="button"
-          accessibilityLabel="Ayuda: chatear con Lü"
+          accessibilityLabel={t('inicio.ayudaAccesible')}
           style={({ pressed }) => [
             estilos.botonAyuda,
             { backgroundColor: colores.verdeProfundo },
@@ -224,10 +227,10 @@ export default function Inicio({ navigation }) {
           ]}
         >
           <Icono nombre="chatbubble-ellipses" tamano={15} color={colores.sobreVerdeProfundo} />
-          <Text style={[estilos.textoAyuda, { color: colores.sobreVerdeProfundo }]}>Ayuda</Text>
+          <Text style={[estilos.textoAyuda, { color: colores.sobreVerdeProfundo }]}>{t('inicio.ayuda')}</Text>
         </Pressable>
         <View style={{ flex: 1 }} />
-        <Pressable onPress={compartir} hitSlop={8} accessibilityRole="button" accessibilityLabel="Compartir Lüp" style={estilos.botonBarra}>
+        <Pressable onPress={compartir} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('inicio.compartir')} style={estilos.botonBarra}>
           <Icono nombre="share-social-outline" tamano={22} color={colores.texto} />
         </Pressable>
         <BotonCarrito navigation={navigation} />
@@ -247,14 +250,14 @@ export default function Inicio({ navigation }) {
             rotateEnabled={false}
             pitchEnabled={false}
             toolbarEnabled={false}
-            accessibilityLabel="Mapa con los comercios cerca tuyo"
+            accessibilityLabel={t('inicio.mapaAccesible')}
           >
             {conUbicacion.map((c) => (
               <Marker
                 key={c.id}
                 coordinate={{ latitude: Number(c.latitud), longitude: Number(c.longitud) }}
                 title={c.nombre_fantasia}
-                description="Tocá para ver su catálogo"
+                description={t('inicio.tocaParaVer')}
                 pinColor={colores.verdeProfundo}
                 onCalloutPress={() => abrirComercio(c)}
               />
@@ -265,12 +268,12 @@ export default function Inicio({ navigation }) {
           <Pressable
             onPress={() => navigation?.navigate?.('Mapa')}
             accessibilityRole="button"
-            accessibilityLabel="Abrir el mapa a pantalla completa"
+            accessibilityLabel={t('inicio.mapaCompleto')}
             style={StyleSheet.absoluteFill}
           >
             <View style={[estilos.agrandar, { backgroundColor: colores.fondo }]}>
               <Icono nombre="expand-outline" tamano={16} color={colores.texto} />
-              <Text style={[estilos.textoAgrandar, { color: colores.texto }]}>Ver mapa</Text>
+              <Text style={[estilos.textoAgrandar, { color: colores.texto }]}>{t('inicio.verMapa')}</Text>
             </View>
           </Pressable>
         </View>
@@ -281,11 +284,11 @@ export default function Inicio({ navigation }) {
 
         {/* "Cerca tuyo" con el buscador */}
         <View style={estilos.filaTitulo}>
-          <Text style={[estilos.titulo, { color: colores.titulo }]}>Cerca tuyo</Text>
+          <Text style={[estilos.titulo, { color: colores.titulo }]}>{t('inicio.cercaTuyo')}</Text>
           <Pressable
             onPress={() => navigation?.navigate?.('Catalogo')}
             accessibilityRole="search"
-            accessibilityLabel="Buscar"
+            accessibilityLabel={t('inicio.buscar')}
             style={estilos.buscar}
           >
             <View style={[estilos.cajaBuscar, { backgroundColor: colores.panel, borderColor: colores.borde }]} />
@@ -298,7 +301,7 @@ export default function Inicio({ navigation }) {
       {recientes.length ? (
         <View style={estilos.recientes}>
           <Text style={[estilos.textoRecientes, { color: colores.gris, paddingHorizontal: espacio(2) }]}>
-            Buscaste hace poco
+            {t('inicio.buscasteHacePoco')}
           </Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={estilos.filaRecientes}>
             {recientes.map((r) => (
@@ -323,7 +326,7 @@ export default function Inicio({ navigation }) {
           <TarjetaComercio comercio={item} foto={fotoDe[item.id]} onPress={() => abrirComercio(item)} />
         )}
         ListEmptyComponent={
-          <Text style={[estilos.vacio, { color: colores.gris }]}>Todavía no hay comercios adheridos.</Text>
+          <Text style={[estilos.vacio, { color: colores.gris }]}>{t('inicio.sinComercios')}</Text>
         }
       />
 
@@ -333,7 +336,7 @@ export default function Inicio({ navigation }) {
           <View style={[estilos.cuerpo, estilos.filaVenceHoy]}>
             <Icono nombre="time-outline" tamano={20} color={colores.ambar} />
             <Text style={[estilos.titulo, { color: colores.titulo }]} accessibilityRole="header">
-              Vence hoy
+              {t('inicio.venceHoy')}
             </Text>
           </View>
           <FlatList
@@ -354,7 +357,7 @@ export default function Inicio({ navigation }) {
           accessibilityRole="link"
           style={[estilos.titulo, estilos.subrayado, { color: colores.titulo, marginTop: espacio(3) }]}
         >
-          Ver catálogo completo
+          {t('inicio.catalogoCompleto')}
         </Text>
       </View>
 
@@ -366,7 +369,7 @@ export default function Inicio({ navigation }) {
         contentContainerStyle={estilos.carrusel}
         renderItem={({ item }) => <TarjetaOferta producto={item} onPress={() => abrirProducto(item)} />}
         ListEmptyComponent={
-          <Text style={[estilos.vacio, { color: colores.gris }]}>No hay ofertas por ahora.</Text>
+          <Text style={[estilos.vacio, { color: colores.gris }]}>{t('inicio.noHayOfertas')}</Text>
         }
       />
 
@@ -374,7 +377,7 @@ export default function Inicio({ navigation }) {
       {misFavoritos.length ? (
         <>
           <View style={estilos.cuerpo}>
-            <Text style={[estilos.titulo, { color: colores.titulo, marginTop: espacio(3) }]}>Tus favoritos</Text>
+            <Text style={[estilos.titulo, { color: colores.titulo, marginTop: espacio(3) }]}>{t('inicio.tusFavoritos')}</Text>
           </View>
           <FlatList
             horizontal

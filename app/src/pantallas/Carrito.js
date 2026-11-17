@@ -14,6 +14,7 @@ import Vacio from '../componentes/Vacio';
 import { useCarrito } from '../contexto/Carrito';
 import { useSesion } from '../contexto/Sesion';
 import { programarRecordatorio } from '../servicios/recordatorios';
+import { useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, sombra, tamanos, useTema } from '../tema';
 import { emojiCategoria, formatoPrecio, textoError, vibrar } from '../utilidades';
 
@@ -40,6 +41,7 @@ function BotonMasMenos({ icono, onPress, deshabilitado, etiqueta }) {
 
 export default function Carrito({ navigation }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const { bottom } = useSafeAreaInsets();
   const { usuario } = useSesion();
   const { items, total, cantidadTotal, cambiarCantidad, quitar, actualizar } = useCarrito();
@@ -77,7 +79,7 @@ export default function Carrito({ navigation }) {
   async function realizarCompra() {
     if (!usuario) return navigation.navigate('Login');
     if (usuario.rol !== 'consumidor') {
-      return Alert.alert('Solo para consumidores', 'Las compras se hacen con una cuenta de consumidor.');
+      return Alert.alert(t('carrito.soloConsumidores'), t('carrito.soloConsumidoresTexto'));
     }
     const disponibles = items.filter((i) => detalles[i.id]);
     setComprando(true);
@@ -100,36 +102,36 @@ export default function Carrito({ navigation }) {
         hechas.push(item);
         quitar(item.id);
       } catch (e) {
-        fallidas.push(`${detalles[item.id]?.titulo || 'Producto'}: ${textoError(e) || 'no se pudo reservar'}`);
+        fallidas.push(`${detalles[item.id]?.titulo || t('carrito.producto')}: ${textoError(e) || t('carrito.noSePudoReservarUno')}`);
       }
     }
     setComprando(false);
 
     if (hechas.length) vibrar('exito');
     if (hechas.length && !fallidas.length) {
-      Alert.alert('¡Compra realizada!', 'Mostrá tus códigos en cada comercio para retirar. Te avisamos antes de cada horario de retiro.', [
-        { text: 'Ver mis reservas', onPress: () => navigation.navigate('Pestanas', { screen: 'MisReservas' }) },
+      Alert.alert(t('carrito.compraRealizada'), t('carrito.compraRealizadaTexto'), [
+        { text: t('carrito.verMisReservas'), onPress: () => navigation.navigate('Pestanas', { screen: 'MisReservas' }) },
       ]);
     } else if (hechas.length) {
       Alert.alert(
-        'Se reservó una parte',
-        `Estos quedaron en el carrito:\n\n${fallidas.join('\n')}`,
-        [{ text: 'Ver mis reservas', onPress: () => navigation.navigate('Pestanas', { screen: 'MisReservas' }) }, { text: 'Ok' }]
+        t('carrito.unaParte'),
+        `${t('carrito.quedaron')}\n\n${fallidas.join('\n')}`,
+        [{ text: t('carrito.verMisReservas'), onPress: () => navigation.navigate('Pestanas', { screen: 'MisReservas' }) }, { text: t('carrito.ok') }]
       );
     } else {
-      Alert.alert('No se pudo reservar', fallidas.join('\n') || 'Probá de nuevo.');
+      Alert.alert(t('carrito.noSePudoReservar'), fallidas.join('\n') || t('carrito.probaDeNuevo'));
     }
   }
 
-  if (cargando && items.length) return <Cargando texto="Abriendo tu carrito…" />;
+  if (cargando && items.length) return <Cargando texto={t('carrito.abriendo')} />;
 
   if (!items.length) {
     return (
       <View style={{ flex: 1, backgroundColor: colores.fondo }}>
         <Vacio
           icono="cart-outline"
-          texto="Tu carrito está vacío"
-          boton="Ver ofertas"
+          texto={t('carrito.vacio')}
+          boton={t('carrito.verOfertas')}
           alTocar={() => navigation.navigate('Pestanas', { screen: 'Catalogo' })}
         />
       </View>
@@ -139,7 +141,7 @@ export default function Carrito({ navigation }) {
   // Agrupados por comercio
   const grupos = {};
   items.forEach((item) => {
-    const nombre = detalles[item.id]?.comercio || 'No disponible';
+    const nombre = detalles[item.id]?.comercio || t('carrito.noDisponible');
     (grupos[nombre] = grupos[nombre] || []).push(item);
   });
   const hayNoDisponibles = items.some((i) => !detalles[i.id]);
@@ -147,7 +149,7 @@ export default function Carrito({ navigation }) {
   return (
     <View style={{ flex: 1, backgroundColor: colores.fondo }}>
       <ScrollView contentContainerStyle={estilos.contenido}>
-        <Text style={[estilos.titulo, { color: colores.titulo }]}>Mi carrito</Text>
+        <Text style={[estilos.titulo, { color: colores.titulo }]}>{t('carrito.titulo')}</Text>
 
         {Object.entries(grupos).map(([comercio, lista]) => (
           <View key={comercio} style={{ gap: espacio(1.25) }}>
@@ -169,33 +171,33 @@ export default function Carrito({ navigation }) {
                   </View>
                   <View style={{ flex: 1, gap: 4 }}>
                     <Text style={[estilos.nombre, { color: colores.texto }]} numberOfLines={1}>
-                      {p?.titulo || 'Ya no está disponible'}
+                      {p?.titulo || t('carrito.yaNoEsta')}
                     </Text>
                     {p ? (
                       <View style={estilos.filaCantidad}>
                         <BotonMasMenos
                           icono="remove"
-                          etiqueta="Restar uno"
+                          etiqueta={t('carrito.restar')}
                           onPress={() => cambiarCantidad(item.id, item.cantidad - 1)}
                         />
                         <Text style={[estilos.cantidad, { color: colores.texto }]}>{item.cantidad}</Text>
                         <BotonMasMenos
                           icono="add"
-                          etiqueta="Sumar uno"
+                          etiqueta={t('carrito.sumar')}
                           deshabilitado={item.cantidad >= item.stock}
                           onPress={() => cambiarCantidad(item.id, item.cantidad + 1)}
                         />
                         <Text style={[estilos.precio, { color: colores.texto }]}>{formatoPrecio(item.precio * item.cantidad)}</Text>
                       </View>
                     ) : (
-                      <Text style={[estilos.chico, { color: colores.gris }]}>Se agotó o venció</Text>
+                      <Text style={[estilos.chico, { color: colores.gris }]}>{t('carrito.seAgoto')}</Text>
                     )}
                   </View>
                   <Pressable
                     onPress={() => quitar(item.id)}
                     hitSlop={8}
                     accessibilityRole="button"
-                    accessibilityLabel="Quitar del carrito"
+                    accessibilityLabel={t('carrito.quitar')}
                     style={estilos.quitar}
                   >
                     <Icono nombre="trash-outline" tamano={19} color={colores.error} />
@@ -207,7 +209,7 @@ export default function Carrito({ navigation }) {
         ))}
 
         {hayNoDisponibles ? (
-          <Text style={[estilos.chico, { color: colores.gris }]}>Los que ya no están disponibles no se van a reservar.</Text>
+          <Text style={[estilos.chico, { color: colores.gris }]}>{t('carrito.noSeVanAReservar')}</Text>
         ) : null}
       </ScrollView>
 
@@ -215,12 +217,12 @@ export default function Carrito({ navigation }) {
       <View style={[estilos.barra, { backgroundColor: colores.fondo, borderColor: colores.borde, paddingBottom: bottom + espacio(1.5) }]}>
         <View style={estilos.filaTotal}>
           <Text style={[estilos.chico, { color: colores.gris }]}>
-            {cantidadTotal} {cantidadTotal === 1 ? 'producto' : 'productos'} · pagás al retirar
+            {t('carrito.pagasAlRetirar', { productos: t('comun.productos', { n: cantidadTotal }) })}
           </Text>
           <Text style={[estilos.total, { color: colores.texto }]}>{formatoPrecio(total)}</Text>
         </View>
         <Boton
-          texto={usuario ? 'Realizar compra' : 'Ingresá para comprar'}
+          texto={usuario ? t('carrito.realizarCompra') : t('carrito.ingresaParaComprar')}
           onPress={realizarCompra}
           cargando={comprando}
           deshabilitado={!items.some((i) => detalles[i.id])}

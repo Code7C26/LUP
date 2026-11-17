@@ -7,6 +7,7 @@
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { urlCompleta } from '../api/cliente';
+import { t as traducir, useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, sombra, useTema } from '../tema';
 import { emojiCategoria, formatoPrecio } from '../utilidades';
 import Icono from './Icono';
@@ -38,13 +39,14 @@ export function atajosParaPublicar(productos) {
 }
 
 function textoEtiqueta(atajo) {
-  if (atajo.ultimo && atajo.masVendido) return '🔥 Lo último y lo más vendido';
-  if (atajo.masVendido) return '🔥 Tu más vendido';
-  return '🕒 Lo último';
+  if (atajo.ultimo && atajo.masVendido) return traducir('publicarDeNuevo.ultimoYMasVendido');
+  if (atajo.masVendido) return traducir('publicarDeNuevo.masVendido');
+  return traducir('publicarDeNuevo.ultimo');
 }
 
 export default function PublicarDeNuevo({ productos, alElegir, compacto = false }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const atajos = atajosParaPublicar(productos);
   if (!atajos.length) return null;
 
@@ -52,14 +54,14 @@ export default function PublicarDeNuevo({ productos, alElegir, compacto = false 
   if (compacto) {
     return (
       <View style={{ gap: espacio(0.75) }}>
-        <Text style={[estilos.chico, { color: colores.gris }]}>¿Lo mismo de siempre? Cargalo de nuevo:</Text>
+        <Text style={[estilos.chico, { color: colores.gris }]}>{t('publicarDeNuevo.loDeSiempre')}</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: espacio(1) }}>
           {atajos.map((a) => (
             <Pressable
               key={a.producto.id}
               onPress={() => alElegir(a.producto)}
               accessibilityRole="button"
-              accessibilityLabel={`Cargar de nuevo ${a.producto.titulo}`}
+              accessibilityLabel={t('publicarDeNuevo.cargarDeNuevo', { titulo: a.producto.titulo })}
               style={({ pressed }) => [
                 estilos.chip,
                 { backgroundColor: colores.menta, borderColor: colores.borde },
@@ -81,9 +83,9 @@ export default function PublicarDeNuevo({ productos, alElegir, compacto = false 
   return (
     <View style={{ gap: espacio(1) }}>
       <View>
-        <Text style={[estilos.tituloSeccion, { color: colores.titulo }]}>Publicar de nuevo</Text>
+        <Text style={[estilos.tituloSeccion, { color: colores.titulo }]}>{t('publicarDeNuevo.titulo')}</Text>
         <Text style={[estilos.chico, { color: colores.gris }]}>
-          Cargalo en un toque: con la foto, los precios y la fecha de hoy.
+          {t('publicarDeNuevo.explicacion')}
         </Text>
       </View>
       <View style={estilos.tarjetas}>
@@ -92,7 +94,7 @@ export default function PublicarDeNuevo({ productos, alElegir, compacto = false 
             key={a.producto.id}
             onPress={() => alElegir(a.producto)}
             accessibilityRole="button"
-            accessibilityLabel={`Publicar de nuevo ${a.producto.titulo}`}
+            accessibilityLabel={t('publicarDeNuevo.publicarDeNuevoAccesible', { titulo: a.producto.titulo })}
             style={({ pressed }) => [
               estilos.tarjeta,
               { backgroundColor: colores.menta, borderColor: colores.borde },
@@ -117,13 +119,13 @@ export default function PublicarDeNuevo({ productos, alElegir, compacto = false 
                 </Text>
                 <Text style={[estilos.chico, { color: colores.gris }]} numberOfLines={1}>
                   {formatoPrecio(a.producto.precio_descuento)}
-                  {a.vendidos ? ` · ${a.vendidos} vendido${a.vendidos === 1 ? '' : 's'}` : ''}
+                  {a.vendidos ? t('publicarDeNuevo.vendidos', { n: a.vendidos }) : ''}
                 </Text>
               </View>
             </View>
             <View style={[estilos.boton, { backgroundColor: colores.verdeProfundo }]}>
               <Icono nombre="repeat" tamano={14} color={colores.sobreVerdeProfundo} />
-              <Text style={[estilos.textoBoton, { color: colores.sobreVerdeProfundo }]}>Publicar de nuevo</Text>
+              <Text style={[estilos.textoBoton, { color: colores.sobreVerdeProfundo }]}>{t('publicarDeNuevo.titulo')}</Text>
             </View>
           </Pressable>
         ))}

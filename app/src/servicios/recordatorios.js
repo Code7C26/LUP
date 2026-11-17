@@ -8,6 +8,8 @@
 import * as Notifications from 'expo-notifications';
 import * as SecureStore from 'expo-secure-store';
 
+import { t } from '../contexto/Idioma';
+
 const CLAVE = 'lup_recordatorios'; // { idReserva: idNotificacion }
 const MINUTOS_ANTES = 30;
 
@@ -66,8 +68,9 @@ export async function programarRecordatorio({ reservaId, producto, comercio, cod
 
     const idNotificacion = await Notifications.scheduleNotificationAsync({
       content: {
-        title: `Retirá tu pedido en ${comercio} 🛍️`,
-        body: `${producto} · Retiro: ${horario}. Tu código es ${codigo}.`,
+        // En el idioma que tiene la app al reservar
+        title: t('recordatorio.titulo', { comercio }),
+        body: t('recordatorio.cuerpo', { producto, horario, codigo }),
         data: { pantalla: 'MisReservas' }, // al tocarlo se abre "Mis reservas" (servicios/push.js)
       },
       trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: cuando },

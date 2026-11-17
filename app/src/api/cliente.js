@@ -5,6 +5,8 @@
 import Constants from 'expo-constants';
 import * as SecureStore from 'expo-secure-store';
 
+import { idiomaActual, t } from '../contexto/Idioma';
+
 // Dirección del servidor de Django.
 // En desarrollo, se usa la MISMA compu que está corriendo Expo, en el puerto 8000.
 // (Expo ya sabe la IP de la compu: la saca del QR que escaneaste).
@@ -38,7 +40,8 @@ export function urlCompleta(ruta) {
 // "espera" (opcional): cuántos milisegundos esperar la respuesta (el chat de ayuda con IA tarda más)
 export async function api(ruta, { metodo = 'GET', datos, espera: esperaMaxima } = {}) {
   const token = await leerToken();
-  const headers = { Accept: 'application/json' };
+  // El idioma elegido en la app, para que Django conteste en ese idioma (ver scr/lup/idioma.py)
+  const headers = { Accept: 'application/json', 'Accept-Language': idiomaActual() === 'en' ? 'en' : 'es-AR' };
   if (token) headers.Authorization = `Token ${token}`;
 
   let body;
@@ -63,7 +66,7 @@ export async function api(ruta, { metodo = 'GET', datos, espera: esperaMaxima } 
     console.warn(`api(${metodo} ${ruta}) falló antes de llegar a Django (${URL_SERVIDOR}):`, e?.message || e);
     throw {
       sinConexion: true,
-      error: `No pudimos conectar con Lüp (${URL_SERVIDOR}). Revisá que Django esté corriendo y que el celular esté en el mismo Wi-Fi que la compu.`,
+      error: t('api.sinConexion', { servidor: URL_SERVIDOR }),
     };
   } finally {
     clearTimeout(espera);

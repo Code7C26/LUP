@@ -5,13 +5,15 @@
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { urlCompleta } from '../api/cliente';
+import { useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, radio, sombra, tamanos, useTema } from '../tema';
-import { emojiCategoria, formatoPrecio, textoDistancia } from '../utilidades';
+import { emojiCategoria, formatoPrecio, textoKm } from '../utilidades';
 import Icono from './Icono';
 
 // La foto (o el emoji de la categoría si no tiene) con el % de descuento encima
 function Foto({ producto, estilo }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   return (
     <View style={[estilo, { backgroundColor: colores.menta, overflow: 'hidden' }]}>
       {producto.imagen ? (
@@ -25,7 +27,7 @@ function Foto({ producto, estilo }) {
         <Text style={[estilos.descuento, { backgroundColor: colores.ambar }]}>-{producto.porcentaje_descuento}%</Text>
       ) : null}
       {producto.es_donacion ? (
-        <View style={[estilos.corazon, { backgroundColor: colores.superficie }]} accessibilityLabel="También para donación">
+        <View style={[estilos.corazon, { backgroundColor: colores.superficie }]} accessibilityLabel={t('tarjeta.tambienDonacion')}>
           <Icono nombre="heart" tamano={13} color={colores.verde} />
         </View>
       ) : null}
@@ -35,14 +37,19 @@ function Foto({ producto, estilo }) {
 
 export default function TarjetaProducto({ producto, onPress, variante = 'fila', estilo }) {
   const { colores } = useTema();
-  const distancia = textoDistancia(producto.distancia_km);
+  const { t } = useIdioma();
+  const distancia = textoKm(producto.distancia_km);
   const vertical = variante === 'vertical';
 
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`${producto.titulo}, de ${producto.comercio}, ${formatoPrecio(producto.precio_descuento)}`}
+      accessibilityLabel={t('tarjeta.accesible', {
+        titulo: producto.titulo,
+        comercio: producto.comercio,
+        precio: formatoPrecio(producto.precio_descuento),
+      })}
       style={({ pressed }) => [
         vertical ? estilos.vertical : estilos.fila,
         { backgroundColor: colores.superficie },
@@ -70,14 +77,14 @@ export default function TarjetaProducto({ producto, onPress, variante = 'fila', 
           {distancia && !vertical ? (
             <View style={[estilos.km, { backgroundColor: colores.menta }]}>
               <Icono nombre="location" tamano={11} color={colores.verdeHover} />
-              <Text style={[estilos.textoKm, { color: colores.verdeHover }]}>{distancia.replace('a ', '')}</Text>
+              <Text style={[estilos.textoKm, { color: colores.verdeHover }]}>{distancia}</Text>
             </View>
           ) : null}
         </View>
         {distancia && vertical ? (
           <View style={estilos.filaChica}>
             <Icono nombre="location" tamano={12} color={colores.verdeHover} />
-            <Text style={[estilos.textoKm, { color: colores.verdeHover }]}>{distancia.replace('a ', '')}</Text>
+            <Text style={[estilos.textoKm, { color: colores.verdeHover }]}>{distancia}</Text>
           </View>
         ) : null}
       </View>

@@ -5,7 +5,7 @@
 // Editar: PATCH /api/mis-productos/<id>/   → navigation.navigate('FormProducto', { id })
 // PASOS 22, 23 y 50 · "Completar con IA": con una foto nueva, POST /api/productos/sugerir/ reconoce
 // el producto y llena título, categoría, descripción, precio y fecha (el comercio los puede cambiar).
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Alert, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { File, Paths } from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
@@ -16,42 +16,34 @@ import Campo from '../../componentes/Campo';
 import Cargando from '../../componentes/Cargando';
 import MensajeError from '../../componentes/MensajeError';
 import PublicarDeNuevo from '../../componentes/PublicarDeNuevo';
+import { idiomaActual, useIdioma } from '../../contexto/Idioma';
 import { espacio, fuentes, radio, tamanos, useTema } from '../../tema';
-import { textoError, vibrar } from '../../utilidades';
+import { emojiCategoria, formatoFecha, textoError, vibrar } from '../../utilidades';
 import { Opciones } from '../Registro';
 import Icono from '../../componentes/Icono';
 
-// Mismas categorías que products/models.py (CATEGORIAS)
-const CATEGORIAS = [
-  ['panificados', '🥐 Panificados'],
-  ['comidas', '🍲 Comidas preparadas'],
-  ['frutas_verduras', '🥕 Frutas y verduras'],
-  ['lacteos', '🧀 Lácteos'],
-  ['carnes', '🍗 Carnes'],
-  ['almacen', '🥫 Almacén'],
-  ['bolsa_sorpresa', '🛍️ Bolsa sorpresa'],
-  ['otros', '🍽️ Otros'],
-];
+// Mismas categorías que products/models.py (CATEGORIAS). El texto sale de t('categorias.X')
+const CATEGORIAS = ['panificados', 'comidas', 'frutas_verduras', 'lacteos', 'carnes', 'almacen', 'bolsa_sorpresa', 'otros'];
 
 const CAMPOS = ['titulo', 'categoria', 'descripcion', 'precio_original', 'precio_descuento', 'stock', 'fecha_vencimiento', 'es_donacion', 'imagen'];
 
-// ---- Fechas: en pantalla "26/10/2026", para Django "2026-10-26" ----
+// ---- Fechas: en pantalla "26/10/2026" (en inglés "10/26/2026"), para Django "2026-10-26" ----
 function fechaEnDias(dias) {
   const fecha = new Date();
   fecha.setDate(fecha.getDate() + dias);
-  return `${String(fecha.getDate()).padStart(2, '0')}/${String(fecha.getMonth() + 1).padStart(2, '0')}/${fecha.getFullYear()}`;
+  return formatoFecha(fecha);
 }
 
 function isoAFecha(iso) {
-  if (!iso) return '';
-  const [anio, mes, dia] = iso.split('-');
-  return `${dia}/${mes}/${anio}`;
+  return iso ? formatoFecha(iso) : '';
 }
 
-function fechaAIso(texto) {
+// Lee la fecha escrita con el formato del idioma (DD/MM/AAAA en español, MM/DD/YYYY en inglés)
+function fechaAIso(texto, idioma = idiomaActual()) {
   const partes = texto.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
   if (!partes) return null;
-  const [, dia, mes, anio] = partes;
+  const [, primero, segundo, anio] = partes;
+  const [dia, mes] = idioma === 'en' ? [segundo, primero] : [primero, segundo];
   const fecha = new Date(Number(anio), Number(mes) - 1, Number(dia));
   if (fecha.getMonth() !== Number(mes) - 1) return null; // ej: 31/02
   return `${anio}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
@@ -65,6 +57,7 @@ function numeroParaDjango(texto) {
 
 export default function FormProducto({ navigation, route }) {
   const { colores } = useTema();
+  const { t, idioma } = useIdioma();
   const id = route?.params?.id; // si viene, se está editando
   const copiarDe = route?.params?.copiarDe; // si viene, es "Publicar de nuevo": se copia ese producto
 
@@ -87,6 +80,15 @@ export default function FormProducto({ navigation, route }) {
   const [anteriores, setAnteriores] = useState([]); // para "¿Lo mismo de siempre?" (solo en uno nuevo)
   // "Completar con IA": { cargando, tipo: 'ok' | 'error' | '', texto }
   const [ia, setIa] = useState({ cargando: false, tipo: '', texto: '' });
+
+  // Si se cambia el idioma con el formulario abierto, la fecha escrita pasa al formato nuevo
+  const idiomaAnterior = useRef(idioma);
+  useEffect(() => {
+    if (idiomaAnterior.current === idioma) return;
+    const iso = fechaAIso(valores.fecha_vencimiento, idiomaAnterior.current);
+    idiomaAnterior.current = idioma;
+    if (iso) setValores((v) => ({ ...v, fecha_vencimiento: isoAFecha(iso) }));
+  }, [idioma]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Con cada foto nueva se borra el mensaje de la anterior
   useEffect(() => {
@@ -147,7 +149,7 @@ export default function FormProducto({ navigation, route }) {
   async function sacarFoto() {
     const permiso = await ImagePicker.requestCameraPermissionsAsync();
     if (!permiso.granted) {
-      Alert.alert('Sin permiso', 'Dale permiso a Lüp para usar la cámara, o elegí una foto de la galería.');
+      Alert.alert(t('comun.sinPermiso'), t('foto.sinPermisoCamara'));
       return;
     }
     const r = await ImagePicker.launchCameraAsync({ quality: 0.6, allowsEditing: true, aspect: [4, 3] });
@@ -172,6 +174,7 @@ export default function FormProducto({ navigation, route }) {
     try {
       const datos = new FormData();
       datos.append('imagen', new File(fotoNueva.uri)); // igual que al publicar (ver más abajo)
+      datos.append('idioma', idioma); // para que la IA conteste en el idioma de la app
       const s = await api('/productos/sugerir/', { metodo: 'POST', datos, espera: 60000 });
       setValores((v) => ({
         ...v,
@@ -186,13 +189,13 @@ export default function FormProducto({ navigation, route }) {
       setIa({
         cargando: false,
         tipo: 'ok',
-        texto: 'Listo. Revisá los datos y poné el precio con descuento: la IA puede equivocarse.',
+        texto: t('formProducto.iaListo'),
       });
     } catch (e) {
       setIa({
         cargando: false,
         tipo: 'error',
-        texto: textoError(e) || 'No pudimos analizar la foto ahora. Probá de nuevo en un rato o completá los datos a mano.',
+        texto: textoError(e) || t('formProducto.iaError'),
       });
     }
   }
@@ -203,7 +206,7 @@ export default function FormProducto({ navigation, route }) {
 
     const fecha = fechaAIso(valores.fecha_vencimiento);
     if (!fecha) {
-      setErrores({ fecha_vencimiento: 'Escribí la fecha como DD/MM/AAAA, por ejemplo 26/10/2026.' });
+      setErrores({ fecha_vencimiento: t('formProducto.fechaInvalida', { formato: t('fechas.formato'), ejemplo: fechaEnDias(3) }) });
       return;
     }
 
@@ -226,8 +229,8 @@ export default function FormProducto({ navigation, route }) {
     try {
       await api(id ? `/mis-productos/${id}/` : '/mis-productos/', { metodo: id ? 'PATCH' : 'POST', datos });
       Alert.alert(
-        id ? 'Publicación actualizada' : '¡Excedente publicado!',
-        id ? 'Los cambios ya se ven en el catálogo.' : 'Ya aparece en el catálogo.'
+        id ? t('formProducto.actualizada') : t('formProducto.publicado'),
+        id ? t('formProducto.cambiosVisibles') : t('formProducto.yaAparece')
       );
       navigation.goBack();
     } catch (e) {
@@ -239,14 +242,14 @@ export default function FormProducto({ navigation, route }) {
         const otros = Object.entries(e || {})
           .filter(([campo]) => !CAMPOS.includes(campo) && campo !== 'estado')
           .map(([, mensaje]) => textoError(mensaje));
-        setErrorGeneral(otros.length ? otros.join(' ') : 'Revisá los campos marcados en rojo.');
+        setErrorGeneral(otros.length ? otros.join(' ') : t('comun.revisaCampos'));
       }
     } finally {
       setEnviando(false);
     }
   }
 
-  if (cargando) return <Cargando texto="Cargando el producto…" />;
+  if (cargando) return <Cargando texto={t('formProducto.cargando')} />;
 
   const foto = fotoNueva?.uri || fotoActual;
 
@@ -260,7 +263,7 @@ export default function FormProducto({ navigation, route }) {
         <View style={estilos.encabezado}>
           <Icono nombre="gift-outline" tamano={28} color={colores.titulo} />
           <Text style={[estilos.titulo, { color: colores.titulo }]}>
-            {id ? 'Editar Producto' : copiarDe ? 'Publicar de nuevo' : 'Nuevo Producto'}
+            {id ? t('formProducto.editarTitulo') : copiarDe ? t('formProducto.publicarDeNuevo') : t('formProducto.nuevoTitulo')}
           </Text>
         </View>
 
@@ -275,18 +278,18 @@ export default function FormProducto({ navigation, route }) {
         {/* Foto: el cuadro gris; al tocarlo se elige cámara o galería */}
         <Pressable
           onPress={() =>
-            Alert.alert('Foto del producto', 'Las ofertas con foto se reservan más.', [
-              { text: 'Sacar foto', onPress: sacarFoto },
-              { text: 'Elegir de la galería', onPress: elegirFoto },
-              { text: 'Cancelar', style: 'cancel' },
+            Alert.alert(t('formProducto.fotoTitulo'), t('formProducto.fotoAyuda'), [
+              { text: t('foto.sacar'), onPress: sacarFoto },
+              { text: t('foto.galeria'), onPress: elegirFoto },
+              { text: t('comun.cancelar'), style: 'cancel' },
             ])
           }
           accessibilityRole="button"
-          accessibilityLabel={foto ? 'Cambiar la foto' : 'Agregar una foto'}
+          accessibilityLabel={foto ? t('formProducto.cambiarFoto') : t('formProducto.agregarFoto')}
           style={[estilos.foto, { backgroundColor: colores.panel }]}
         >
           {foto ? (
-            <Image source={{ uri: foto }} style={StyleSheet.absoluteFill} accessibilityLabel="Foto del producto" />
+            <Image source={{ uri: foto }} style={StyleSheet.absoluteFill} accessibilityLabel={t('formProducto.fotoTitulo')} />
           ) : (
             <Icono nombre="image-outline" tamano={44} color={colores.titulo} />
           )}
@@ -297,7 +300,7 @@ export default function FormProducto({ navigation, route }) {
         {fotoNueva ? (
           <View style={{ gap: espacio(0.75) }}>
             <Boton
-              texto={ia.cargando ? 'Analizando la foto…' : 'Completar con IA'}
+              texto={ia.cargando ? t('formProducto.analizando') : t('formProducto.completarConIa')}
               icono="sparkles-outline"
               variante="secundario"
               chico
@@ -306,7 +309,7 @@ export default function FormProducto({ navigation, route }) {
               estilo={{ alignSelf: 'flex-start' }}
             />
             {ia.cargando ? (
-              <Text style={[estilos.ayuda, { color: colores.gris }]}>Mirando la foto… puede tardar unos segundos.</Text>
+              <Text style={[estilos.ayuda, { color: colores.gris }]}>{t('formProducto.mirando')}</Text>
             ) : ia.texto ? (
               <Text
                 accessibilityLiveRegion="polite"
@@ -316,14 +319,14 @@ export default function FormProducto({ navigation, route }) {
               </Text>
             ) : (
               <Text style={[estilos.ayuda, { color: colores.gris }]}>
-                La IA sugiere título, categoría, descripción, precio y fecha a partir de la foto.
+                {t('formProducto.iaAyuda')}
               </Text>
             )}
           </View>
         ) : null}
 
         <Campo
-          placeholder="Nombre del Producto"
+          placeholder={t('formProducto.nombre')}
           value={valores.titulo}
           onChangeText={cambiar('titulo')}
           error={errores.titulo}
@@ -331,7 +334,7 @@ export default function FormProducto({ navigation, route }) {
         />
 
         <Campo
-          placeholder="Añadir descripción"
+          placeholder={t('formProducto.descripcion')}
           value={valores.descripcion}
           onChangeText={cambiar('descripcion')}
           error={errores.descripcion}
@@ -342,7 +345,7 @@ export default function FormProducto({ navigation, route }) {
 
         <View style={estilos.fila}>
           <Campo
-            placeholder="Insertar precio original"
+            placeholder={t('formProducto.precioOriginal')}
             keyboardType="decimal-pad"
             value={valores.precio_original}
             onChangeText={cambiar('precio_original')}
@@ -350,7 +353,7 @@ export default function FormProducto({ navigation, route }) {
             estilo={{ flex: 1 }}
           />
           <Campo
-            placeholder="Insertar precio con %"
+            placeholder={t('formProducto.precioDescuento')}
             keyboardType="decimal-pad"
             value={valores.precio_descuento}
             onChangeText={cambiar('precio_descuento')}
@@ -360,7 +363,7 @@ export default function FormProducto({ navigation, route }) {
         </View>
         {porcentaje !== null ? (
           <Text style={[estilos.ayuda, { color: colores.verdeHover, marginTop: -espacio(1.5) }]}>
-            Descuento del {porcentaje}%
+            {t('formProducto.descuentoDel', { n: porcentaje })}
           </Text>
         ) : null}
 
@@ -375,25 +378,25 @@ export default function FormProducto({ navigation, route }) {
               error={errores.stock}
               estilo={{ width: 96 }}
             />
-            <Text style={[estilos.leyenda, { color: colores.titulo }]}>Insertar cantidad disponible</Text>
+            <Text style={[estilos.leyenda, { color: colores.titulo }]}>{t('formProducto.cantidad')}</Text>
           </View>
           <View style={{ flex: 1, gap: 4 }}>
             <Campo
-              placeholder="00/00/0000"
+              placeholder={t('formProducto.fechaPlaceholder')}
               keyboardType="numbers-and-punctuation"
               value={valores.fecha_vencimiento}
               onChangeText={cambiar('fecha_vencimiento')}
               error={errores.fecha_vencimiento}
               maxLength={10}
             />
-            <Text style={[estilos.leyenda, { color: colores.titulo }]}>Insertar fecha de vencimiento</Text>
+            <Text style={[estilos.leyenda, { color: colores.titulo }]}>{t('formProducto.fecha')}</Text>
           </View>
         </View>
         <View style={[estilos.fila, { marginTop: -espacio(1) }]}>
           {[
-            [0, 'Hoy'],
-            [1, 'Mañana'],
-            [2, 'Pasado'],
+            [0, t('fechas.hoy')],
+            [1, t('fechas.manana')],
+            [2, t('fechas.pasado')],
           ].map(([dias, texto]) => {
             const elegida = valores.fecha_vencimiento === fechaEnDias(dias);
             return (
@@ -401,7 +404,7 @@ export default function FormProducto({ navigation, route }) {
                 key={dias}
                 onPress={() => cambiar('fecha_vencimiento')(fechaEnDias(dias))}
                 accessibilityRole="button"
-                accessibilityLabel={`Vence ${texto}`}
+                accessibilityLabel={t('formProducto.vence', { cuando: texto })}
                 accessibilityState={{ selected: elegida }}
                 style={[
                   estilos.chip,
@@ -416,8 +419,8 @@ export default function FormProducto({ navigation, route }) {
         </View>
 
         <Opciones
-          etiqueta="Categoría"
-          opciones={CATEGORIAS}
+          etiqueta={t('formProducto.categoria')}
+          opciones={CATEGORIAS.map((c) => [c, `${emojiCategoria(c)} ${t(`categorias.${c}`)}`])}
           valor={valores.categoria}
           alElegir={cambiar('categoria')}
           error={errores.categoria}
@@ -439,13 +442,13 @@ export default function FormProducto({ navigation, route }) {
           >
             {valores.es_donacion ? <Icono nombre="checkmark" tamano={16} color={colores.sobreVerdeProfundo} /> : null}
           </View>
-          <Text style={[estilos.textoCasilla, { color: colores.texto }]}>También para donar a organizaciones</Text>
+          <Text style={[estilos.textoCasilla, { color: colores.texto }]}>{t('formProducto.tambienDonar')}</Text>
         </Pressable>
 
         <MensajeError mensaje={errorGeneral} />
 
         <Boton
-          texto={id ? 'Guardar' : 'Publicar'}
+          texto={id ? t('formProducto.guardar') : t('formProducto.publicar')}
           onPress={publicar}
           cargando={enviando}
           estilo={{ alignSelf: 'center', paddingHorizontal: espacio(4), marginTop: espacio(2) }}

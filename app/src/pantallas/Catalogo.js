@@ -16,30 +16,32 @@ import Chip from '../componentes/Chip';
 import Icono from '../componentes/Icono';
 import MensajeError from '../componentes/MensajeError';
 import FilaProducto from '../componentes/FilaProducto';
+import { useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, radio, tamanos, useTema } from '../tema';
 import { emojiCategoria } from '../utilidades';
 
-// Mismas categorías que la web (products/models.py → CATEGORIAS)
+// Mismas categorías que la web (products/models.py → CATEGORIAS). El texto es la clave de idiomas/es.js
 const CATEGORIAS = [
-  ['', 'Todas'],
-  ['panificados', 'Panificados'],
-  ['comidas', 'Comidas'],
-  ['frutas_verduras', 'Frutas y verduras'],
-  ['lacteos', 'Lácteos'],
-  ['carnes', 'Carnes'],
-  ['almacen', 'Almacén'],
-  ['bolsa_sorpresa', 'Bolsa sorpresa'],
-  ['otros', 'Otros'],
+  ['', 'catalogo.todas'],
+  ['panificados', 'categorias.panificados'],
+  ['comidas', 'catalogo.comidas'],
+  ['frutas_verduras', 'categorias.frutas_verduras'],
+  ['lacteos', 'categorias.lacteos'],
+  ['carnes', 'categorias.carnes'],
+  ['almacen', 'categorias.almacen'],
+  ['bolsa_sorpresa', 'categorias.bolsa_sorpresa'],
+  ['otros', 'categorias.otros'],
 ];
 
-// Lo que se sugiere buscar antes de la primera búsqueda
+// Lo que se sugiere buscar antes de la primera búsqueda.
+// Quedan en castellano en los dos idiomas: son palabras que se buscan en los títulos de las ofertas.
 const SUGERENCIAS = ['medialunas', 'pan', 'verduras', 'bolsa sorpresa', 'tarta'];
 
 const ORDENES = [
-  ['recientes', 'Nuevos', 'sparkles-outline'],
-  ['cercania', 'Cerca', 'navigate-outline'],
-  ['precio', 'Baratos', 'pricetag-outline'],
-  ['vencimiento', 'Vencen antes', 'time-outline'],
+  ['recientes', 'catalogo.nuevos', 'sparkles-outline'],
+  ['cercania', 'catalogo.cerca', 'navigate-outline'],
+  ['precio', 'catalogo.baratos', 'pricetag-outline'],
+  ['vencimiento', 'catalogo.vencenAntes', 'time-outline'],
 ];
 
 // Busca la ubicación SIN volver a pedir permiso (ya se pidió en "Cerca tuyo")
@@ -58,6 +60,7 @@ async function ubicacionSiHayPermiso() {
 
 export default function Catalogo({ navigation, route }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const { recientes, guardarBusqueda, borrarBusquedas } = useBusquedas();
 
   const [texto, setTexto] = useState('');
@@ -134,7 +137,7 @@ export default function Catalogo({ navigation, route }) {
     <View style={{ gap: espacio(1.5), marginBottom: espacio(1.5) }}>
       <Campo
         icono="search"
-        placeholder="Buscar medialunas, verduras…"
+        placeholder={t('catalogo.buscarEjemplo')}
         value={texto}
         onChangeText={setTexto}
         autoCorrect={false}
@@ -151,7 +154,7 @@ export default function Catalogo({ navigation, route }) {
         <View style={estilos.recientes}>
           <View style={estilos.filaRecientes}>
             <Text style={[estilos.textoRecientes, { color: colores.gris }]}>
-              {recientes.length ? 'Búsquedas recientes' : 'Probá buscar'}
+              {recientes.length ? t('catalogo.recientes') : t('catalogo.probaBuscar')}
             </Text>
             {recientes.length ? (
               <Text
@@ -159,7 +162,7 @@ export default function Catalogo({ navigation, route }) {
                 accessibilityRole="button"
                 style={[estilos.textoRecientes, { color: colores.verdeHover, fontFamily: fuentes.negrita }]}
               >
-                Borrar
+                {t('catalogo.borrar')}
               </Text>
             ) : null}
           </View>
@@ -183,7 +186,7 @@ export default function Catalogo({ navigation, route }) {
         <Pressable
           onPress={() => setComercio(null)}
           accessibilityRole="button"
-          accessibilityLabel={`Quitar filtro de ${comercio.nombre}`}
+          accessibilityLabel={t('catalogo.quitarFiltro', { nombre: comercio.nombre })}
           style={[estilos.filtroComercio, { backgroundColor: colores.menta }]}
         >
           <Icono nombre="storefront" tamano={16} color={colores.verdeHover} />
@@ -199,7 +202,7 @@ export default function Catalogo({ navigation, route }) {
         {CATEGORIAS.map(([clave, nombre]) => (
           <Chip
             key={clave || 'todas'}
-            texto={nombre}
+            texto={t(nombre)}
             emoji={clave ? emojiCategoria(clave) : null}
             activo={categoria === clave}
             onPress={() => setCategoria(clave)}
@@ -210,16 +213,16 @@ export default function Catalogo({ navigation, route }) {
       {/* Orden y donación */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={estilos.filaChips}>
         {ORDENES.filter(([clave]) => clave !== 'cercania' || coords).map(([clave, nombre, icono]) => (
-          <Chip key={clave} texto={nombre} icono={icono} activo={orden === clave} onPress={() => setOrden(clave)} />
+          <Chip key={clave} texto={t(nombre)} icono={icono} activo={orden === clave} onPress={() => setOrden(clave)} />
         ))}
-        <Chip texto="Donación" icono="heart-outline" activo={soloDonacion} onPress={() => setSoloDonacion((v) => !v)} />
+        <Chip texto={t('catalogo.donacion')} icono="heart-outline" activo={soloDonacion} onPress={() => setSoloDonacion((v) => !v)} />
       </ScrollView>
 
       <MensajeError mensaje={error} alReintentar={cargar} />
 
       {!error ? (
         <Text style={[estilos.cantidad, { color: colores.gris }]}>
-          {productos.length === 1 ? '1 oferta' : `${productos.length} ofertas`}
+          {t('catalogo.ofertas', { n: productos.length })}
         </Text>
       ) : null}
     </View>
@@ -251,7 +254,7 @@ export default function Catalogo({ navigation, route }) {
             <View style={estilos.vacio}>
               <Icono nombre="search-outline" tamano={44} color={colores.gris} />
               <Text style={[estilos.textoVacio, { color: colores.gris }]}>
-                Nada por acá. Probá con otros filtros.
+                {t('catalogo.nada')}
               </Text>
             </View>
           ) : null

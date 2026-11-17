@@ -2,13 +2,15 @@
 // Uso:  <Estrellas valor={4} />   <Estrellas valor={puntaje} alElegir={(n) => calificar(n)} />
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { useIdioma } from '../contexto/Idioma';
 import { useTema } from '../tema';
 import Icono from './Icono';
 
 export default function Estrellas({ valor = 0, alElegir, tamano = 22 }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   return (
-    <View style={estilos.fila} accessibilityRole={alElegir ? 'adjustable' : 'text'} accessibilityLabel={`${valor} de 5 estrellas`}>
+    <View style={estilos.fila} accessibilityRole={alElegir ? 'adjustable' : 'text'} accessibilityLabel={t('componentes.estrellas', { valor })}>
       {[1, 2, 3, 4, 5].map((n) => {
         const llena = n <= valor;
         const estrella = <Icono nombre={llena ? 'star' : 'star-outline'} tamano={tamano} color={llena ? colores.ambar : colores.gris} />;

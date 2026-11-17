@@ -16,6 +16,7 @@ import Cargando from '../componentes/Cargando';
 import Icono from '../componentes/Icono';
 import MensajeError from '../componentes/MensajeError';
 import { useSesion } from '../contexto/Sesion';
+import { textoDeOpcion, useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, radio, tamanos, useTema } from '../tema';
 import { textoError, vibrar } from '../utilidades';
 import { Opciones } from './Registro';
@@ -24,6 +25,7 @@ const CAMPOS = ['nombre_fantasia', 'rubro', 'descripcion', 'direccion', 'horario
 
 export default function EditarComercio({ navigation }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const { actualizarUsuario } = useSesion();
 
   const [valores, setValores] = useState(null);
@@ -56,14 +58,14 @@ export default function EditarComercio({ navigation }) {
     try {
       const permiso = await Location.requestForegroundPermissionsAsync();
       if (permiso.status !== 'granted') {
-        setErrorGeneral('Dale permiso a Lüp para usar la ubicación (en los ajustes del celular) y probá de nuevo.');
+        setErrorGeneral(t('editarComercio.permisoUbicacion'));
         return;
       }
       const { coords } = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
       setUbicacion({ latitud: coords.latitude, longitud: coords.longitude });
       setMarcada(true);
     } catch {
-      setErrorGeneral('No pudimos saber dónde estás. Revisá que la ubicación del celular esté prendida.');
+      setErrorGeneral(t('editarComercio.sinUbicacion'));
     } finally {
       setBuscando(false);
     }
@@ -88,7 +90,7 @@ export default function EditarComercio({ navigation }) {
         setErrorGeneral(e);
       } else {
         setErrores(e || {});
-        setErrorGeneral(e?.non_field_errors ? textoError(e.non_field_errors) : 'Revisá los campos marcados en rojo.');
+        setErrorGeneral(e?.non_field_errors ? textoError(e.non_field_errors) : t('comun.revisaCampos'));
       }
     } finally {
       setGuardando(false);
@@ -101,7 +103,7 @@ export default function EditarComercio({ navigation }) {
         <MensajeError mensaje={errorGeneral} />
       </View>
     ) : (
-      <Cargando texto="Cargando tu comercio…" />
+      <Cargando texto={t('editarComercio.cargando')} />
     );
   }
 
@@ -114,28 +116,28 @@ export default function EditarComercio({ navigation }) {
         <View style={estilos.cabecera}>
           <Icono nombre="storefront-outline" tamano={28} color={colores.titulo} />
           <Text style={[estilos.titulo, { color: colores.titulo }]} accessibilityRole="header">
-            Datos de mi comercio
+            {t('editarComercio.titulo')}
           </Text>
         </View>
 
         <View style={estilos.campos}>
           <Campo
-            etiqueta="Nombre del comercio"
+            etiqueta={t('editarComercio.nombre')}
             value={valores.nombre_fantasia}
             onChangeText={cambiar('nombre_fantasia')}
             error={errores.nombre_fantasia}
             maxLength={100}
           />
           <Opciones
-            etiqueta="Rubro"
-            opciones={rubros}
+            etiqueta={t('editarComercio.rubro')}
+            opciones={rubros.map(([valor, texto]) => [valor, textoDeOpcion(t, 'rubros', valor, texto)])}
             valor={valores.rubro}
             alElegir={cambiar('rubro')}
             error={errores.rubro}
           />
           <Campo
-            etiqueta="Descripción"
-            placeholder="Qué vendés, especialidades, cómo retirar…"
+            etiqueta={t('editarComercio.descripcion')}
+            placeholder={t('editarComercio.descripcionEjemplo')}
             value={valores.descripcion}
             onChangeText={cambiar('descripcion')}
             error={errores.descripcion}
@@ -143,16 +145,16 @@ export default function EditarComercio({ navigation }) {
             estiloInput={{ minHeight: 84 }}
           />
           <Campo
-            etiqueta="Dirección del local"
-            placeholder="Calle, número y ciudad"
+            etiqueta={t('editarComercio.direccion')}
+            placeholder={t('editarComercio.direccionEjemplo')}
             value={valores.direccion}
             onChangeText={cambiar('direccion')}
             error={errores.direccion}
             maxLength={200}
           />
           <Campo
-            etiqueta="Horario de retiro"
-            placeholder="Ej: Lun a Sáb de 18 a 20 hs"
+            etiqueta={t('editarComercio.horario')}
+            placeholder={t('editarComercio.horarioEjemplo')}
             value={valores.horario_atencion}
             onChangeText={cambiar('horario_atencion')}
             error={errores.horario_atencion}
@@ -162,10 +164,9 @@ export default function EditarComercio({ navigation }) {
 
         {/* Ubicación del local (igual que la web) */}
         <View style={{ gap: espacio(1) }}>
-          <Text style={[estilos.seccion, { color: colores.titulo }]}>Ubicación del local</Text>
+          <Text style={[estilos.seccion, { color: colores.titulo }]}>{t('editarComercio.ubicacion')}</Text>
           <Text style={[estilos.ayuda, { color: colores.gris }]}>
-            Así los clientes ven cuán cerca están y pueden abrir el recorrido en Google Maps. Si estás en el local,
-            usá la ubicación de este celular.
+            {t('editarComercio.ubicacionAyuda')}
           </Text>
           <View style={estilos.estadoUbicacion}>
             <Icono
@@ -174,7 +175,11 @@ export default function EditarComercio({ navigation }) {
               color={ubicacion ? colores.verde : colores.gris}
             />
             <Text style={[estilos.ayuda, { color: ubicacion ? colores.verdeHover : colores.gris }]}>
-              {marcada ? 'Ubicación nueva (se guarda al tocar "Guardar cambios")' : ubicacion ? 'Ubicación guardada' : 'Todavía sin ubicación'}
+              {marcada
+                ? t('editarComercio.ubicacionNueva')
+                : ubicacion
+                  ? t('editarComercio.ubicacionGuardada')
+                  : t('editarComercio.todaviaSinUbicacion')}
             </Text>
           </View>
           {ubicacion ? (
@@ -184,14 +189,14 @@ export default function EditarComercio({ navigation }) {
                 region={{ latitude: ubicacion.latitud, longitude: ubicacion.longitud, latitudeDelta: 0.006, longitudeDelta: 0.006 }}
                 scrollEnabled={false}
                 zoomEnabled={false}
-                accessibilityLabel="Mapa con la ubicación del local"
+                accessibilityLabel={t('editarComercio.mapaAccesible')}
               >
                 <Marker coordinate={{ latitude: ubicacion.latitud, longitude: ubicacion.longitud }} />
               </MapView>
             </View>
           ) : null}
           <Boton
-            texto="Usar la ubicación de este dispositivo"
+            texto={t('editarComercio.usarUbicacion')}
             icono="locate-outline"
             variante="secundario"
             chico
@@ -201,10 +206,10 @@ export default function EditarComercio({ navigation }) {
           />
         </View>
 
-        {cuit ? <Text style={[estilos.ayuda, { color: colores.gris }]}>CUIT {cuit} · no se puede cambiar.</Text> : null}
+        {cuit ? <Text style={[estilos.ayuda, { color: colores.gris }]}>{t('editarComercio.cuit', { cuit })}</Text> : null}
 
         <MensajeError mensaje={errorGeneral} />
-        <Boton texto="Guardar cambios" onPress={guardar} cargando={guardando} estilo={estilos.boton} />
+        <Boton texto={t('comun.guardarCambios')} onPress={guardar} cargando={guardando} estilo={estilos.boton} />
       </ScrollView>
     </KeyboardAvoidingView>
   );

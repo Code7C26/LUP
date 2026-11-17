@@ -6,25 +6,27 @@
 //   textoCalificacion(c.calificacion_promedio, c.calificaciones)  ← para los lectores de pantalla
 import { StyleSheet, Text, View } from 'react-native';
 
+import { idiomaActual, t, useIdioma } from '../contexto/Idioma';
 import { fuentes, tamanos, useTema } from '../tema';
 import Icono from './Icono';
 
-// 4.6 -> "4,6"   (null si no hay opiniones)
+// 4.6 -> "4,6" ("4.6" en inglés)   (null si no hay opiniones)
 function promedioConComa(promedio, cantidad) {
   const numero = Number(promedio);
   if (!cantidad || promedio === null || promedio === undefined || Number.isNaN(numero)) return null;
-  return numero.toFixed(1).replace('.', ',');
+  return idiomaActual() === 'en' ? numero.toFixed(1) : numero.toFixed(1).replace('.', ',');
 }
 
 // "4,6 de 5 estrellas, 23 opiniones" (o '' si no tiene)
 export function textoCalificacion(promedio, cantidad) {
   const valor = promedioConComa(promedio, cantidad);
   if (!valor) return '';
-  return `${valor} de 5 estrellas, ${cantidad} ${cantidad === 1 ? 'opinión' : 'opiniones'}`;
+  return t('componentes.calificacion', { valor, n: cantidad });
 }
 
 export default function CalificacionComercio({ promedio, cantidad, tamano = tamanos.chico, estilo }) {
   const { colores } = useTema();
+  useIdioma(); // para volver a dibujarse al cambiar el idioma
   const valor = promedioConComa(promedio, cantidad);
   if (!valor) return null;
   return (

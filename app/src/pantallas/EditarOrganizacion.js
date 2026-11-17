@@ -13,6 +13,7 @@ import Cargando from '../componentes/Cargando';
 import Icono from '../componentes/Icono';
 import MensajeError from '../componentes/MensajeError';
 import { useSesion } from '../contexto/Sesion';
+import { textoDeOpcion, useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, tamanos, useTema } from '../tema';
 import { vibrar } from '../utilidades';
 import { Opciones } from './Registro';
@@ -21,6 +22,7 @@ const CAMPOS = ['nombre', 'tipo', 'direccion', 'personeria_juridica', 'personas_
 
 export default function EditarOrganizacion({ navigation }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const { actualizarUsuario } = useSesion();
 
   const [valores, setValores] = useState(null);
@@ -57,7 +59,7 @@ export default function EditarOrganizacion({ navigation }) {
         setErrorGeneral(e);
       } else {
         setErrores(e || {});
-        setErrorGeneral('Revisá los campos marcados en rojo.');
+        setErrorGeneral(t('comun.revisaCampos'));
       }
     } finally {
       setGuardando(false);
@@ -70,7 +72,7 @@ export default function EditarOrganizacion({ navigation }) {
         <MensajeError mensaje={errorGeneral} />
       </View>
     ) : (
-      <Cargando texto="Cargando tu organización…" />
+      <Cargando texto={t('editarOrganizacion.cargando')} />
     );
   }
 
@@ -83,42 +85,42 @@ export default function EditarOrganizacion({ navigation }) {
         <View style={estilos.cabecera}>
           <Icono nombre="heart-outline" tamano={28} color={colores.titulo} />
           <Text style={[estilos.titulo, { color: colores.titulo }]} accessibilityRole="header">
-            Datos de mi organización
+            {t('editarOrganizacion.titulo')}
           </Text>
         </View>
 
         <View style={estilos.campos}>
           <Campo
-            etiqueta="Nombre de la organización"
+            etiqueta={t('editarOrganizacion.nombre')}
             value={valores.nombre}
             onChangeText={cambiar('nombre')}
             error={errores.nombre}
             maxLength={150}
           />
           <Opciones
-            etiqueta="Tipo de organización"
-            opciones={tipos}
+            etiqueta={t('editarOrganizacion.tipo')}
+            opciones={tipos.map(([valor, texto]) => [valor, textoDeOpcion(t, 'tiposOrganizacion', valor, texto)])}
             valor={valores.tipo}
             alElegir={cambiar('tipo')}
             error={errores.tipo}
           />
           <Campo
-            etiqueta="Dirección"
-            placeholder="Calle, número y ciudad"
+            etiqueta={t('editarOrganizacion.direccion')}
+            placeholder={t('editarOrganizacion.direccionEjemplo')}
             value={valores.direccion}
             onChangeText={cambiar('direccion')}
             error={errores.direccion}
             maxLength={255}
           />
           <Campo
-            etiqueta="N° personería jurídica (opcional)"
+            etiqueta={t('editarOrganizacion.personeria')}
             value={valores.personeria_juridica}
             onChangeText={cambiar('personeria_juridica')}
             error={errores.personeria_juridica}
             maxLength={100}
           />
           <Campo
-            etiqueta="Personas asistidas por semana"
+            etiqueta={t('editarOrganizacion.personas')}
             value={valores.personas_asistidas}
             onChangeText={cambiar('personas_asistidas')}
             error={errores.personas_asistidas}
@@ -128,10 +130,10 @@ export default function EditarOrganizacion({ navigation }) {
           />
         </View>
 
-        {cuit ? <Text style={[estilos.ayuda, { color: colores.gris }]}>CUIT / matrícula {cuit} · no se puede cambiar.</Text> : null}
+        {cuit ? <Text style={[estilos.ayuda, { color: colores.gris }]}>{t('editarOrganizacion.cuit', { cuit })}</Text> : null}
 
         <MensajeError mensaje={errorGeneral} />
-        <Boton texto="Guardar cambios" onPress={guardar} cargando={guardando} estilo={estilos.boton} />
+        <Boton texto={t('comun.guardarCambios')} onPress={guardar} cargando={guardando} estilo={estilos.boton} />
       </ScrollView>
     </KeyboardAvoidingView>
   );

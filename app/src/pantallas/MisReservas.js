@@ -19,19 +19,14 @@ import Vacio from '../componentes/Vacio';
 import { mostrarAviso } from '../contexto/Aviso';
 import { useSesion } from '../contexto/Sesion';
 import { cancelarRecordatorio } from '../servicios/recordatorios';
+import { useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, radio, sombra, tamanos, useTema } from '../tema';
-import { formatoPrecio, textoError, vibrar } from '../utilidades';
-
-// "2026-10-26T14:30:00-03:00" -> "26/10"
-function textoFecha(fechaHora) {
-  const fecha = new Date(fechaHora);
-  if (Number.isNaN(fecha.getTime())) return '';
-  return `${String(fecha.getDate()).padStart(2, '0')}/${String(fecha.getMonth() + 1).padStart(2, '0')}`;
-}
+import { formatoDiaMes, formatoPrecio, textoError, vibrar } from '../utilidades';
 
 // Una fila chiquita con ícono (comercio, dirección, horario)
 function Linea({ icono, texto }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   return (
     <View style={estilos.linea}>
       <Icono nombre={icono} tamano={15} color={colores.gris} />
@@ -44,6 +39,7 @@ function Linea({ icono, texto }) {
 
 function TarjetaPendiente({ reserva, alCancelar, cancelando }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const [verQR, setVerQR] = useState(false);
 
   return (
@@ -62,7 +58,10 @@ function TarjetaPendiente({ reserva, alCancelar, cancelando }) {
       <Pressable
         onPress={() => setVerQR((v) => !v)}
         accessibilityRole="button"
-        accessibilityLabel={`Código de retiro ${reserva.codigo_retiro.split('').join(' ')}. ${verQR ? 'Ocultar QR' : 'Ver QR'}`}
+        accessibilityLabel={t('misReservas.codigoAccesible', {
+          codigo: reserva.codigo_retiro.split('').join(' '),
+          accion: verQR ? t('misReservas.ocultarQr') : t('misReservas.verQr'),
+        })}
         style={[estilos.codigoCaja, { backgroundColor: colores.menta }]}
       >
         <Text style={[estilos.codigo, { color: colores.titulo }]}>{reserva.codigo_retiro}</Text>
@@ -74,12 +73,12 @@ function TarjetaPendiente({ reserva, alCancelar, cancelando }) {
         <View style={estilos.linea}>
           <Icono nombre={verQR ? 'chevron-up' : 'qr-code-outline'} tamano={15} color={colores.verdeHover} />
           <Text style={[estilos.detalle, { color: colores.verdeHover, fontFamily: fuentes.media }]}>
-            {verQR ? 'Ocultar QR' : 'Ver QR'}
+            {verQR ? t('misReservas.ocultarQr') : t('misReservas.verQr')}
           </Text>
         </View>
       </Pressable>
 
-      <Boton texto="Cancelar reserva" variante="texto" chico onPress={alCancelar} cargando={cancelando} />
+      <Boton texto={t('misReservas.cancelarReserva')} variante="texto" chico onPress={alCancelar} cargando={cancelando} />
     </View>
   );
 }
@@ -87,6 +86,7 @@ function TarjetaPendiente({ reserva, alCancelar, cancelando }) {
 // "El comercio  ★★★★☆": etiqueta a la izquierda y estrellas a la derecha (se pueden tocar si hay "alElegir")
 function FilaEstrellas({ etiqueta, valor, alElegir, tamano }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   return (
     <View style={estilos.filaEstrellas}>
       <Text style={[estilos.detalle, { color: colores.gris }]}>{etiqueta}</Text>
@@ -98,18 +98,19 @@ function FilaEstrellas({ etiqueta, valor, alElegir, tamano }) {
 // La opinión ya enviada: estrellas, comentario y, si el comercio contestó, su respuesta
 function MiOpinion({ reserva, alEditar }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const opinion = reserva.calificacion;
   return (
     <View style={estilos.opinion}>
       <View style={estilos.filaTotal}>
-        <Text style={[estilos.detalle, { color: colores.titulo, fontFamily: fuentes.media }]}>Tu opinión</Text>
-        <Pressable onPress={alEditar} hitSlop={8} accessibilityRole="button" accessibilityLabel="Editar tu opinión">
-          <Text style={[estilos.detalle, { color: colores.verdeHover, fontFamily: fuentes.media }]}>Editar</Text>
+        <Text style={[estilos.detalle, { color: colores.titulo, fontFamily: fuentes.media }]}>{t('misReservas.tuOpinion')}</Text>
+        <Pressable onPress={alEditar} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('misReservas.editarOpinion')}>
+          <Text style={[estilos.detalle, { color: colores.verdeHover, fontFamily: fuentes.media }]}>{t('comun.editar')}</Text>
         </Pressable>
       </View>
-      <FilaEstrellas etiqueta="El comercio" valor={opinion.puntaje} tamano={16} />
+      <FilaEstrellas etiqueta={t('misReservas.elComercio')} valor={opinion.puntaje} tamano={16} />
       {opinion.puntaje_producto ? (
-        <FilaEstrellas etiqueta="El producto" valor={opinion.puntaje_producto} tamano={16} />
+        <FilaEstrellas etiqueta={t('misReservas.elProducto')} valor={opinion.puntaje_producto} tamano={16} />
       ) : null}
       {opinion.comentario ? (
         <Text style={[estilos.comentario, { color: colores.texto }]}>“{opinion.comentario}”</Text>
@@ -120,7 +121,7 @@ function MiOpinion({ reserva, alEditar }) {
           <View style={estilos.linea}>
             <Icono nombre="chatbubble-ellipses-outline" tamano={14} color={colores.verdeHover} />
             <Text style={[estilos.detalle, { color: colores.verdeHover, fontFamily: fuentes.negrita, flex: 1 }]} numberOfLines={1}>
-              Respuesta de {reserva.comercio}
+              {t('misReservas.respuestaDe', { comercio: reserva.comercio })}
             </Text>
           </View>
           <Text style={[estilos.comentario, { color: colores.texto }]}>{opinion.respuesta}</Text>
@@ -133,6 +134,7 @@ function MiOpinion({ reserva, alEditar }) {
 // Formulario: primero solo "¿Qué tal estuvo? ☆☆☆☆☆"; al tocar una estrella aparece el resto
 function FormOpinion({ reserva, alEnviar, alCancelar }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const anterior = reserva.calificacion;
   const [puntaje, setPuntaje] = useState(anterior?.puntaje || 0);
   const [puntajeProducto, setPuntajeProducto] = useState(anterior?.puntaje_producto || 0);
@@ -161,15 +163,15 @@ function FormOpinion({ reserva, alEnviar, alCancelar }) {
   }
 
   if (!puntaje) {
-    return <FilaEstrellas etiqueta="¿Qué tal estuvo?" valor={0} alElegir={elegir(setPuntaje)} />;
+    return <FilaEstrellas etiqueta={t('misReservas.queTal')} valor={0} alElegir={elegir(setPuntaje)} />;
   }
 
   return (
     <View style={estilos.opinion}>
-      <FilaEstrellas etiqueta="El comercio" valor={puntaje} alElegir={elegir(setPuntaje)} />
-      <FilaEstrellas etiqueta="El producto" valor={puntajeProducto} alElegir={elegir(setPuntajeProducto)} />
+      <FilaEstrellas etiqueta={t('misReservas.elComercio')} valor={puntaje} alElegir={elegir(setPuntaje)} />
+      <FilaEstrellas etiqueta={t('misReservas.elProducto')} valor={puntajeProducto} alElegir={elegir(setPuntajeProducto)} />
       <Campo
-        placeholder="Contanos cómo te fue (opcional)"
+        placeholder={t('misReservas.contanos')}
         value={comentario}
         onChangeText={setComentario}
         multiline
@@ -178,12 +180,12 @@ function FormOpinion({ reserva, alEnviar, alCancelar }) {
       />
       <View style={estilos.botones}>
         {alCancelar ? (
-          <Boton texto="Cancelar" variante="texto" chico onPress={alCancelar} deshabilitado={enviando} />
+          <Boton texto={t('comun.cancelar')} variante="texto" chico onPress={alCancelar} deshabilitado={enviando} />
         ) : null}
-        <Boton texto="Enviar opinión" icono="send" chico onPress={enviar} cargando={enviando} estilo={{ flex: 1 }} />
+        <Boton texto={t('misReservas.enviarOpinion')} icono="send" chico onPress={enviar} cargando={enviando} estilo={{ flex: 1 }} />
       </View>
       {comentario.length > 400 ? (
-        <Text style={[estilos.mini, { color: colores.gris }]}>{500 - comentario.length} caracteres disponibles</Text>
+        <Text style={[estilos.mini, { color: colores.gris }]}>{t('misReservas.caracteres', { n: 500 - comentario.length })}</Text>
       ) : null}
     </View>
   );
@@ -191,6 +193,7 @@ function FormOpinion({ reserva, alEnviar, alCancelar }) {
 
 function FilaHistorial({ reserva, alEnviarOpinion }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const retirada = reserva.estado === 'retirada';
   const [editando, setEditando] = useState(false);
 
@@ -206,12 +209,12 @@ function FilaHistorial({ reserva, alEnviarOpinion }) {
             {reserva.cantidad} × {reserva.producto}
           </Text>
           <Text style={[estilos.detalle, { color: colores.gris }]} numberOfLines={1}>
-            {reserva.comercio} · {textoFecha(reserva.creada_en)}
+            {reserva.comercio} · {formatoDiaMes(reserva.creada_en)}
           </Text>
         </View>
         <View style={estilos.linea}>
           <View style={[estilos.punto, { backgroundColor: retirada ? colores.verde : colores.borde }]} />
-          <Text style={[estilos.detalle, { color: colores.gris }]}>{retirada ? 'Retirada' : 'Cancelada'}</Text>
+          <Text style={[estilos.detalle, { color: colores.gris }]}>{retirada ? t('misReservas.retirada') : t('misReservas.cancelada')}</Text>
         </View>
       </View>
       {retirada ? (
@@ -233,6 +236,7 @@ function FilaHistorial({ reserva, alEnviarOpinion }) {
 
 export default function MisReservas({ navigation }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const { usuario } = useSesion();
   const esConsumidor = usuario?.rol === 'consumidor';
 
@@ -249,10 +253,10 @@ export default function MisReservas({ navigation }) {
       const actualizada = await api(`/reservas/${reserva.id}/calificar/`, { metodo: 'POST', datos });
       setReservas((lista) => lista.map((r) => (r.id === reserva.id ? actualizada : r)));
       vibrar('exito');
-      mostrarAviso({ texto: '¡Gracias por tu opinión! 🌱' });
+      mostrarAviso({ texto: t('misReservas.gracias') });
       return true;
     } catch (e) {
-      Alert.alert('No se pudo enviar tu opinión', textoError(e) || 'Probá de nuevo.');
+      Alert.alert(t('misReservas.noSeEnvio'), textoError(e) || t('misReservas.probaDeNuevo'));
       return false;
     }
   }
@@ -282,12 +286,12 @@ export default function MisReservas({ navigation }) {
 
   function cancelar(reserva) {
     Alert.alert(
-      '¿Cancelar la reserva?',
-      `${reserva.cantidad} × ${reserva.producto} en ${reserva.comercio}. El producto vuelve a quedar disponible para otros.`,
+      t('misReservas.cancelarPregunta'),
+      t('misReservas.cancelarTexto', { n: reserva.cantidad, producto: reserva.producto, comercio: reserva.comercio }),
       [
-        { text: 'No', style: 'cancel' },
+        { text: t('misReservas.no'), style: 'cancel' },
         {
-          text: 'Sí, cancelar',
+          text: t('misReservas.siCancelar'),
           style: 'destructive',
           onPress: async () => {
             setCancelando(reserva.id);
@@ -296,7 +300,7 @@ export default function MisReservas({ navigation }) {
               await cancelarRecordatorio(reserva.id); // ya no hace falta el aviso
               await cargar();
             } catch (e) {
-              Alert.alert('No se pudo cancelar', textoError(e) || 'Probá de nuevo.');
+              Alert.alert(t('misReservas.noSeCancelo'), textoError(e) || t('misReservas.probaDeNuevo'));
             } finally {
               setCancelando(null);
             }
@@ -312,8 +316,8 @@ export default function MisReservas({ navigation }) {
       <View style={{ flex: 1, backgroundColor: colores.fondo }}>
         <Vacio
           icono="ticket-outline"
-          texto={usuario ? 'Las reservas son para cuentas de consumidor.' : 'Ingresá para ver tus reservas.'}
-          boton={usuario ? null : 'Iniciar sesión'}
+          texto={usuario ? t('misReservas.soloConsumidores') : t('misReservas.ingresaParaVer')}
+          boton={usuario ? null : t('login.iniciarSesion')}
           alTocar={() => navigation.navigate('Login')}
         />
       </View>
@@ -325,8 +329,8 @@ export default function MisReservas({ navigation }) {
   const pendientes = reservas.filter((r) => r.estado === 'pendiente');
   const historial = reservas.filter((r) => r.estado !== 'pendiente');
   const secciones = [
-    { titulo: 'Para retirar', data: pendientes, tipo: 'pendiente' },
-    { titulo: 'Historial', data: historial, tipo: 'historial' },
+    { titulo: t('misReservas.paraRetirar'), data: pendientes, tipo: 'pendiente' },
+    { titulo: t('misReservas.historial'), data: historial, tipo: 'historial' },
   ].filter((s) => s.data.length > 0);
 
   return (
@@ -352,7 +356,7 @@ export default function MisReservas({ navigation }) {
       }
       ListHeaderComponent={
         <View style={{ gap: espacio(1.5) }}>
-          <Encabezado titulo="Mis reservas" />
+          <Encabezado titulo={t('misReservas.titulo')} />
           <MensajeError mensaje={error} alReintentar={cargar} />
         </View>
       }
@@ -360,8 +364,8 @@ export default function MisReservas({ navigation }) {
         !error ? (
           <Vacio
             icono="bag-handle-outline"
-            texto="Todavía no reservaste nada"
-            boton="Buscar ofertas"
+            texto={t('misReservas.vacio')}
+            boton={t('misReservas.buscarOfertas')}
             alTocar={() => navigation.navigate('Catalogo')}
           />
         ) : null
