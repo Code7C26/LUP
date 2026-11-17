@@ -2,14 +2,16 @@
 // Uso:  if (cargando) return <Cargando />;
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
+import { useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, tamanos, useTema } from '../tema';
 
-export default function Cargando({ texto = 'Cargando…' }) {
+export default function Cargando({ texto }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   return (
     <View style={[estilos.contenedor, { backgroundColor: colores.fondo }]}>
       <ActivityIndicator size="large" color={colores.verde} />
-      <Text style={[estilos.texto, { color: colores.gris }]}>{texto}</Text>
+      <Text style={[estilos.texto, { color: colores.gris }]}>{texto || t('comun.cargando')}</Text>
     </View>
   );
 }

@@ -1,12 +1,67 @@
 import * as Haptics from 'expo-haptics';
 
-// Funciones chiquitas que se usan en varias pantallas.
+import { idiomaActual, t } from './contexto/Idioma';
 
-// "1700.00" -> "$1.700"
+// Funciones chiquitas que se usan en varias pantallas.
+// Las de números y fechas siguen el idioma elegido (contexto/Idioma.js). Las pantallas que las usan
+// llaman a useIdioma(), así que se vuelven a dibujar solas al cambiar el idioma.
+
+const enIngles = () => idiomaActual() === 'en';
+
+// Separador de miles a mano (igual en Android y iPhone): "1.700" en español, "1,700" en inglés
+function miles(entero) {
+  return String(Math.abs(entero)).replace(/\B(?=(\d{3})+(?!\d))/g, enIngles() ? ',' : '.');
+}
+
+// "1700.00" -> "$1.700" (español) o "$1,700" (inglés)
 export function formatoPrecio(valor) {
   const numero = Number(valor);
-  if (Number.isNaN(numero)) return '';
-  return '$' + numero.toLocaleString('es-AR', { maximumFractionDigits: 0 });
+  if (valor === null || valor === undefined || valor === '' || Number.isNaN(numero)) return '';
+  return (numero < 0 ? '-$' : '$') + miles(Math.round(numero));
+}
+
+// ---- Fechas: "16/11/2026" en español, "11/16/2026" en inglés ----
+// Aceptan un Date o un texto de Django ("2026-11-16" o "2026-11-16T18:30:00-03:00").
+function aFecha(valor) {
+  if (valor instanceof Date) return valor;
+  const texto = String(valor || '');
+  const soloDia = texto.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  // "2026-11-16" se toma como día local (new Date() lo tomaría en UTC y podría dar el día anterior)
+  if (soloDia) return new Date(Number(soloDia[1]), Number(soloDia[2]) - 1, Number(soloDia[3]));
+  const fecha = new Date(texto);
+  return Number.isNaN(fecha.getTime()) ? null : fecha;
+}
+
+const dos = (n) => String(n).padStart(2, '0');
+
+export function formatoFecha(valor) {
+  const f = aFecha(valor);
+  if (!f) return '';
+  const [d, m] = [dos(f.getDate()), dos(f.getMonth() + 1)];
+  return enIngles() ? `${m}/${d}/${f.getFullYear()}` : `${d}/${m}/${f.getFullYear()}`;
+}
+
+// "16/11" o "11/16"
+export function formatoDiaMes(valor) {
+  const f = aFecha(valor);
+  if (!f) return '';
+  const [d, m] = [dos(f.getDate()), dos(f.getMonth() + 1)];
+  return enIngles() ? `${m}/${d}` : `${d}/${m}`;
+}
+
+// "16 nov" o "Nov 16" (con el año si no es el actual)
+export function formatoDiaMesTexto(valor) {
+  const f = aFecha(valor);
+  if (!f) return '';
+  const mes = t('fechas.meses')[f.getMonth()] ?? '';
+  const anio = f.getFullYear() !== new Date().getFullYear() ? ` ${f.getFullYear()}` : '';
+  return enIngles() ? `${mes} ${f.getDate()}${anio && ','}${anio}` : `${f.getDate()} ${mes}${anio}`;
+}
+
+// "18:30" (las dos usan 24 horas, como la web)
+export function formatoHora(valor) {
+  const f = aFecha(valor);
+  return f ? `${dos(f.getHours())}:${dos(f.getMinutes())}` : '';
 }
 
 // Mismo emoji por categoría que usa la web (templatetags/lup_tags.py)
@@ -40,11 +95,18 @@ export function emojiRubro(rubro) {
   return EMOJIS_RUBRO[rubro] || '🏪';
 }
 
-// "a 350 m" o "a 1,2 km"
-export function textoDistancia(km) {
+// "350 m" o "1,2 km" ("1.2 km" en inglés), sin el "a" de adelante (como el mockup)
+export function textoKm(km) {
   if (km === null || km === undefined) return null;
-  if (km < 1) return `a ${Math.round(km * 1000)} m`;
-  return `a ${km.toFixed(1).replace('.', ',')} km`;
+  if (km < 1) return `${Math.round(km * 1000)} m`;
+  const numero = km.toFixed(1);
+  return `${enIngles() ? numero : numero.replace('.', ',')} km`;
+}
+
+// "a 350 m" o "a 1,2 km" ("350 m away" en inglés)
+export function textoDistancia(km) {
+  const corta = textoKm(km);
+  return corta ? t('distancia.a', { d: corta }) : null;
 }
 
 // Django REST a veces devuelve los errores como lista: ["Este campo es obligatorio."]

@@ -17,6 +17,7 @@ import Boton from '../componentes/Boton';
 import Campo from '../componentes/Campo';
 import MensajeError from '../componentes/MensajeError';
 import { useSesion } from '../contexto/Sesion';
+import { useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, radio, tamanos, useTema } from '../tema';
 import { textoError } from '../utilidades';
 import { TIPOS_DE_CUENTA } from './RegistroSeleccion';
@@ -25,18 +26,18 @@ import Icono from '../componentes/Icono';
 // Pantallas de cuenta de la navegación (paso 37): se cierran juntas al terminar el registro
 const PANTALLAS_DE_CUENTA = ['Login', 'Registro', 'RegistroFormulario'];
 
-// ---- Campos de cada parte del formulario ----
+// ---- Campos de cada parte del formulario (etiqueta y placeholder son claves de idiomas/es.js) ----
 const CAMPOS_CUENTA = [
-  { nombre: 'username', etiqueta: 'Nombre de usuario', placeholder: 'ej: juan_perez', autoCapitalize: 'none' },
-  { nombre: 'email', etiqueta: 'Email', placeholder: 'tu@email.com', autoCapitalize: 'none', keyboardType: 'email-address' },
-  { nombre: 'password1', etiqueta: 'Contraseña', placeholder: 'Mínimo 8 caracteres, no solo números', secureTextEntry: true },
-  { nombre: 'password2', etiqueta: 'Repetí la contraseña', placeholder: '••••••••', secureTextEntry: true },
+  { nombre: 'username', etiqueta: 'registro.usuario', placeholder: 'registro.usuarioEjemplo', autoCapitalize: 'none' },
+  { nombre: 'email', etiqueta: 'registro.email', placeholder: 'registro.emailEjemplo', autoCapitalize: 'none', keyboardType: 'email-address' },
+  { nombre: 'password1', etiqueta: 'registro.contrasena', placeholder: 'registro.contrasenaReglas', secureTextEntry: true },
+  { nombre: 'password2', etiqueta: 'registro.repetir', placeholder: 'registro.puntos', secureTextEntry: true },
 ];
 
 const ETIQUETAS_PERSONA = {
-  consumidor: ['Nombre', 'Apellido'],
-  comercio: ['Nombre del responsable', 'Apellido del responsable'],
-  organizacion: ['Nombre del referente', 'Apellido del referente'],
+  consumidor: ['registro.nombre', 'registro.apellido'],
+  comercio: ['registro.nombreResponsable', 'registro.apellidoResponsable'],
+  organizacion: ['registro.nombreReferente', 'registro.apellidoReferente'],
 };
 
 function camposPersonales(rol) {
@@ -44,43 +45,30 @@ function camposPersonales(rol) {
   return [
     { nombre: 'first_name', etiqueta: nombre },
     { nombre: 'last_name', etiqueta: apellido },
-    { nombre: 'telefono', etiqueta: 'Teléfono', placeholder: '351 555 1234', keyboardType: 'phone-pad' },
-    { nombre: 'ciudad', etiqueta: 'Ciudad', placeholder: 'Ej: Alta Gracia' },
+    { nombre: 'telefono', etiqueta: 'registro.telefono', placeholder: 'registro.telefonoEjemplo', keyboardType: 'phone-pad' },
+    { nombre: 'ciudad', etiqueta: 'registro.ciudad', placeholder: 'registro.ciudadEjemplo' },
   ];
 }
 
 const CAMPOS_COMERCIO = [
-  { nombre: 'nombre_fantasia', etiqueta: 'Nombre del comercio' },
-  { nombre: 'cuit', etiqueta: 'CUIT / CUIL', placeholder: '20-12345678-9', keyboardType: 'numbers-and-punctuation' },
-  { nombre: 'direccion', etiqueta: 'Dirección del local', placeholder: 'Calle, número y ciudad' },
-  { nombre: 'horario_atencion', etiqueta: 'Horario de retiro', placeholder: 'Ej: Lun a Sáb de 18 a 20 hs' },
+  { nombre: 'nombre_fantasia', etiqueta: 'registro.nombreComercio' },
+  { nombre: 'cuit', etiqueta: 'registro.cuitComercio', placeholder: 'registro.cuitComercioEjemplo', keyboardType: 'numbers-and-punctuation' },
+  { nombre: 'direccion', etiqueta: 'registro.direccionLocal', placeholder: 'registro.direccionEjemplo' },
+  { nombre: 'horario_atencion', etiqueta: 'registro.horario', placeholder: 'registro.horarioEjemplo' },
 ];
 
 const CAMPOS_ORGANIZACION = [
-  { nombre: 'nombre_organizacion', etiqueta: 'Nombre de la organización' },
-  { nombre: 'cuit', etiqueta: 'CUIT / matrícula', placeholder: '30-12345678-9', keyboardType: 'numbers-and-punctuation' },
-  { nombre: 'direccion', etiqueta: 'Dirección', placeholder: 'Calle, número y ciudad' },
-  { nombre: 'personas_asistidas', etiqueta: 'Personas asistidas por semana', placeholder: '0', keyboardType: 'number-pad' },
+  { nombre: 'nombre_organizacion', etiqueta: 'registro.nombreOrganizacion' },
+  { nombre: 'cuit', etiqueta: 'registro.cuitOrganizacion', placeholder: 'registro.cuitOrganizacionEjemplo', keyboardType: 'numbers-and-punctuation' },
+  { nombre: 'direccion', etiqueta: 'registro.direccion', placeholder: 'registro.direccionEjemplo' },
+  { nombre: 'personas_asistidas', etiqueta: 'registro.personas', placeholder: 'registro.cero', keyboardType: 'number-pad' },
 ];
 
-// Opciones: las mismas de stores/models.py (RUBROS) y users/models.py (TIPOS)
-const RUBROS = [
-  ['panaderia', 'Panadería / Confitería'],
-  ['restaurante', 'Restaurante / Rotisería'],
-  ['verduleria', 'Verdulería'],
-  ['supermercado', 'Supermercado / Almacén'],
-  ['cafeteria', 'Cafetería'],
-  ['carniceria', 'Carnicería'],
-  ['otro', 'Otro'],
-];
+// Opciones: las mismas de stores/models.py (RUBROS) y users/models.py (TIPOS).
+// Los textos salen de t('rubros.X') y t('tiposOrganizacion.X') (idiomas/es.js y en.js)
+const RUBROS = ['panaderia', 'restaurante', 'verduleria', 'supermercado', 'cafeteria', 'carniceria', 'otro'];
 
-const TIPOS_ORGANIZACION = [
-  ['comedor', 'Comedor / Merendero'],
-  ['fundacion', 'Fundación'],
-  ['ong', 'ONG / Asociación civil'],
-  ['religiosa', 'Institución religiosa'],
-  ['otra', 'Otra'],
-];
+const TIPOS_ORGANIZACION = ['comedor', 'fundacion', 'ong', 'religiosa', 'otra'];
 
 // Botones para elegir una opción (en lugar de una lista desplegable).
 // También la usa el formulario de producto del comercio (paso 46).
@@ -116,9 +104,10 @@ export function Opciones({ etiqueta, opciones, valor, alElegir, error }) {
 
 export default function Registro({ navigation, route }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const { registrar, invitado } = useSesion();
   const rol = route?.params?.rol || 'consumidor';
-  const tipo = TIPOS_DE_CUENTA.find((t) => t.rol === rol);
+  const tipo = TIPOS_DE_CUENTA.find((c) => c.rol === rol);
 
   const [valores, setValores] = useState({
     rubro: 'panaderia',
@@ -134,9 +123,11 @@ export default function Registro({ navigation, route }) {
 
   // Dibuja una lista de campos de texto
   const dibujarCampos = (lista) =>
-    lista.map(({ nombre, ...props }) => (
+    lista.map(({ nombre, etiqueta, placeholder, ...props }) => (
       <Campo
         key={nombre}
+        etiqueta={t(etiqueta)}
+        placeholder={placeholder ? t(placeholder) : undefined}
         value={valores[nombre] || ''}
         onChangeText={cambiar(nombre)}
         error={errores[nombre]}
@@ -174,7 +165,7 @@ export default function Registro({ navigation, route }) {
         const otros = Object.entries(e || {})
           .filter(([campo]) => !conocidos.has(campo) && campo !== 'estado')
           .map(([, mensaje]) => textoError(mensaje));
-        setErrorGeneral(otros.length ? otros.join(' ') : 'Revisá los campos marcados en rojo.');
+        setErrorGeneral(otros.length ? otros.join(' ') : t('comun.revisaCampos'));
       }
     } finally {
       setEnviando(false);
@@ -187,21 +178,21 @@ export default function Registro({ navigation, route }) {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={estilos.contenido} keyboardShouldPersistTaps="handled">
-        <Text style={[estilos.titulo, { color: colores.titulo }]}>Cuenta de {tipo.titulo}</Text>
+        <Text style={[estilos.titulo, { color: colores.titulo }]}>{t('registro.cuentaDe', { tipo: t(tipo.titulo) })}</Text>
 
-        <Text style={[estilos.seccion, { color: colores.verdeHover }]}>Tu cuenta</Text>
+        <Text style={[estilos.seccion, { color: colores.verdeHover }]}>{t('registro.tuCuenta')}</Text>
         {dibujarCampos(CAMPOS_CUENTA)}
 
-        <Text style={[estilos.seccion, { color: colores.verdeHover }]}>Tus datos</Text>
+        <Text style={[estilos.seccion, { color: colores.verdeHover }]}>{t('registro.tusDatos')}</Text>
         {dibujarCampos(camposPersonales(rol))}
 
         {rol === 'comercio' ? (
           <>
-            <Text style={[estilos.seccion, { color: colores.verdeHover }]}>Tu comercio</Text>
+            <Text style={[estilos.seccion, { color: colores.verdeHover }]}>{t('registro.tuComercio')}</Text>
             {dibujarCampos(CAMPOS_COMERCIO.slice(0, 1))}
             <Opciones
-              etiqueta="Rubro"
-              opciones={RUBROS}
+              etiqueta={t('registro.rubro')}
+              opciones={RUBROS.map((r) => [r, t(`rubros.${r}`)])}
               valor={valores.rubro}
               alElegir={cambiar('rubro')}
               error={errores.rubro}
@@ -212,11 +203,11 @@ export default function Registro({ navigation, route }) {
 
         {rol === 'organizacion' ? (
           <>
-            <Text style={[estilos.seccion, { color: colores.verdeHover }]}>Tu organización</Text>
+            <Text style={[estilos.seccion, { color: colores.verdeHover }]}>{t('registro.tuOrganizacion')}</Text>
             {dibujarCampos(CAMPOS_ORGANIZACION.slice(0, 1))}
             <Opciones
-              etiqueta="Tipo de organización"
-              opciones={TIPOS_ORGANIZACION}
+              etiqueta={t('registro.tipoOrganizacion')}
+              opciones={TIPOS_ORGANIZACION.map((o) => [o, t(`tiposOrganizacion.${o}`)])}
               valor={valores.tipo}
               alElegir={cambiar('tipo')}
               error={errores.tipo}
@@ -242,7 +233,7 @@ export default function Registro({ navigation, route }) {
             {valores.acepta_terminos ? <Icono nombre="checkmark" tamano={16} color={colores.sobreVerdeProfundo} /> : null}
           </View>
           <Text style={[estilos.textoTerminos, { color: colores.texto }]}>
-            Acepto los términos y condiciones de Lüp
+            {t('registro.terminos')}
           </Text>
         </Pressable>
         {errores.acepta_terminos ? (
@@ -251,8 +242,8 @@ export default function Registro({ navigation, route }) {
 
         <MensajeError mensaje={errorGeneral} />
 
-        <Boton texto="Crear mi cuenta" onPress={crearCuenta} cargando={enviando} />
-        <Boton texto="Volver" variante="texto" onPress={() => navigation?.goBack?.()} />
+        <Boton texto={t('registro.crearCuenta')} onPress={crearCuenta} cargando={enviando} />
+        <Boton texto={t('comun.volver')} variante="texto" onPress={() => navigation?.goBack?.()} />
       </ScrollView>
     </KeyboardAvoidingView>
   );

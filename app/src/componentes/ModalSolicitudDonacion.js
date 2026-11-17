@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { api } from '../api/cliente';
+import { useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, radio, tamanos, useTema } from '../tema';
 import { textoError } from '../utilidades';
 import Boton from './Boton';
@@ -18,6 +19,7 @@ import MensajeError from './MensajeError';
 
 export default function ModalSolicitudDonacion({ producto, alCerrar, alEnviar }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const [mensaje, setMensaje] = useState('');
   const [error, setError] = useState('');
   const [enviando, setEnviando] = useState(false);
@@ -30,7 +32,7 @@ export default function ModalSolicitudDonacion({ producto, alCerrar, alEnviar })
 
   async function enviar() {
     if (!mensaje.trim()) {
-      setError('Escribí un mensaje para el comercio.');
+      setError(t('donacionModal.escribiMensaje'));
       return;
     }
     setEnviando(true);
@@ -53,9 +55,9 @@ export default function ModalSolicitudDonacion({ producto, alCerrar, alEnviar })
     <Modal visible={Boolean(producto)} transparent animationType="fade" onRequestClose={alCerrar}>
       <KeyboardAvoidingView style={estilos.fondo} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         {/* Tocar afuera del cuadro lo cierra */}
-        <Pressable style={StyleSheet.absoluteFill} onPress={alCerrar} accessibilityLabel="Cerrar" />
+        <Pressable style={StyleSheet.absoluteFill} onPress={alCerrar} accessibilityLabel={t('comun.cerrar')} />
         <View style={[estilos.cuadro, { backgroundColor: colores.superficie }]}>
-          <Text style={[estilos.titulo, { color: colores.titulo }]}>Pedir en donación</Text>
+          <Text style={[estilos.titulo, { color: colores.titulo }]}>{t('donacionModal.titulo')}</Text>
           {producto ? (
             <Text style={[estilos.detalle, { color: colores.gris }]}>
               {producto.titulo} · {producto.comercio}
@@ -63,8 +65,8 @@ export default function ModalSolicitudDonacion({ producto, alCerrar, alEnviar })
           ) : null}
 
           <Campo
-            etiqueta="Mensaje para el comercio"
-            placeholder="Contale a cuántas personas ayudaría y cuándo podés retirarlo…"
+            etiqueta={t('donacionModal.mensaje')}
+            placeholder={t('donacionModal.placeholder')}
             value={mensaje}
             onChangeText={setMensaje}
             multiline
@@ -75,8 +77,8 @@ export default function ModalSolicitudDonacion({ producto, alCerrar, alEnviar })
 
           <MensajeError mensaje={error} />
 
-          <Boton texto="Enviar solicitud" onPress={enviar} cargando={enviando} />
-          <Boton texto="Cancelar" variante="texto" onPress={alCerrar} deshabilitado={enviando} />
+          <Boton texto={t('donacionModal.enviar')} onPress={enviar} cargando={enviando} />
+          <Boton texto={t('comun.cancelar')} variante="texto" onPress={alCerrar} deshabilitado={enviando} />
         </View>
       </KeyboardAvoidingView>
     </Modal>

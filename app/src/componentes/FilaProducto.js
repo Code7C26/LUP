@@ -11,13 +11,15 @@ import { useNavigation } from '@react-navigation/native';
 import { mostrarAviso } from '../contexto/Aviso';
 import { useCarrito } from '../contexto/Carrito';
 import { useSesion } from '../contexto/Sesion';
+import { useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, radio, sombra, tamanos, useTema } from '../tema';
-import { emojiCategoria, formatoPrecio, textoDistancia, vibrar } from '../utilidades';
+import { emojiCategoria, formatoPrecio, textoKm, vibrar } from '../utilidades';
 import FotoSuave from './FotoSuave';
 import Icono from './Icono';
 
 export default function FilaProducto({ producto, onPress, mostrarComercio }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const { usuario } = useSesion();
   const { agregar, cantidadDe } = useCarrito();
   const enCarrito = cantidadDe(producto.id);
@@ -40,13 +42,13 @@ export default function FilaProducto({ producto, onPress, mostrarComercio }) {
     agregar(producto, elegida);
     vibrar();
     mostrarAviso({
-      texto: elegida > 1 ? `${elegida} agregados al carrito` : 'Agregado al carrito',
-      boton: 'Ver',
+      texto: t('fila.agregados', { n: elegida }),
+      boton: t('fila.ver'),
       alTocar: () => navigation.navigate('Carrito'),
     });
     setCantidad(1);
   }
-  const distancia = textoDistancia(producto.distancia_km)?.replace('a ', '');
+  const distancia = textoKm(producto.distancia_km);
 
   return (
     <Animated.View
@@ -58,7 +60,7 @@ export default function FilaProducto({ producto, onPress, mostrarComercio }) {
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`${producto.titulo}, ${formatoPrecio(producto.precio_descuento)}. Ver detalle`}
+      accessibilityLabel={t('fila.accesible', { titulo: producto.titulo, precio: formatoPrecio(producto.precio_descuento) })}
       style={({ pressed }) => [estilos.fila, pressed && { opacity: 0.85 }]}
     >
       <View style={[estilos.foto, { backgroundColor: colores.panel }]}>
@@ -93,8 +95,8 @@ export default function FilaProducto({ producto, onPress, mostrarComercio }) {
                 disabled={lleno}
                 hitSlop={6}
                 accessibilityRole="button"
-                accessibilityLabel={`Cantidad: ${elegida}`}
-                accessibilityHint="Elegir cuántos agregar al carrito"
+                accessibilityLabel={t('fila.cantidadAccesible', { n: elegida })}
+                accessibilityHint={t('fila.cantidadAyuda')}
                 style={({ pressed }) => [
                   estilos.selector,
                   { backgroundColor: colores.campo, borderColor: colores.borde },
@@ -112,8 +114,8 @@ export default function FilaProducto({ producto, onPress, mostrarComercio }) {
                 accessibilityRole="button"
                 accessibilityLabel={
                   lleno
-                    ? `No quedan más, hay ${enCarrito} en el carrito`
-                    : `Agregar ${elegida} al carrito${enCarrito ? `, ya hay ${enCarrito}` : ''}`
+                    ? t('fila.noQuedan', { n: enCarrito })
+                    : t('fila.agregarN', { n: elegida }) + (enCarrito ? t('fila.yaHay', { n: enCarrito }) : '')
                 }
                 style={({ pressed }) => [
                   estilos.boton,
@@ -123,7 +125,7 @@ export default function FilaProducto({ producto, onPress, mostrarComercio }) {
               >
                 <Icono nombre={enCarrito ? 'cart' : 'cart-outline'} tamano={12} color={colores.sobreVerdeProfundo} />
                 <Text style={[estilos.textoBoton, { color: colores.sobreVerdeProfundo }]} numberOfLines={1}>
-                  {enCarrito ? `En el carrito · ${enCarrito}` : 'Agregar al carrito'}
+                  {enCarrito ? t('fila.enCarrito', { n: enCarrito }) : t('fila.agregar')}
                 </Text>
               </Pressable>
             </View>
@@ -154,14 +156,15 @@ const ALTO_OPCION = 44;
 
 function ListaCantidades({ maximo, elegida, titulo, alElegir, alCerrar }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const numeros = Array.from({ length: maximo }, (_, i) => i + 1);
   return (
     <Modal visible transparent animationType="fade" onRequestClose={alCerrar}>
       <View style={[estilos.velo, { backgroundColor: colores.velo }]}>
         {/* Tocar afuera del cuadro lo cierra */}
-        <Pressable style={StyleSheet.absoluteFill} onPress={alCerrar} accessibilityLabel="Cerrar" />
+        <Pressable style={StyleSheet.absoluteFill} onPress={alCerrar} accessibilityLabel={t('comun.cerrar')} />
         <View style={[estilos.cuadro, { backgroundColor: colores.superficie }, sombra(colores, 3)]}>
-          <Text style={[estilos.tituloCuadro, { color: colores.titulo }]}>Cantidad</Text>
+          <Text style={[estilos.tituloCuadro, { color: colores.titulo }]}>{t('fila.cantidad')}</Text>
           <Text style={[estilos.chico, { color: colores.gris }]} numberOfLines={1}>
             {titulo}
           </Text>

@@ -12,10 +12,12 @@ import Campo from '../componentes/Campo';
 import Icono from '../componentes/Icono';
 import Logo from '../componentes/Logo';
 import MensajeError from '../componentes/MensajeError';
+import { useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, tamanos, useTema } from '../tema';
 
 export default function RecuperarClave({ navigation, route }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const [email, setEmail] = useState(route?.params?.email || '');
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState('');
@@ -25,13 +27,13 @@ export default function RecuperarClave({ navigation, route }) {
     setError('');
     const limpio = email.trim();
     if (!/^\S+@\S+\.\S+$/.test(limpio)) {
-      setError('Escribí el email de tu cuenta.');
+      setError(t('recuperar.escribiEmail'));
       return;
     }
     setEnviando(true);
     try {
-      const r = await api('/auth/recuperar/', { metodo: 'POST', datos: { email: limpio } });
-      setListo(r.mensaje);
+      await api('/auth/recuperar/', { metodo: 'POST', datos: { email: limpio } });
+      setListo(t('recuperar.enviado'));
     } catch (e) {
       setError(e);
     } finally {
@@ -53,30 +55,30 @@ export default function RecuperarClave({ navigation, route }) {
               <Icono nombre="mail-unread-outline" tamano={38} color={colores.verdeHover} />
             </View>
             <Text style={[estilos.titulo, { color: colores.titulo }]} accessibilityRole="header">
-              Revisá tu email
+              {t('recuperar.revisaEmail')}
             </Text>
             <View style={[estilos.recuadro, { backgroundColor: colores.panel, borderColor: colores.borde }]} accessibilityLiveRegion="polite">
               <Text style={[estilos.textoRecuadro, { color: colores.texto }]}>{listo}</Text>
             </View>
             <Text style={[estilos.pasos, { color: colores.gris }]}>
-              Abrí el link del email, elegí tu contraseña nueva y volvé acá para ingresar con ella.
+              {t('recuperar.pasos')}
             </Text>
-            <Boton texto="Volver a iniciar sesión" onPress={() => navigation.goBack()} estilo={estilos.boton} />
-            <Boton texto="No me llegó, mandar de nuevo" variante="texto" chico onPress={() => setListo('')} />
+            <Boton texto={t('recuperar.volverAIngresar')} onPress={() => navigation.goBack()} estilo={estilos.boton} />
+            <Boton texto={t('recuperar.mandarDeNuevo')} variante="texto" chico onPress={() => setListo('')} />
           </>
         ) : (
           <>
             <Text style={[estilos.titulo, { color: colores.titulo }]} accessibilityRole="header">
-              ¿Olvidaste tu contraseña?
+              {t('recuperar.olvidaste')}
             </Text>
             <View style={[estilos.recuadro, { backgroundColor: colores.panel, borderColor: colores.borde }]}>
               <Text style={[estilos.textoRecuadro, { color: colores.texto }]}>
-                Escribí el email de tu cuenta y te mandamos un link para elegir una nueva.
+                {t('recuperar.explicacion')}
               </Text>
             </View>
             <Campo
-              etiqueta="Email"
-              placeholder="tu@email.com"
+              etiqueta={t('recuperar.email')}
+              placeholder={t('recuperar.emailEjemplo')}
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
@@ -88,7 +90,7 @@ export default function RecuperarClave({ navigation, route }) {
               estilo={{ marginTop: espacio(1.5) }}
             />
             <MensajeError mensaje={error} />
-            <Boton texto="Mandarme el link" onPress={enviar} cargando={enviando} estilo={estilos.boton} />
+            <Boton texto={t('recuperar.mandarLink')} onPress={enviar} cargando={enviando} estilo={estilos.boton} />
           </>
         )}
       </ScrollView>

@@ -10,6 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icono from '../componentes/Icono';
 import { claveBienvenida, useBienvenida } from '../contexto/Bienvenida';
 import { useSesion } from '../contexto/Sesion';
+import { useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes } from '../tema';
 
 // Colores de la marca (iguales en modo claro y oscuro, como la intro de la Portada)
@@ -19,22 +20,22 @@ const VERDE_HOJA = '#71A24D';
 const VERDE_CLARO = '#B6D1A1';
 const TEXTO_SUAVE = '#D5E6C8';
 
-// Una idea por pantalla: ícono, título y una frase corta
+// Una idea por pantalla: ícono, título y una frase corta (claves de idiomas/es.js, se muestran con t())
 const PANTALLAS = {
   consumidor: [
-    { icono: 'location-outline', titulo: 'Ofertas cerca tuyo', texto: 'Comida rica de tu barrio, con descuento.' },
-    { icono: 'bag-check-outline', titulo: 'Reservá y retirá', texto: 'Pagás en el local con tu código.' },
-    { icono: 'leaf-outline', titulo: 'Salvá comida', texto: 'Cada reserva es comida que no se tira.' },
+    { icono: 'location-outline', titulo: 'bienvenida.ofertasCerca', texto: 'bienvenida.ofertasCercaTexto' },
+    { icono: 'bag-check-outline', titulo: 'bienvenida.reservaYRetira', texto: 'bienvenida.reservaYRetiraTexto' },
+    { icono: 'leaf-outline', titulo: 'bienvenida.salvaComida', texto: 'bienvenida.salvaComidaTexto' },
   ],
   organizacion: [
-    { icono: 'heart-outline', titulo: 'Donaciones cerca', texto: 'Comercios de la zona que donan alimentos.' },
-    { icono: 'paper-plane-outline', titulo: 'Pedí lo que necesitás', texto: 'Contales para cuántas personas es.' },
-    { icono: 'checkmark-done-outline', titulo: 'Retirá y listo', texto: 'Seguí cada pedido desde la app.' },
+    { icono: 'heart-outline', titulo: 'bienvenida.donacionesCerca', texto: 'bienvenida.donacionesCercaTexto' },
+    { icono: 'paper-plane-outline', titulo: 'bienvenida.pedi', texto: 'bienvenida.pediTexto' },
+    { icono: 'checkmark-done-outline', titulo: 'bienvenida.retiraYListo', texto: 'bienvenida.retiraYListoTexto' },
   ],
   comercio: [
-    { icono: 'camera-outline', titulo: 'Publicá en un minuto', texto: 'Una foto, el precio y listo.' },
-    { icono: 'cash-outline', titulo: 'Vendé lo que sobra', texto: 'En vez de tirarlo.' },
-    { icono: 'qr-code-outline', titulo: 'Entregá con un código', texto: 'El cliente lo muestra y confirmás.' },
+    { icono: 'camera-outline', titulo: 'bienvenida.publica', texto: 'bienvenida.publicaTexto' },
+    { icono: 'cash-outline', titulo: 'bienvenida.vende', texto: 'bienvenida.vendeTexto' },
+    { icono: 'qr-code-outline', titulo: 'bienvenida.entrega', texto: 'bienvenida.entregaTexto' },
   ],
 };
 
@@ -79,6 +80,7 @@ function BotonClaro({ texto, onPress }) {
 export default function Bienvenida({ navigation, route }) {
   const { width } = useWindowDimensions();
   const { top, bottom } = useSafeAreaInsets();
+  const { t } = useIdioma();
   const { marcarVista } = useBienvenida();
   const { usuario } = useSesion();
   const lista = useRef(null);
@@ -134,7 +136,7 @@ export default function Bienvenida({ navigation, route }) {
 
       {/* Arriba a la derecha, "Omitir" */}
       <Pressable onPress={terminar} hitSlop={10} accessibilityRole="button" style={estilos.omitir}>
-        <Text style={estilos.textoOmitir}>Omitir</Text>
+        <Text style={estilos.textoOmitir}>{t('bienvenida.omitir')}</Text>
       </Pressable>
 
       {/* Las 3 pantallas */}
@@ -153,13 +155,13 @@ export default function Bienvenida({ navigation, route }) {
           const opacidad = scrollX.interpolate({ inputRange: rango, outputRange: [0, 1, 0], extrapolate: 'clamp' });
           const correr = scrollX.interpolate({ inputRange: rango, outputRange: [width * 0.3, 0, -width * 0.3], extrapolate: 'clamp' });
           return (
-            <View key={p.titulo} style={[estilos.pagina, { width }]} accessible accessibilityLabel={`${p.titulo}. ${p.texto}`}>
+            <View key={p.titulo} style={[estilos.pagina, { width }]} accessible accessibilityLabel={`${t(p.titulo)}. ${t(p.texto)}`}>
               <Animated.View style={{ opacity: opacidad, transform: [{ scale: escala }] }}>
                 <Ilustracion icono={p.icono} moverse={moverse && i === pagina} />
               </Animated.View>
               <Animated.View style={[estilos.textos, { opacity: opacidad, transform: [{ translateX: correr }] }]}>
-                <Text style={estilos.titulo}>{p.titulo}</Text>
-                <Text style={estilos.texto}>{p.texto}</Text>
+                <Text style={estilos.titulo}>{t(p.titulo)}</Text>
+                <Text style={estilos.texto}>{t(p.texto)}</Text>
               </Animated.View>
             </View>
           );
@@ -167,7 +169,7 @@ export default function Bienvenida({ navigation, route }) {
       </Animated.ScrollView>
 
       {/* Puntitos: el actual más grande y claro */}
-      <View style={estilos.puntos} accessibilityLabel={`Pantalla ${pagina + 1} de ${pantallas.length}`}>
+      <View style={estilos.puntos} accessibilityLabel={t('bienvenida.pantallaDe', { n: pagina + 1, total: pantallas.length })}>
         {pantallas.map((p, i) => {
           const rango = [(i - 1) * width, i * width, (i + 1) * width];
           return (
@@ -188,14 +190,14 @@ export default function Bienvenida({ navigation, route }) {
       {/* Abajo: "Siguiente", y en la última "Empezar" (o crear la cuenta, si es invitado) */}
       <View style={estilos.abajo}>
         {!ultima ? (
-          <BotonClaro texto="Siguiente" onPress={siguiente} />
+          <BotonClaro texto={t('bienvenida.siguiente')} onPress={siguiente} />
         ) : usuario ? (
-          <BotonClaro texto="Empezar" onPress={terminar} />
+          <BotonClaro texto={t('bienvenida.empezar')} onPress={terminar} />
         ) : (
           <>
-            <BotonClaro texto="Crear mi cuenta gratis" onPress={() => irA('Registro')} />
+            <BotonClaro texto={t('bienvenida.crearCuenta')} onPress={() => irA('Registro')} />
             <Text onPress={() => irA('Login')} accessibilityRole="link" style={estilos.link}>
-              Ya tengo cuenta
+              {t('bienvenida.yaTengoCuenta')}
             </Text>
           </>
         )}

@@ -9,20 +9,17 @@ import { api } from '../../api/cliente';
 import Boton from '../../componentes/Boton';
 import Cargando from '../../componentes/Cargando';
 import MensajeError from '../../componentes/MensajeError';
+import { textoDeOpcion, useIdioma } from '../../contexto/Idioma';
 import { espacio, fuentes, radio, tamanos, useTema } from '../../tema';
 import Encabezado from '../../componentes/Encabezado';
 import Icono from '../../componentes/Icono';
 import Vacio from '../../componentes/Vacio';
+import { formatoDiaMes } from '../../utilidades';
 
-// "2026-10-26T14:30:00-03:00" -> "26/10"
-function textoFecha(fechaHora) {
-  const fecha = new Date(fechaHora);
-  if (Number.isNaN(fecha.getTime())) return '';
-  return `${String(fecha.getDate()).padStart(2, '0')}/${String(fecha.getMonth() + 1).padStart(2, '0')}`;
-}
 
 function TarjetaSolicitud({ solicitud, alVerComercio }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const colorEstado = {
     aprobada: { backgroundColor: colores.menta, color: colores.verdeHover },
     pendiente: { backgroundColor: colores.ambarClaro, color: colores.texto },
@@ -37,10 +34,10 @@ function TarjetaSolicitud({ solicitud, alVerComercio }) {
             {solicitud.producto}
           </Text>
           <Text style={[estilos.detalle, { color: colores.gris }]}>
-            {solicitud.comercio} · {textoFecha(solicitud.creada_en)}
+            {solicitud.comercio} · {formatoDiaMes(solicitud.creada_en)}
           </Text>
         </View>
-        <Text style={[estilos.estado, colorEstado]}>{solicitud.estado_texto}</Text>
+        <Text style={[estilos.estado, colorEstado]}>{textoDeOpcion(t, 'estadosSolicitud', solicitud.estado, solicitud.estado_texto)}</Text>
       </View>
 
       <Text style={[estilos.mensaje, { color: colores.texto, backgroundColor: colores.fondo }]}>
@@ -49,7 +46,7 @@ function TarjetaSolicitud({ solicitud, alVerComercio }) {
 
       {solicitud.estado === 'aprobada' ? (
         <View style={[estilos.aviso, { backgroundColor: colores.menta }]}>
-          <Text style={[estilos.textoAviso, { color: colores.titulo }]}>¡Aprobada! Pasá a retirarla</Text>
+          <Text style={[estilos.textoAviso, { color: colores.titulo }]}>{t('misSolicitudes.aprobadaRetirar')}</Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <Icono nombre="location-outline" tamano={15} color={colores.verdeHover} />
             <Text style={[estilos.detalle, { color: colores.texto, flex: 1 }]}>{solicitud.direccion}</Text>
@@ -58,10 +55,10 @@ function TarjetaSolicitud({ solicitud, alVerComercio }) {
             <Icono nombre="time-outline" tamano={15} color={colores.verdeHover} />
             <Text style={[estilos.detalle, { color: colores.texto, flex: 1 }]}>{solicitud.horario}</Text>
           </View>
-          <Boton texto="Cómo llegar" icono="navigate" chico onPress={alVerComercio} />
+          <Boton texto={t('misSolicitudes.comoLlegar')} icono="navigate" chico onPress={alVerComercio} />
         </View>
       ) : solicitud.estado === 'pendiente' ? (
-        <Text style={[estilos.detalle, { color: colores.gris }]}>Esperando respuesta…</Text>
+        <Text style={[estilos.detalle, { color: colores.gris }]}>{t('misSolicitudes.esperando')}</Text>
       ) : null}
     </View>
   );
@@ -69,6 +66,7 @@ function TarjetaSolicitud({ solicitud, alVerComercio }) {
 
 export default function MisSolicitudes({ navigation }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const [solicitudes, setSolicitudes] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [actualizando, setActualizando] = useState(false);
@@ -93,12 +91,12 @@ export default function MisSolicitudes({ navigation }) {
   // Al volver a la pestaña se actualiza, por si el comercio ya respondió
   useEffect(() => navigation?.addListener?.('focus', cargar), [navigation, cargar]);
 
-  if (cargando) return <Cargando texto="Cargando tus solicitudes…" />;
+  if (cargando) return <Cargando texto={t('misSolicitudes.cargando')} />;
 
   const secciones = [
-    { titulo: 'Para retirar', estado: 'aprobada' },
-    { titulo: 'Esperando respuesta', estado: 'pendiente' },
-    { titulo: 'Rechazadas', estado: 'rechazada' },
+    { titulo: t('misSolicitudes.paraRetirar'), estado: 'aprobada' },
+    { titulo: t('misSolicitudes.esperandoRespuesta'), estado: 'pendiente' },
+    { titulo: t('misSolicitudes.rechazadas'), estado: 'rechazada' },
   ]
     .map((s) => ({ ...s, data: solicitudes.filter((sol) => sol.estado === s.estado) }))
     .filter((s) => s.data.length > 0);
@@ -122,7 +120,7 @@ export default function MisSolicitudes({ navigation }) {
       }
       ListHeaderComponent={
         <View style={{ gap: espacio(1.5) }}>
-          <Encabezado titulo="Mis pedidos" />
+          <Encabezado titulo={t('misSolicitudes.titulo')} />
           <MensajeError mensaje={error} alReintentar={cargar} />
         </View>
       }
@@ -130,8 +128,8 @@ export default function MisSolicitudes({ navigation }) {
         !error ? (
           <Vacio
             icono="clipboard-outline"
-            texto="Todavía no pediste donaciones"
-            boton="Ver donaciones"
+            texto={t('misSolicitudes.vacio')}
+            boton={t('misSolicitudes.verDonaciones')}
             alTocar={() => navigation.navigate('Donaciones')}
           />
         ) : null

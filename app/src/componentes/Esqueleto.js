@@ -5,6 +5,7 @@
 import { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 
+import { useIdioma } from '../contexto/Idioma';
 import { espacio, useTema } from '../tema';
 
 // Un bloque gris con el "brillo" suave
@@ -15,6 +16,7 @@ function Bloque({ estilo, opacidad }) {
 
 export default function Esqueleto({ tipo = 'filas' }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const opacidad = useRef(new Animated.Value(0.5)).current;
 
   useEffect(() => {
@@ -38,7 +40,7 @@ export default function Esqueleto({ tipo = 'filas' }) {
   return (
     <View
       style={[estilos.pantalla, { backgroundColor: colores.fondo }]}
-      accessibilityLabel="Cargando"
+      accessibilityLabel={t('comun.cargando')}
       accessibilityRole="progressbar"
     >
       {tipo === 'inicio' ? (

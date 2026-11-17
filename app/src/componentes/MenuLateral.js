@@ -19,6 +19,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useFavoritos } from '../contexto/Favoritos';
 import { useSesion } from '../contexto/Sesion';
+import { useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, sombra, tamanos, useTema } from '../tema';
 import Icono from './Icono';
 import Logo from './Logo';
@@ -57,6 +58,7 @@ function Opcion({ icono, texto, subtitulo, numero, alTocar }) {
 
 export default function MenuLateral({ visible, alCerrar, navigation }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const { usuario } = useSesion();
   const { favoritos } = useFavoritos();
   const { top, bottom } = useSafeAreaInsets();
@@ -86,7 +88,7 @@ export default function MenuLateral({ visible, alCerrar, navigation }) {
 
   function soporte() {
     Linking.openURL(WHATSAPP_SOPORTE).catch(() =>
-      Alert.alert('Soporte al Consumidor', `Escribinos por WhatsApp al ${TELEFONO_SOPORTE}`)
+      Alert.alert(t('menu.soporteTitulo'), t('menu.escribinosAl', { tel: TELEFONO_SOPORTE }))
     );
   }
 
@@ -103,7 +105,7 @@ export default function MenuLateral({ visible, alCerrar, navigation }) {
     >
       {/* El fondo oscuro: tocarlo cierra el menú */}
       <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: colores.velo, opacity: avance }]}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={alCerrar} accessibilityRole="button" accessibilityLabel="Cerrar el menú" />
+        <Pressable style={StyleSheet.absoluteFill} onPress={alCerrar} accessibilityRole="button" accessibilityLabel={t('menu.cerrarMenu')} />
       </Animated.View>
 
       <Animated.View
@@ -127,33 +129,33 @@ export default function MenuLateral({ visible, alCerrar, navigation }) {
             onPress={alCerrar}
             hitSlop={10}
             accessibilityRole="button"
-            accessibilityLabel="Cerrar el menú"
+            accessibilityLabel={t('menu.cerrarMenu')}
             style={[estilos.cerrar, { backgroundColor: colores.panel }]}
           >
             <Icono nombre="close" tamano={20} color={colores.texto} />
           </Pressable>
         </View>
         <Text style={[estilos.saludo, { color: colores.titulo }]} numberOfLines={1}>
-          {nombre ? `Hola, ${nombre}` : 'Hola 👋'}
+          {nombre ? t('menu.holaNombre', { nombre }) : t('menu.hola')}
         </Text>
 
         <ScrollView contentContainerStyle={estilos.contenido} showsVerticalScrollIndicator={false}>
           <View>
-            <Opcion icono="person-outline" texto="Perfil" alTocar={() => ir('Perfil')} />
-            <Opcion icono="ticket-outline" texto="Mis reservas" alTocar={() => ir('MisReservas')} />
-            <Opcion icono="heart-outline" texto="Mis favoritos" numero={favoritos.length} alTocar={() => ir('MisFavoritos')} />
+            <Opcion icono="person-outline" texto={t('menu.perfil')} alTocar={() => ir('Perfil')} />
+            <Opcion icono="ticket-outline" texto={t('menu.misReservas')} alTocar={() => ir('MisReservas')} />
+            <Opcion icono="heart-outline" texto={t('menu.misFavoritos')} numero={favoritos.length} alTocar={() => ir('MisFavoritos')} />
           </View>
 
           <View style={[estilos.separador, { backgroundColor: colores.borde }]} />
 
           <View style={{ gap: espacio(1) }}>
-            <Text style={[estilos.tituloGrupo, { color: colores.gris }]}>Apariencia</Text>
+            <Text style={[estilos.tituloGrupo, { color: colores.gris }]}>{t('menu.apariencia')}</Text>
             <SelectorApariencia />
           </View>
 
           <View style={[estilos.separador, { backgroundColor: colores.borde }]} />
 
-          <Opcion icono="logo-whatsapp" texto="Soporte" subtitulo="Escribinos por WhatsApp" alTocar={soporte} />
+          <Opcion icono="logo-whatsapp" texto={t('menu.soporte')} subtitulo={t('menu.escribinos')} alTocar={soporte} />
         </ScrollView>
       </Animated.View>
     </Modal>

@@ -15,6 +15,7 @@ import * as Notifications from 'expo-notifications';
 import * as SecureStore from 'expo-secure-store';
 
 import { api } from '../api/cliente';
+import { t } from '../contexto/Idioma';
 
 const CLAVE = 'lup_push_token'; // el token de este celular, para borrarlo al cerrar sesión
 
@@ -36,7 +37,7 @@ export async function registrarPush() {
     // En Android, el canal "avisos" tiene que existir antes de pedir permiso (y es el que usa Django)
     if (Platform.OS === 'android') {
       await Notifications.setNotificationChannelAsync('avisos', {
-        name: 'Avisos de Lüp',
+        name: t('push.canal'),
         importance: Notifications.AndroidImportance.HIGH,
         lightColor: '#71A24D',
       });

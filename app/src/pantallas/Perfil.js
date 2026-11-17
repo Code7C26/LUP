@@ -16,7 +16,9 @@ import Cifras from '../componentes/Cifras';
 import Icono from '../componentes/Icono';
 import MensajeError from '../componentes/MensajeError';
 import SelectorApariencia from '../componentes/SelectorApariencia';
+import SelectorIdioma from '../componentes/SelectorIdioma';
 import { claveBienvenida, useBienvenida } from '../contexto/Bienvenida';
+import { t as traducir, textoDesdeEspanol, useIdioma } from '../contexto/Idioma';
 import { useSesion } from '../contexto/Sesion';
 import { espacio, fuentes, radio, sombra, tamanos, useTema } from '../tema';
 
@@ -29,18 +31,19 @@ const SOPORTE = {
 };
 
 const ROLES = {
-  consumidor: { titulo: 'Consumidor', icono: 'bag-handle' },
-  comercio: { titulo: 'Comercio', icono: 'storefront' },
-  organizacion: { titulo: 'Organización', icono: 'heart' },
+  consumidor: { titulo: 'tiposCuenta.consumidor', icono: 'bag-handle' },
+  comercio: { titulo: 'tiposCuenta.comercio', icono: 'storefront' },
+  organizacion: { titulo: 'tiposCuenta.organizacion', icono: 'heart' },
 };
 
 function abrir(url) {
-  Linking.openURL(url).catch(() => Alert.alert('No se pudo abrir', 'Probá de nuevo desde otro celular o desde la web.'));
+  Linking.openURL(url).catch(() => Alert.alert(traducir('comun.noSePudoAbrir'), traducir('comun.noSePudoAbrirTexto')));
 }
 
 // Grupo de filas con título chiquito arriba
 function Grupo({ titulo, children }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   return (
     <View style={{ gap: espacio(1) }}>
       <Text style={[estilos.tituloGrupo, { color: colores.gris }]}>{titulo}</Text>
@@ -52,6 +55,7 @@ function Grupo({ titulo, children }) {
 // Una fila con ícono a la izquierda (no se muestra si el valor está vacío)
 function Dato({ icono, valor, ultimo }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   if (valor === null || valor === undefined || valor === '') return null;
   return (
     <View style={[estilos.fila, !ultimo && { borderBottomWidth: StyleSheet.hairlineWidth, borderColor: colores.borde }]}>
@@ -68,6 +72,7 @@ function Dato({ icono, valor, ultimo }) {
 // Fila que se toca (con flecha) para abrir una pantalla: "Cambiar contraseña", "Editar datos del comercio"
 function FilaAccion({ icono, texto, alTocar }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   return (
     <Pressable
       onPress={alTocar}
@@ -87,17 +92,18 @@ function FilaAccion({ icono, texto, alTocar }) {
 // Soporte: el chat con Lü (pantalla Ayuda) y 3 botones redondos (WhatsApp, llamar, Instagram)
 function Soporte({ navigation }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const botones = [
-    ['logo-whatsapp', 'WhatsApp', SOPORTE.whatsapp],
-    ['call-outline', 'Llamar', SOPORTE.telefono],
-    ['logo-instagram', 'Instagram', SOPORTE.instagram],
+    ['logo-whatsapp', t('perfil.whatsapp'), SOPORTE.whatsapp],
+    ['call-outline', t('perfil.llamar'), SOPORTE.telefono],
+    ['logo-instagram', t('perfil.instagram'), SOPORTE.instagram],
   ];
   return (
-    <Grupo titulo="¿Necesitás ayuda?">
+    <Grupo titulo={t('perfil.necesitasAyuda')}>
       <Pressable
         onPress={() => navigation?.navigate?.('Ayuda', { desde: 'Perfil' })}
         accessibilityRole="button"
-        accessibilityLabel="Chatear con Lü. Respuestas al instante o hablá con una persona"
+        accessibilityLabel={t('perfil.chatearAccesible')}
         style={({ pressed }) => [
           estilos.fila,
           { borderBottomWidth: StyleSheet.hairlineWidth, borderColor: colores.borde },
@@ -108,9 +114,9 @@ function Soporte({ navigation }) {
           <Icono nombre="chatbubbles-outline" tamano={17} color={colores.sobreVerdeProfundo} />
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={[estilos.valor, { color: colores.texto, fontFamily: fuentes.media }]}>Chatear con Lü</Text>
+          <Text style={[estilos.valor, { color: colores.texto, fontFamily: fuentes.media }]}>{t('perfil.chatear')}</Text>
           <Text style={[estilos.subtitulo, { color: colores.gris, textAlign: 'left' }]}>
-            Respuestas al instante o hablá con una persona
+            {t('perfil.chatearAyuda')}
           </Text>
         </View>
         <Icono nombre="chevron-forward" tamano={16} color={colores.gris} />
@@ -135,34 +141,34 @@ function Soporte({ navigation }) {
   );
 }
 
-// Los números de "Tu impacto" según el rol
+// Los números de "Tu impacto" según el rol ("texto" es una clave de idiomas/es.js: se muestra con t())
 async function calcularImpacto(rol) {
   try {
     if (rol === 'consumidor') {
       const reservas = await api('/mis-reservas/');
       const retiradas = reservas.filter((r) => r.estado === 'retirada');
       return [
-        { icono: 'leaf-outline', valor: retiradas.reduce((total, r) => total + r.cantidad, 0), texto: 'Rescatadas' },
-        { icono: 'storefront-outline', valor: new Set(retiradas.map((r) => r.comercio)).size, texto: 'Comercios' },
-        { icono: 'star-outline', valor: retiradas.filter((r) => r.calificacion).length, texto: 'Calificaste' },
+        { icono: 'leaf-outline', valor: retiradas.reduce((total, r) => total + r.cantidad, 0), texto: 'perfil.rescatadas' },
+        { icono: 'storefront-outline', valor: new Set(retiradas.map((r) => r.comercio)).size, texto: 'perfil.comercios' },
+        { icono: 'star-outline', valor: retiradas.filter((r) => r.calificacion).length, texto: 'perfil.calificaste' },
       ];
     }
     if (rol === 'comercio') {
       const [productos, reservas] = await Promise.all([api('/mis-productos/'), api('/reservas-del-comercio/')]);
       const contar = (estado) => productos.filter((p) => p.estado === estado).length;
       return [
-        { icono: 'storefront-outline', valor: contar('DISPONIBLE'), texto: 'En venta' },
-        { icono: 'bag-handle-outline', valor: reservas.length, texto: 'Para retirar' },
-        { icono: 'checkmark-done-outline', valor: contar('AGOTADO'), texto: 'Vendidos' },
-        { icono: 'heart-outline', valor: contar('DONADO'), texto: 'Donados' },
+        { icono: 'storefront-outline', valor: contar('DISPONIBLE'), texto: 'perfil.enVenta' },
+        { icono: 'bag-handle-outline', valor: reservas.length, texto: 'perfil.paraRetirar' },
+        { icono: 'checkmark-done-outline', valor: contar('AGOTADO'), texto: 'perfil.vendidos' },
+        { icono: 'heart-outline', valor: contar('DONADO'), texto: 'perfil.donados' },
       ];
     }
     if (rol === 'organizacion') {
       const solicitudes = await api('/mis-solicitudes-donacion/');
       return [
-        { icono: 'paper-plane-outline', valor: solicitudes.length, texto: 'Pedidas' },
-        { icono: 'heart-outline', valor: solicitudes.filter((s) => s.estado === 'aprobada').length, texto: 'Recibidas' },
-        { icono: 'time-outline', valor: solicitudes.filter((s) => s.estado === 'pendiente').length, texto: 'Esperando' },
+        { icono: 'paper-plane-outline', valor: solicitudes.length, texto: 'perfil.pedidas' },
+        { icono: 'heart-outline', valor: solicitudes.filter((s) => s.estado === 'aprobada').length, texto: 'perfil.recibidas' },
+        { icono: 'time-outline', valor: solicitudes.filter((s) => s.estado === 'pendiente').length, texto: 'perfil.esperando' },
       ];
     }
   } catch {
@@ -173,6 +179,7 @@ async function calcularImpacto(rol) {
 
 export default function Perfil({ navigation }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const { usuario, cerrarSesion, entrarComoInvitado } = useSesion();
   const { marcarVista } = useBienvenida();
 
@@ -206,12 +213,11 @@ export default function Perfil({ navigation }) {
   // Antes de salir se avisa qué se borra del celular (ver cerrarSesion en contexto/Sesion.js)
   function confirmarSalida() {
     Alert.alert(
-      '¿Cerrar sesión?',
-      'Se van a borrar de este celular tu carrito, tus comercios favoritos, tus búsquedas recientes y los avisos de retiro.\n\n' +
-        'Tu cuenta, tus reservas y tus publicaciones siguen guardadas: las ves de nuevo al volver a entrar.',
+      t('perfil.cerrarSesionPregunta'),
+      t('perfil.cerrarSesionTexto'),
       [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Cerrar sesión y borrar', style: 'destructive', onPress: salir },
+        { text: t('comun.cancelar'), style: 'cancel' },
+        { text: t('perfil.cerrarYBorrar'), style: 'destructive', onPress: salir },
       ]
     );
   }
@@ -235,18 +241,23 @@ export default function Perfil({ navigation }) {
           <View style={[estilos.avatar, { backgroundColor: colores.menta }]}>
             <Icono nombre="person-outline" tamano={40} color={colores.verdeHover} />
           </View>
-          <Text style={[estilos.nombre, { color: colores.titulo }]}>Estás como invitado</Text>
-          <Text style={[estilos.subtitulo, { color: colores.gris }]}>Ingresá para reservar y ver tus códigos.</Text>
+          <Text style={[estilos.nombre, { color: colores.titulo }]}>{t('perfil.invitado')}</Text>
+          <Text style={[estilos.subtitulo, { color: colores.gris }]}>{t('perfil.invitadoTexto')}</Text>
         </View>
-        <Boton texto="Iniciar sesión" icono="log-in-outline" onPress={() => navigation.navigate('Login')} />
-        <Boton texto="Crear cuenta" variante="secundario" onPress={() => navigation.navigate('Registro')} />
-        <Grupo titulo="Apariencia">
+        <Boton texto={t('login.iniciarSesion')} icono="log-in-outline" onPress={() => navigation.navigate('Login')} />
+        <Boton texto={t('perfil.crearCuenta')} variante="secundario" onPress={() => navigation.navigate('Registro')} />
+        <Grupo titulo={t('perfil.apariencia')}>
           <View style={{ padding: espacio(1) }}>
             <SelectorApariencia />
           </View>
         </Grupo>
+        <Grupo titulo={t('idioma.titulo')}>
+          <View style={{ padding: espacio(1) }}>
+            <SelectorIdioma />
+          </View>
+        </Grupo>
         <Soporte navigation={navigation} />
-        <Boton texto="Ver la bienvenida" icono="sparkles-outline" variante="texto" chico onPress={() => navigation.navigate('VerBienvenida', { rol: usuario?.rol || 'consumidor' })} />
+        <Boton texto={t('perfil.verBienvenida')} icono="sparkles-outline" variante="texto" chico onPress={() => navigation.navigate('VerBienvenida', { rol: usuario?.rol || 'consumidor' })} />
       </ScrollView>
     );
   }
@@ -274,7 +285,7 @@ export default function Perfil({ navigation }) {
     >
       <View style={estilos.cabecera}>
         {foto ? (
-          <Image source={{ uri: foto }} style={estilos.avatar} accessibilityLabel="Tu foto de perfil" />
+          <Image source={{ uri: foto }} style={estilos.avatar} accessibilityLabel={t('perfil.tuFoto')} />
         ) : (
           <View style={[estilos.avatar, { backgroundColor: colores.menta }]}>
             <Icono nombre={rol.icono} tamano={38} color={colores.verdeHover} />
@@ -283,10 +294,10 @@ export default function Perfil({ navigation }) {
         <Text style={[estilos.nombre, { color: colores.titulo }]}>{datos?.nombre}</Text>
         <View style={[estilos.rol, { backgroundColor: colores.menta }]}>
           <Icono nombre={rol.icono} tamano={13} color={colores.verdeHover} />
-          <Text style={[estilos.textoRol, { color: colores.verdeHover }]}>{rol.titulo}</Text>
+          <Text style={[estilos.textoRol, { color: colores.verdeHover }]}>{t(rol.titulo)}</Text>
         </View>
         <Boton
-          texto="Editar mis datos"
+          texto={t('perfil.editarMisDatos')}
           icono="create-outline"
           variante="secundario"
           chico
@@ -298,62 +309,68 @@ export default function Perfil({ navigation }) {
       <MensajeError mensaje={error} alReintentar={cargar} />
 
       {impacto ? (
-        <Grupo titulo="Tu impacto">
-          <Cifras datos={impacto} />
+        <Grupo titulo={t('perfil.tuImpacto')}>
+          <Cifras datos={impacto.map((d) => ({ ...d, texto: t(d.texto) }))} />
         </Grupo>
       ) : null}
 
-      <Grupo titulo="Tu cuenta">
+      <Grupo titulo={t('perfil.tuCuenta')}>
         <Dato icono="at" valor={datos?.username} />
         <Dato icono="mail-outline" valor={datos?.email} />
         <Dato icono="call-outline" valor={datos?.telefono} />
         <Dato icono="location-outline" valor={datos?.ciudad} />
         <Dato
           icono={datos?.avisos_email === false ? 'notifications-off-outline' : 'notifications-outline'}
-          valor={datos?.avisos_email === false ? 'Avisos por email apagados' : 'Avisos por email activados'}
+          valor={datos?.avisos_email === false ? t('perfil.avisosApagados') : t('perfil.avisosActivados')}
         />
-        <FilaAccion icono="key-outline" texto="Cambiar contraseña" alTocar={() => navigation.navigate('CambiarClave')} />
+        <FilaAccion icono="key-outline" texto={t('perfil.cambiarClave')} alTocar={() => navigation.navigate('CambiarClave')} />
       </Grupo>
 
       {comercio ? (
-        <Grupo titulo="Tu comercio">
+        <Grupo titulo={t('perfil.tuComercio')}>
           <Dato icono="storefront-outline" valor={comercio.nombre} />
-          <Dato icono="pricetag-outline" valor={comercio.rubro} />
+          <Dato icono="pricetag-outline" valor={textoDesdeEspanol(t, 'rubros', comercio.rubro)} />
           <Dato icono="map-outline" valor={comercio.direccion} />
           <Dato icono="time-outline" valor={comercio.horario} />
           <Dato icono="document-text-outline" valor={comercio.cuit && `CUIT ${comercio.cuit}`} />
-          <FilaAccion icono="create-outline" texto="Editar datos del comercio" alTocar={() => navigation.navigate('EditarComercio')} />
+          <FilaAccion icono="create-outline" texto={t('perfil.editarComercio')} alTocar={() => navigation.navigate('EditarComercio')} />
         </Grupo>
       ) : null}
 
       {organizacion ? (
-        <Grupo titulo="Tu organización">
+        <Grupo titulo={t('perfil.tuOrganizacion')}>
           <Dato icono="heart-outline" valor={organizacion.nombre} />
-          <Dato icono="people-outline" valor={organizacion.tipo} />
+          <Dato icono="people-outline" valor={textoDesdeEspanol(t, 'tiposOrganizacion', organizacion.tipo)} />
           <Dato icono="map-outline" valor={organizacion.direccion} />
           <Dato
             icono="restaurant-outline"
-            valor={organizacion.personas_asistidas ? `${organizacion.personas_asistidas} personas por semana` : null}
+            valor={organizacion.personas_asistidas ? t('perfil.personasPorSemana', { n: organizacion.personas_asistidas }) : null}
           />
           <Dato icono="document-text-outline" valor={organizacion.cuit && `CUIT ${organizacion.cuit}`} />
           <FilaAccion
             icono="create-outline"
-            texto="Editar datos de la organización"
+            texto={t('perfil.editarOrganizacion')}
             alTocar={() => navigation.navigate('EditarOrganizacion')}
           />
         </Grupo>
       ) : null}
 
-      <Grupo titulo="Apariencia">
+      <Grupo titulo={t('perfil.apariencia')}>
         <View style={{ padding: espacio(1) }}>
           <SelectorApariencia />
         </View>
       </Grupo>
 
+      <Grupo titulo={t('idioma.titulo')}>
+        <View style={{ padding: espacio(1) }}>
+          <SelectorIdioma />
+        </View>
+      </Grupo>
+
       <Soporte navigation={navigation} />
 
-      <Boton texto="Ver la bienvenida" icono="sparkles-outline" variante="texto" chico onPress={() => navigation.navigate('VerBienvenida', { rol: usuario?.rol || 'consumidor' })} />
-      <Boton texto="Cerrar sesión" icono="log-out-outline" variante="texto" onPress={confirmarSalida} cargando={saliendo} />
+      <Boton texto={t('perfil.verBienvenida')} icono="sparkles-outline" variante="texto" chico onPress={() => navigation.navigate('VerBienvenida', { rol: usuario?.rol || 'consumidor' })} />
+      <Boton texto={t('perfil.cerrarSesion')} icono="log-out-outline" variante="texto" onPress={confirmarSalida} cargando={saliendo} />
     </ScrollView>
   );
 }

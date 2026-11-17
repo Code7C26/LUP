@@ -4,6 +4,7 @@
 //   <MensajeError mensaje={error} alReintentar={cargarDatos} />
 import { StyleSheet, Text, View } from 'react-native';
 
+import { useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, radio, tamanos, useTema } from '../tema';
 import { textoError } from '../utilidades';
 import Boton from './Boton';
@@ -11,6 +12,7 @@ import Icono from './Icono';
 
 export default function MensajeError({ mensaje, alReintentar }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const texto = textoError(mensaje);
   if (!texto) return null;
 
@@ -18,7 +20,7 @@ export default function MensajeError({ mensaje, alReintentar }) {
     <View accessibilityRole="alert" style={[estilos.caja, { backgroundColor: colores.ambarClaro }]}>
       <Icono nombre="alert-circle" tamano={22} color={colores.ambar} />
       <Text style={[estilos.texto, { color: colores.texto }]}>{texto}</Text>
-      {alReintentar ? <Boton icono="refresh" etiqueta="Reintentar" texto="Reintentar" variante="texto" chico onPress={alReintentar} /> : null}
+      {alReintentar ? <Boton icono="refresh" etiqueta={t('comun.reintentar')} texto={t('comun.reintentar')} variante="texto" chico onPress={alReintentar} /> : null}
     </View>
   );
 }

@@ -3,11 +3,13 @@
 import { Pressable, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useIdioma } from '../contexto/Idioma';
 import { espacio, sombra, useTema } from '../tema';
 import Icono from './Icono';
 
 export default function BotonVolver({ navigation, derecha }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const { top } = useSafeAreaInsets();
   if (!navigation?.canGoBack?.()) return null;
 
@@ -16,7 +18,7 @@ export default function BotonVolver({ navigation, derecha }) {
       onPress={() => navigation.goBack()}
       hitSlop={8}
       accessibilityRole="button"
-      accessibilityLabel="Volver"
+      accessibilityLabel={t('comun.volver')}
       style={({ pressed }) => [
         estilos.boton,
         { top: top + espacio(1), backgroundColor: colores.superficie },

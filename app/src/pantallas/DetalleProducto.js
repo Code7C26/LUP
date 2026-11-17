@@ -21,25 +21,24 @@ import { mostrarAviso } from '../contexto/Aviso';
 import { useCarrito } from '../contexto/Carrito';
 import { programarRecordatorio, textoHora } from '../servicios/recordatorios';
 import { useSesion } from '../contexto/Sesion';
+import { textoDeOpcion, useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, radio, sombra, tamanos, useTema } from '../tema';
-import { emojiCategoria, emojiRubro, formatoPrecio, textoError, vibrar } from '../utilidades';
+import { emojiCategoria, emojiRubro, formatoDiaMes, formatoPrecio, textoError, vibrar } from '../utilidades';
 
-// "2026-10-26" -> "hoy", "mañana" o "el 28/10"
-function textoFechaLimite(fecha) {
-  if (!fecha) return '';
+// "2026-10-26" -> cuántos días faltan (0 = hoy, 1 = mañana), o null si no hay fecha
+function diasHasta(fecha) {
+  if (!fecha) return null;
   const [anio, mes, dia] = fecha.split('-').map(Number);
   const limite = new Date(anio, mes - 1, dia);
   const hoy = new Date();
   hoy.setHours(0, 0, 0, 0);
-  const dias = Math.round((limite - hoy) / 86400000);
-  if (dias === 0) return 'hoy';
-  if (dias === 1) return 'mañana';
-  return `el ${String(dia).padStart(2, '0')}/${String(mes).padStart(2, '0')}`;
+  return Math.round((limite - hoy) / 86400000);
 }
 
 // Botón redondo de − y + para la cantidad
 function BotonCantidad({ icono, onPress, deshabilitado, etiqueta }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   return (
     <Pressable
       onPress={onPress}
@@ -60,6 +59,7 @@ function BotonCantidad({ icono, onPress, deshabilitado, etiqueta }) {
 
 export default function DetalleProducto({ navigation, route }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const { usuario } = useSesion();
   const { agregar } = useCarrito();
   const { top, bottom } = useSafeAreaInsets();
@@ -81,7 +81,7 @@ export default function DetalleProducto({ navigation, route }) {
       setCantidad((c) => Math.min(Math.max(c, 1), datos.stock || 1));
     } catch (e) {
       // El catálogo solo muestra productos disponibles: un 404 es porque se agotó o venció
-      setError(e?.estado === 404 ? 'Esta oferta ya no está disponible.' : e);
+      setError(e?.estado === 404 ? t('detalleProducto.noDisponible') : e);
     } finally {
       setCargando(false);
     }
@@ -107,21 +107,21 @@ export default function DetalleProducto({ navigation, route }) {
         fecha: producto.fecha_vencimiento,
       });
       Alert.alert(
-        '¡Reserva confirmada!',
-        `Mostrá el código ${reserva.codigo_retiro} en ${reserva.comercio} para retirar tu pedido.` +
-          (aviso ? `\n\nTe avisamos a las ${textoHora(aviso)} para que no te olvides.` : '')
+        t('detalleProducto.confirmada'),
+        t('detalleProducto.mostraCodigo', { codigo: reserva.codigo_retiro, comercio: reserva.comercio }) +
+          (aviso ? `\n\n${t('detalleProducto.teAvisamos', { hora: textoHora(aviso) })}` : '')
       );
       cargar(); // el stock bajó
       navigation.navigate('Pestanas', { screen: 'MisReservas' }); // la pestaña, dentro de las pestañas (paso 37)
     } catch (e) {
-      Alert.alert('No se pudo reservar', textoError(e) || 'Probá de nuevo.');
+      Alert.alert(t('detalleProducto.noSePudo'), textoError(e) || t('detalleProducto.probaDeNuevo'));
       cargar(); // por si otro se llevó lo que quedaba
     } finally {
       setReservando(false);
     }
   }
 
-  if (cargando) return <Cargando texto="Cargando la oferta…" />;
+  if (cargando) return <Cargando texto={t('detalleProducto.cargando')} />;
 
   if (!producto) {
     return (
@@ -132,8 +132,16 @@ export default function DetalleProducto({ navigation, route }) {
     );
   }
 
-  const fechaLimite = textoFechaLimite(producto.fecha_vencimiento);
-  const venceHoy = fechaLimite === 'hoy';
+  const dias = diasHasta(producto.fecha_vencimiento);
+  const venceHoy = dias === 0;
+  const fechaLimite =
+    dias === null
+      ? ''
+      : dias === 0
+        ? t('detalleProducto.hoy')
+        : dias === 1
+          ? t('detalleProducto.manana')
+          : t('detalleProducto.elDia', { fecha: formatoDiaMes(producto.fecha_vencimiento) });
   const puedeReservar = !usuario || usuario.rol === 'consumidor';
   const total = Number(producto.precio_descuento) * cantidad;
 
@@ -151,7 +159,7 @@ export default function DetalleProducto({ navigation, route }) {
         {/* Foto grande */}
         <View style={[estilos.foto, { backgroundColor: colores.menta }]}>
           {producto.imagen ? (
-            <FotoSuave uri={producto.imagen} estilo={StyleSheet.absoluteFill} etiqueta={`Foto de ${producto.titulo}`} />
+            <FotoSuave uri={producto.imagen} estilo={StyleSheet.absoluteFill} etiqueta={t('detalleProducto.fotoDe', { titulo: producto.titulo })} />
           ) : (
             <Text style={estilos.emoji}>{emojiCategoria(producto.categoria)}</Text>
           )}
@@ -166,7 +174,7 @@ export default function DetalleProducto({ navigation, route }) {
           {/* Título y precios */}
           <View style={{ gap: espacio(0.5) }}>
             <Text style={[estilos.categoria, { color: colores.verdeHover }]}>
-              {emojiCategoria(producto.categoria)} {producto.categoria_texto}
+              {emojiCategoria(producto.categoria)} {textoDeOpcion(t, 'categorias', producto.categoria, producto.categoria_texto)}
             </Text>
             <Text style={[estilos.titulo, { color: colores.titulo }]}>{producto.titulo}</Text>
             <View style={estilos.precios}>
@@ -176,9 +184,9 @@ export default function DetalleProducto({ navigation, route }) {
           </View>
 
           <View style={estilos.filaPastillas}>
-            <Pastilla icono="time-outline" texto={`Hasta ${fechaLimite}`} aviso={venceHoy} />
-            <Pastilla icono="cube-outline" texto={producto.stock === 1 ? 'Queda 1' : `Quedan ${producto.stock}`} />
-            {producto.es_donacion ? <Pastilla icono="heart-outline" texto="Donable" /> : null}
+            <Pastilla icono="time-outline" texto={t('detalleProducto.hasta', { fecha: fechaLimite })} aviso={venceHoy} />
+            <Pastilla icono="cube-outline" texto={t('detalleProducto.quedan', { n: producto.stock })} />
+            {producto.es_donacion ? <Pastilla icono="heart-outline" texto={t('detalleProducto.donable')} /> : null}
           </View>
 
           {producto.descripcion ? (
@@ -189,7 +197,7 @@ export default function DetalleProducto({ navigation, route }) {
           <Pressable
             onPress={() => navigation.navigate('DetalleComercio', { id: producto.comercio_id })}
             accessibilityRole="button"
-            accessibilityLabel={`Ver el comercio ${producto.comercio}`}
+            accessibilityLabel={t('detalleProducto.verComercio', { comercio: producto.comercio })}
             style={({ pressed }) => [
               estilos.comercio,
               { backgroundColor: colores.superficie },
@@ -221,7 +229,7 @@ export default function DetalleProducto({ navigation, route }) {
           </Pressable>
 
           {!puedeReservar && usuario?.rol !== 'organizacion' ? (
-            <Text style={[estilos.aviso, { color: colores.gris }]}>Las reservas son solo para consumidores.</Text>
+            <Text style={[estilos.aviso, { color: colores.gris }]}>{t('detalleProducto.soloConsumidores')}</Text>
           ) : null}
         </View>
       </ScrollView>
@@ -238,7 +246,7 @@ export default function DetalleProducto({ navigation, route }) {
           <View style={estilos.selector}>
             <BotonCantidad
               icono="remove"
-              etiqueta="Restar uno"
+              etiqueta={t('detalleProducto.restar')}
               deshabilitado={cantidad <= 1}
               onPress={() => setCantidad((c) => c - 1)}
             />
@@ -247,7 +255,7 @@ export default function DetalleProducto({ navigation, route }) {
             </Text>
             <BotonCantidad
               icono="add"
-              etiqueta="Sumar uno"
+              etiqueta={t('detalleProducto.sumar')}
               deshabilitado={cantidad >= producto.stock}
               onPress={() => setCantidad((c) => c + 1)}
             />
@@ -258,14 +266,14 @@ export default function DetalleProducto({ navigation, route }) {
               agregar(producto, cantidad);
               vibrar();
               mostrarAviso({
-                texto: `${cantidad} × ${producto.titulo} al carrito`,
-                boton: 'Ver',
+                texto: t('detalleProducto.alCarrito', { n: cantidad, titulo: producto.titulo }),
+                boton: t('detalleProducto.ver'),
                 alTocar: () => navigation.navigate('Carrito'),
               });
             }}
             disabled={producto.stock < 1}
             accessibilityRole="button"
-            accessibilityLabel="Agregar al carrito"
+            accessibilityLabel={t('detalleProducto.agregarAlCarrito')}
             style={({ pressed }) => [
               estilos.botonCarrito,
               { borderColor: colores.verdeProfundo },
@@ -275,7 +283,7 @@ export default function DetalleProducto({ navigation, route }) {
             <Icono nombre="cart-outline" tamano={21} color={colores.verdeProfundo} />
           </Pressable>
           <Boton
-            texto={usuario ? `Reservar · ${formatoPrecio(total)}` : 'Ingresá para reservar'}
+            texto={usuario ? t('detalleProducto.reservar', { total: formatoPrecio(total) }) : t('detalleProducto.ingresaParaReservar')}
             icono={usuario ? 'bag-check-outline' : 'log-in-outline'}
             onPress={reservar}
             cargando={reservando}
@@ -293,7 +301,7 @@ export default function DetalleProducto({ navigation, route }) {
           ]}
         >
           <Boton
-            texto={pedido ? 'Ya lo pediste' : 'Pedir en donación'}
+            texto={pedido ? t('detalleProducto.yaLoPediste') : t('detalleProducto.pedirDonacion')}
             icono={pedido ? 'checkmark-circle' : 'heart'}
             onPress={() => setPidiendo(true)}
             deshabilitado={pedido}
@@ -307,14 +315,18 @@ export default function DetalleProducto({ navigation, route }) {
       <Pressable
         onPress={() =>
           Share.share({
-            message:
-              `¡Mirá esta oferta en Lüp! ${producto.titulo} a ${formatoPrecio(producto.precio_descuento)} ` +
-              `(antes ${formatoPrecio(producto.precio_original)}) en ${producto.comercio}, ${producto.direccion}. 🌱`,
+            message: t('detalleProducto.compartirMensaje', {
+              titulo: producto.titulo,
+              precio: formatoPrecio(producto.precio_descuento),
+              antes: formatoPrecio(producto.precio_original),
+              comercio: producto.comercio,
+              direccion: producto.direccion,
+            }),
           }).catch(() => {})
         }
         hitSlop={8}
         accessibilityRole="button"
-        accessibilityLabel="Compartir oferta"
+        accessibilityLabel={t('detalleProducto.compartir')}
         style={({ pressed }) => [
           estilos.compartir,
           { top: top + espacio(1), backgroundColor: colores.superficie },
@@ -331,7 +343,7 @@ export default function DetalleProducto({ navigation, route }) {
         alEnviar={() => {
           setPidiendo(false);
           setPedido(true);
-          Alert.alert('Solicitud enviada', `${producto.comercio} recibió tu pedido. Vas a ver su respuesta en "Mis solicitudes".`);
+          Alert.alert(t('detalleProducto.solicitudEnviada'), t('detalleProducto.solicitudEnviadaTexto', { comercio: producto.comercio }));
         }}
       />
     </View>

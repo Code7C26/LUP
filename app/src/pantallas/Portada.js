@@ -11,6 +11,7 @@ import * as SecureStore from 'expo-secure-store';
 
 import Boton from '../componentes/Boton';
 import Logo from '../componentes/Logo';
+import { useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, useTema } from '../tema';
 
 // true: la intro sale solo la primera vez que se abre la app.
@@ -22,6 +23,7 @@ const CLAVE_INTRO = 'lup_intro_vista';
 // y aplastan la "ü", la hoja cae sobre la "p", festejan y aparece la sonrisa (estilo Pixar).
 // Si el video no carga, a los 6 segundos sigue igual.
 function Intro({ alTerminar }) {
+  const { t } = useIdioma();
   const reproductor = useVideoPlayer(require('../../assets/intro.mp4'), (p) => {
     p.loop = false;
     p.muted = true;
@@ -41,7 +43,7 @@ function Intro({ alTerminar }) {
     <Pressable
       onPress={alTerminar}
       accessibilityRole="button"
-      accessibilityLabel="Lüp. Tocá para continuar"
+      accessibilityLabel={t('portada.tocaParaContinuar')}
       style={[estilos.pantalla, { backgroundColor: '#073425' }]}
     >
       <StatusBar style="light" />
@@ -60,6 +62,7 @@ function Intro({ alTerminar }) {
 
 export default function Portada({ navigation }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const [paso, setPaso] = useState(null); // null mientras se fija si ya se vio la intro
   const opacidad = useRef(new Animated.Value(0)).current;
 
@@ -96,17 +99,17 @@ export default function Portada({ navigation }) {
   return (
     <View style={[estilos.pantalla, { backgroundColor: colores.fondo }]}>
       {paso === 1 ? (
-        <Pressable onPress={() => setPaso(2)} style={estilos.centro} accessibilityRole="button" accessibilityLabel="Continuar">
+        <Pressable onPress={() => setPaso(2)} style={estilos.centro} accessibilityRole="button" accessibilityLabel={t('comun.continuar')}>
           <Animated.Text style={[estilos.frase, { color: oscuro, opacity: opacidad }]}>
-            Una segunda{'\n'}
-            <Text style={{ color: colores.verde }}>oportunidad</Text> para{'\n'}
-            cada alimento
+            {t('portada.fraseAntes')}{'\n'}
+            <Text style={{ color: colores.verde }}>{t('portada.fraseResaltada')}</Text> {t('portada.fraseDespues')}{'\n'}
+            {t('portada.fraseFinal')}
           </Animated.Text>
         </Pressable>
       ) : (
         <Animated.View style={[estilos.centro, { opacity: opacidad, gap: espacio(6) }]}>
           <Logo ancho={190} />
-          <Boton texto="Iniciar sesión" chico onPress={() => navigation.navigate('Login')} estilo={estilos.boton} />
+          <Boton texto={t('login.iniciarSesion')} chico onPress={() => navigation.navigate('Login')} estilo={estilos.boton} />
         </Animated.View>
       )}
     </View>

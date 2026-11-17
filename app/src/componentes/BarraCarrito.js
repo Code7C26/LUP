@@ -3,12 +3,14 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useCarrito } from '../contexto/Carrito';
+import { useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, useTema } from '../tema';
 import { formatoPrecio } from '../utilidades';
 import Icono from './Icono';
 
 export default function BarraCarrito({ navigation }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const { cantidadTotal, total } = useCarrito();
   if (!cantidadTotal) return null;
 
@@ -17,11 +19,14 @@ export default function BarraCarrito({ navigation }) {
       <Pressable
         onPress={() => navigation.navigate('Carrito')}
         accessibilityRole="button"
-        accessibilityLabel={`Ver carrito: ${cantidadTotal} productos, ${formatoPrecio(total)}`}
+        accessibilityLabel={t('componentes.verCarritoAccesible', {
+          productos: t('comun.productos', { n: cantidadTotal }),
+          total: formatoPrecio(total),
+        })}
         style={({ pressed }) => [estilos.barra, { backgroundColor: colores.verdeProfundo }, pressed && { opacity: 0.9 }]}
       >
         <Icono nombre="cart" tamano={20} color={colores.sobreVerdeProfundo} />
-        <Text style={[estilos.texto, { color: colores.sobreVerdeProfundo }]}>Ver carrito ({cantidadTotal})</Text>
+        <Text style={[estilos.texto, { color: colores.sobreVerdeProfundo }]}>{t('componentes.verCarrito', { n: cantidadTotal })}</Text>
         <Text style={[estilos.texto, { color: colores.sobreVerdeProfundo, marginLeft: 'auto' }]}>{formatoPrecio(total)}</Text>
       </Pressable>
     </View>

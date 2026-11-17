@@ -2,6 +2,7 @@
 // Al tocar una tarjeta abre el formulario: navigation.navigate('RegistroFormulario', { rol })
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, radio, tamanos, useTema } from '../tema';
 import Icono from '../componentes/Icono';
 
@@ -11,32 +12,33 @@ export const TIPOS_DE_CUENTA = [
     rol: 'consumidor',
     emoji: '🛍️',
     icono: 'bag-handle-outline',
-    titulo: 'Consumidor',
-    descripcion: 'Comprá comida rica con descuento.',
+    titulo: 'tiposCuenta.consumidor', // claves de idiomas/es.js: se muestran con t()
+    descripcion: 'tiposCuenta.consumidorDesc',
   },
   {
     rol: 'comercio',
     emoji: '🏪',
     icono: 'storefront-outline',
-    titulo: 'Comercio',
-    descripcion: 'Vendé lo que te sobra en el día.',
+    titulo: 'tiposCuenta.comercio',
+    descripcion: 'tiposCuenta.comercioDesc',
   },
   {
     rol: 'organizacion',
     emoji: '🤝',
     icono: 'heart-outline',
-    titulo: 'Organización',
-    descripcion: 'Recibí donaciones de alimentos.',
+    titulo: 'tiposCuenta.organizacion',
+    descripcion: 'tiposCuenta.organizacionDesc',
   },
 ];
 
 export default function RegistroSeleccion({ navigation }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
 
   return (
     <ScrollView style={{ backgroundColor: colores.fondo }} contentContainerStyle={estilos.contenido}>
-      <Text style={[estilos.titulo, { color: colores.titulo }]}>Creá tu cuenta</Text>
-      <Text style={[estilos.subtitulo, { color: colores.gris }]}>¿Cómo vas a usar Lüp?</Text>
+      <Text style={[estilos.titulo, { color: colores.titulo }]}>{t('tiposCuenta.creaTuCuenta')}</Text>
+      <Text style={[estilos.subtitulo, { color: colores.gris }]}>{t('tiposCuenta.comoVasAUsar')}</Text>
 
       {TIPOS_DE_CUENTA.map((tipo) => (
         <Pressable
@@ -53,8 +55,8 @@ export default function RegistroSeleccion({ navigation }) {
             <Icono nombre={tipo.icono} tamano={24} color={colores.verdeHover} />
           </View>
           <View style={{ flex: 1, gap: 2 }}>
-            <Text style={[estilos.nombre, { color: colores.titulo }]}>{tipo.titulo}</Text>
-            <Text style={[estilos.descripcion, { color: colores.gris }]}>{tipo.descripcion}</Text>
+            <Text style={[estilos.nombre, { color: colores.titulo }]}>{t(tipo.titulo)}</Text>
+            <Text style={[estilos.descripcion, { color: colores.gris }]}>{t(tipo.descripcion)}</Text>
           </View>
           <Icono nombre="chevron-forward" tamano={20} color={colores.gris} />
         </Pressable>
@@ -64,7 +66,7 @@ export default function RegistroSeleccion({ navigation }) {
         style={[estilos.volver, { color: colores.verdeHover }]}
         onPress={() => navigation?.goBack?.()}
       >
-        Ya tengo cuenta, quiero ingresar
+        {t('tiposCuenta.yaTengoCuenta')}
       </Text>
     </ScrollView>
   );

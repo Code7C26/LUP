@@ -15,6 +15,7 @@ import Icono from '../componentes/Icono';
 import MensajeError from '../componentes/MensajeError';
 import Vacio from '../componentes/Vacio';
 import { useFavoritos } from '../contexto/Favoritos';
+import { textoDeOpcion, useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, radio, sombra, tamanos, useTema } from '../tema';
 import { emojiRubro } from '../utilidades';
 
@@ -23,6 +24,7 @@ const OFERTAS_A_MOSTRAR = 3; // el resto, con "Ver las N ofertas" (abre el comer
 // Un comercio favorito: su cabecera (tocarla abre el comercio) y sus ofertas de hoy
 function TarjetaFavorito({ comercio, ofertas, navigation }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const abrirComercio = () => navigation.navigate('DetalleComercio', { id: comercio.id });
   const visibles = (ofertas || []).slice(0, OFERTAS_A_MOSTRAR);
   const resto = (ofertas?.length || 0) - visibles.length;
@@ -33,7 +35,7 @@ function TarjetaFavorito({ comercio, ofertas, navigation }) {
         <Pressable
           onPress={abrirComercio}
           accessibilityRole="button"
-          accessibilityLabel={`${comercio.nombre_fantasia}. Ver el comercio`}
+          accessibilityLabel={t('favoritos.verComercio', { nombre: comercio.nombre_fantasia })}
           style={({ pressed }) => [estilos.filaComercio, pressed && { opacity: 0.8 }]}
         >
           <View style={[estilos.icono, { backgroundColor: colores.panel }]}>
@@ -44,7 +46,7 @@ function TarjetaFavorito({ comercio, ofertas, navigation }) {
               {comercio.nombre_fantasia}
             </Text>
             <Text style={[estilos.detalle, { color: colores.gris }]} numberOfLines={1}>
-              {[comercio.rubro_texto, comercio.horario_atencion].filter(Boolean).join(' · ')}
+              {[textoDeOpcion(t, 'rubros', comercio.rubro, comercio.rubro_texto), comercio.horario_atencion].filter(Boolean).join(' · ')}
             </Text>
             <CalificacionComercio promedio={comercio.calificacion_promedio} cantidad={comercio.calificaciones} tamano={12} />
           </View>
@@ -54,18 +56,18 @@ function TarjetaFavorito({ comercio, ofertas, navigation }) {
       </View>
 
       {ofertas === null ? (
-        <Text style={[estilos.detalle, { color: colores.gris }]}>No pudimos cargar sus ofertas. Deslizá hacia abajo para reintentar.</Text>
+        <Text style={[estilos.detalle, { color: colores.gris }]}>{t('favoritos.noCargaron')}</Text>
       ) : visibles.length ? (
         <View style={{ gap: espacio(1.5) }}>
           <Text style={[estilos.subtitulo, { color: colores.gris }]}>
-            {ofertas.length === 1 ? '1 oferta hoy' : `${ofertas.length} ofertas hoy`}
+            {t('favoritos.ofertasHoy', { n: ofertas.length })}
           </Text>
           {visibles.map((p) => (
             <FilaProducto key={p.id} producto={p} onPress={() => navigation.navigate('DetalleProducto', { id: p.id })} />
           ))}
           {resto > 0 ? (
             <Pressable onPress={abrirComercio} accessibilityRole="link" style={estilos.verMas} hitSlop={6}>
-              <Text style={[estilos.textoVerMas, { color: colores.verdeHover }]}>Ver las {ofertas.length} ofertas</Text>
+              <Text style={[estilos.textoVerMas, { color: colores.verdeHover }]}>{t('favoritos.verLasOfertas', { n: ofertas.length })}</Text>
               <Icono nombre="chevron-forward" tamano={14} color={colores.verdeHover} />
             </Pressable>
           ) : null}
@@ -73,7 +75,7 @@ function TarjetaFavorito({ comercio, ofertas, navigation }) {
       ) : (
         <View style={[estilos.sinOfertas, { backgroundColor: colores.fondo }]}>
           <Icono nombre="basket-outline" tamano={18} color={colores.gris} />
-          <Text style={[estilos.detalle, { color: colores.gris, flex: 1 }]}>Hoy no tiene ofertas. ¡Volvé más tarde!</Text>
+          <Text style={[estilos.detalle, { color: colores.gris, flex: 1 }]}>{t('favoritos.sinOfertasHoy')}</Text>
         </View>
       )}
     </View>
@@ -82,6 +84,7 @@ function TarjetaFavorito({ comercio, ofertas, navigation }) {
 
 export default function MisFavoritos({ navigation }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const { favoritos } = useFavoritos();
   const [datos, setDatos] = useState([]); // [{ comercio, ofertas }] (ofertas = null si no se pudieron cargar)
   const [cargando, setCargando] = useState(true);
@@ -151,8 +154,8 @@ export default function MisFavoritos({ navigation }) {
       ListHeaderComponent={
         <View style={{ gap: espacio(1.5), marginBottom: espacio(2) }}>
           <Encabezado
-            titulo="Mis favoritos"
-            subtitulo={lista.length ? `${lista.length} ${lista.length === 1 ? 'comercio guardado' : 'comercios guardados'}` : null}
+            titulo={t('favoritos.titulo')}
+            subtitulo={lista.length ? t('favoritos.guardados', { n: lista.length }) : null}
           />
           <MensajeError mensaje={error} alReintentar={cargar} />
         </View>
@@ -161,8 +164,8 @@ export default function MisFavoritos({ navigation }) {
         !error ? (
           <Vacio
             icono="heart-outline"
-            texto={'Todavía no guardaste comercios.\nTocá el corazón de un comercio para tenerlo acá.'}
-            boton="Buscar comercios"
+            texto={t('favoritos.vacio')}
+            boton={t('favoritos.buscarComercios')}
             alTocar={() => navigation.navigate('Pestanas', { screen: 'Inicio' })}
           />
         ) : null

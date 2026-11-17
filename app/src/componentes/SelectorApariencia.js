@@ -3,20 +3,23 @@
 // Uso:  <SelectorApariencia />
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { useIdioma } from '../contexto/Idioma';
 import { cambiarApariencia, espacio, fuentes, tamanos, useTema } from '../tema';
 import Icono from './Icono';
 
 const OPCIONES = [
-  ['sistema', 'Auto', 'phone-portrait-outline'],
-  ['claro', 'Claro', 'sunny-outline'],
-  ['oscuro', 'Oscuro', 'moon-outline'],
+  ['sistema', 'apariencia.auto', 'phone-portrait-outline'],
+  ['claro', 'apariencia.claro', 'sunny-outline'],
+  ['oscuro', 'apariencia.oscuro', 'moon-outline'],
 ];
 
 export default function SelectorApariencia() {
   const { colores, apariencia } = useTema();
+  const { t } = useIdioma();
   return (
     <View style={[estilos.segmento, { backgroundColor: colores.campo }]} accessibilityRole="radiogroup">
-      {OPCIONES.map(([clave, texto, icono]) => {
+      {OPCIONES.map(([clave, claveTexto, icono]) => {
+        const texto = t(claveTexto);
         const activa = apariencia === clave;
         const color = activa ? colores.sobreVerdeProfundo : colores.gris;
         return (
@@ -24,12 +27,14 @@ export default function SelectorApariencia() {
             key={clave}
             onPress={() => cambiarApariencia(clave)}
             accessibilityRole="radio"
-            accessibilityLabel={texto === 'Auto' ? 'Automático' : texto}
+            accessibilityLabel={clave === 'sistema' ? t('apariencia.autoAccesible') : texto}
             accessibilityState={{ selected: activa }}
             style={[estilos.opcion, activa && { backgroundColor: colores.verdeProfundo }]}
           >
             <Icono nombre={icono} tamano={16} color={color} />
-            <Text style={[estilos.textoOpcion, { color }]}>{texto}</Text>
+            <Text style={[estilos.textoOpcion, { color }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
+              {texto}
+            </Text>
           </Pressable>
         );
       })}

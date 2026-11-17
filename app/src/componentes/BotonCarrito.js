@@ -4,11 +4,13 @@ import { useEffect, useRef } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useCarrito } from '../contexto/Carrito';
+import { useIdioma } from '../contexto/Idioma';
 import { fuentes, useTema } from '../tema';
 import Icono from './Icono';
 
 export default function BotonCarrito({ navigation, estilo }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const { cantidadTotal } = useCarrito();
   const salto = useRef(new Animated.Value(0)).current;
   const anterior = useRef(cantidadTotal);
@@ -30,7 +32,11 @@ export default function BotonCarrito({ navigation, estilo }) {
       onPress={() => navigation.navigate('Carrito')}
       hitSlop={8}
       accessibilityRole="button"
-      accessibilityLabel={cantidadTotal ? `Carrito, ${cantidadTotal} productos` : 'Carrito vacío'}
+      accessibilityLabel={
+        cantidadTotal
+          ? t('componentes.carritoCon', { productos: t('comun.productos', { n: cantidadTotal }) })
+          : t('componentes.carritoVacio')
+      }
       style={[estilos.boton, { backgroundColor: colores.panel }, estilo]}
     >
       <Animated.View style={{ transform: [{ translateY: salto }] }}>

@@ -23,25 +23,20 @@ import Estrellas from '../componentes/Estrellas';
 import Icono from '../componentes/Icono';
 import MensajeError from '../componentes/MensajeError';
 import FilaProducto from '../componentes/FilaProducto';
+import { textoDeOpcion, useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, radio, tamanos, useTema } from '../tema';
+import { formatoFecha } from '../utilidades';
 
-// "2026-10-26T14:30:00-03:00" -> "26/10/2026"
-function textoFecha(fechaHora) {
-  const fecha = new Date(fechaHora);
-  if (Number.isNaN(fecha.getTime())) return '';
-  const dd = String(fecha.getDate()).padStart(2, '0');
-  const mm = String(fecha.getMonth() + 1).padStart(2, '0');
-  return `${dd}/${mm}/${fecha.getFullYear()}`;
-}
 
 // Una opinión: estrellas y fecha, nombre y producto, comentario y la respuesta del comercio
 function Opinion({ opinion, comercio }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   return (
     <View style={[estilos.opinion, { backgroundColor: colores.superficie }]}>
       <View style={estilos.filaEntre}>
         <Estrellas valor={opinion.puntaje} tamano={15} />
-        <Text style={[estilos.mini, { color: colores.gris }]}>{textoFecha(opinion.creada_en)}</Text>
+        <Text style={[estilos.mini, { color: colores.gris }]}>{formatoFecha(opinion.creada_en)}</Text>
       </View>
       <Text style={[estilos.autor, { color: colores.titulo }]} numberOfLines={1}>
         {opinion.autor}
@@ -56,7 +51,7 @@ function Opinion({ opinion, comercio }) {
             <View
               style={estilos.linea}
               accessible
-              accessibilityLabel={`El producto: ${opinion.puntaje_producto} de 5 estrellas`}
+              accessibilityLabel={t('detalleComercio.productoEstrellas', { n: opinion.puntaje_producto })}
             >
               <Icono nombre="star" tamano={11} color={colores.ambar} />
               <Text style={[estilos.mini, { color: colores.gris }]}>{opinion.puntaje_producto}</Text>
@@ -73,7 +68,7 @@ function Opinion({ opinion, comercio }) {
           <View style={estilos.linea}>
             <Icono nombre="chatbubble-ellipses-outline" tamano={14} color={colores.verdeHover} />
             <Text style={[estilos.mini, { color: colores.verdeHover, fontFamily: fuentes.negrita, flex: 1 }]} numberOfLines={1}>
-              Respuesta de {comercio}
+              {t('detalleComercio.respuestaDe', { comercio })}
             </Text>
           </View>
           <Text style={[estilos.comentario, { color: colores.texto }]}>{opinion.respuesta}</Text>
@@ -86,26 +81,28 @@ function Opinion({ opinion, comercio }) {
 // "Opiniones": "★ 4,0 · 1 opinión" grande y la lista (o "Todavía no tiene opiniones")
 function Opiniones({ comercio }) {
   const { colores } = useTema();
+  const { t, idioma } = useIdioma();
   const opiniones = comercio.opiniones || [];
   const cantidad = comercio.calificaciones || 0;
   const promedio = Number(comercio.calificacion_promedio);
   const hayPromedio = cantidad > 0 && comercio.calificacion_promedio !== null && !Number.isNaN(promedio);
-  const textoCantidad = `${cantidad} ${cantidad === 1 ? 'opinión' : 'opiniones'}`;
+  const textoCantidad = t('detalleComercio.cantidadOpiniones', { n: cantidad });
+  const promedioTexto = hayPromedio ? (idioma === 'en' ? promedio.toFixed(1) : promedio.toFixed(1).replace('.', ',')) : '';
 
   return (
     <View style={[estilos.cuerpo, estilos.seccion]}>
       <Text style={[estilos.tituloSeccion, { color: colores.titulo }]} accessibilityRole="header">
-        Opiniones
+        {t('detalleComercio.opiniones')}
       </Text>
 
       {hayPromedio ? (
         <View
           style={estilos.promedio}
           accessible
-          accessibilityLabel={`${promedio.toFixed(1).replace('.', ',')} de 5 estrellas, ${textoCantidad}`}
+          accessibilityLabel={t('detalleComercio.promedioAccesible', { promedio: promedioTexto, cantidad: textoCantidad })}
         >
           <Icono nombre="star" tamano={28} color={colores.ambar} />
-          <Text style={[estilos.numeroPromedio, { color: colores.titulo }]}>{promedio.toFixed(1).replace('.', ',')}</Text>
+          <Text style={[estilos.numeroPromedio, { color: colores.titulo }]}>{promedioTexto}</Text>
           <Text style={[estilos.texto, { color: colores.gris }]}>· {textoCantidad}</Text>
         </View>
       ) : null}
@@ -115,7 +112,7 @@ function Opiniones({ comercio }) {
       ) : (
         <View style={[estilos.sinOpiniones, { backgroundColor: colores.superficie }]}>
           <Icono nombre="star-outline" tamano={22} color={colores.gris} />
-          <Text style={[estilos.detalle, { color: colores.gris }]}>Todavía no tiene opiniones</Text>
+          <Text style={[estilos.detalle, { color: colores.gris }]}>{t('detalleComercio.sinOpiniones')}</Text>
         </View>
       )}
     </View>
@@ -124,6 +121,7 @@ function Opiniones({ comercio }) {
 
 export default function DetalleComercio({ navigation, route }) {
   const { colores } = useTema();
+  const { t } = useIdioma();
   const { top } = useSafeAreaInsets();
   const id = route?.params?.id;
 
@@ -141,7 +139,7 @@ export default function DetalleComercio({ navigation, route }) {
       setComercio(datos);
       setProductos(ofertas);
     } catch (e) {
-      setError(e?.estado === 404 ? 'No encontramos este comercio.' : e);
+      setError(e?.estado === 404 ? t('detalleComercio.noEncontrado') : e);
     } finally {
       setCargando(false);
       setActualizando(false);
@@ -184,7 +182,7 @@ export default function DetalleComercio({ navigation, route }) {
             rotateEnabled={false}
             pitchEnabled={false}
             toolbarEnabled={false}
-            accessibilityLabel={`Mapa con la ubicación de ${comercio.nombre_fantasia}`}
+            accessibilityLabel={t('detalleComercio.mapaDe', { nombre: comercio.nombre_fantasia })}
           >
             <Marker coordinate={{ latitude: lat, longitude: lng }} title={comercio.nombre_fantasia} pinColor={colores.verdeProfundo} />
           </MapView>
@@ -197,7 +195,7 @@ export default function DetalleComercio({ navigation, route }) {
           onPress={() => setVerDatos((v) => !v)}
           accessibilityRole="button"
           accessibilityState={{ expanded: verDatos }}
-          accessibilityLabel={`${comercio.nombre_fantasia}. ${verDatos ? 'Ocultar' : 'Ver'} dirección y horario`}
+          accessibilityLabel={t(verDatos ? 'detalleComercio.ocultarDatos' : 'detalleComercio.verDatos', { nombre: comercio.nombre_fantasia })}
           style={estilos.filaNombre}
         >
           <Text style={[estilos.nombre, { color: colores.texto }]} numberOfLines={1}>
@@ -215,7 +213,7 @@ export default function DetalleComercio({ navigation, route }) {
 
         {verDatos ? (
           <View style={estilos.datos}>
-            <Text style={[estilos.detalle, { color: colores.gris }]}>{comercio.rubro_texto}</Text>
+            <Text style={[estilos.detalle, { color: colores.gris }]}>{textoDeOpcion(t, 'rubros', comercio.rubro, comercio.rubro_texto)}</Text>
             <View style={estilos.linea}>
               <Icono nombre="location-outline" tamano={16} color={colores.gris} />
               <Text style={[estilos.texto, { color: colores.texto, flex: 1 }]}>{comercio.direccion}</Text>
@@ -229,7 +227,7 @@ export default function DetalleComercio({ navigation, route }) {
             ) : null}
             {/* Si no hay ubicación, la API arma el link con la dirección */}
             <Boton
-              texto="Cómo llegar"
+              texto={t('detalleComercio.comoLlegar')}
               icono="navigate"
               chico
               onPress={() => Linking.openURL(comercio.como_llegar)}
@@ -265,7 +263,7 @@ export default function DetalleComercio({ navigation, route }) {
         ListEmptyComponent={
           <View style={estilos.vacio}>
             <Icono nombre="basket-outline" tamano={40} color={colores.gris} />
-            <Text style={[estilos.detalle, { color: colores.gris }]}>Sin ofertas por ahora</Text>
+            <Text style={[estilos.detalle, { color: colores.gris }]}>{t('detalleComercio.sinOfertas')}</Text>
           </View>
         }
         renderItem={({ item }) => (
