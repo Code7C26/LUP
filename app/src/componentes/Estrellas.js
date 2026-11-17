@@ -15,7 +15,7 @@ export default function Estrellas({ valor = 0, alElegir, tamano = 22 }) {
         const llena = n <= valor;
         const estrella = <Icono nombre={llena ? 'star' : 'star-outline'} tamano={tamano} color={llena ? colores.ambar : colores.gris} />;
         return alElegir ? (
-          <Pressable key={n} onPress={() => alElegir(n)} hitSlop={4} accessibilityRole="button" accessibilityLabel={`${n} estrellas`}>
+          <Pressable key={n} onPress={() => alElegir(n)} hitSlop={4} accessibilityRole="button" accessibilityLabel={t('componentes.nEstrellas', { n })}>
             {estrella}
           </Pressable>
         ) : (

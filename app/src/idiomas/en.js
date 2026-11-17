@@ -59,6 +59,7 @@ const en = {
   },
   componentes: {
     estrellas: '{valor} out of 5 stars',
+    nEstrellas: { one: '1 star', other: '{n} stars' },
     quitarFavorito: 'Remove from favorites',
     agregarFavorito: 'Add to favorites',
     carritoVacio: 'Empty cart',
@@ -181,7 +182,7 @@ const en = {
   },
   categorias: {
     panificados: 'Baked goods',
-    comidas: 'Ready meals',
+    comidas: 'Prepared meals',
     frutas_verduras: 'Fruits and vegetables',
     lacteos: 'Dairy',
     carnes: 'Meat',
@@ -268,7 +269,7 @@ const en = {
     titulo: 'My favorites',
     guardados: { one: '1 saved store', other: '{n} saved stores' },
     vacio: "You haven't saved any stores yet.\nTap a store's heart to keep it here.",
-    buscarComercios: 'Find stores',
+    buscarComercios: 'Search stores',
   },
   detalleComercio: {
     productoEstrellas: 'The product: {n} out of 5 stars',
@@ -562,7 +563,7 @@ const en = {
     historial: 'History',
     titulo: 'My reservations',
     vacio: "You haven't reserved anything yet",
-    buscarOfertas: 'Find offers',
+    buscarOfertas: 'Search offers',
   },
   estadosProducto: {
     DISPONIBLE: 'Available',

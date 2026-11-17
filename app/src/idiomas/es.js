@@ -60,6 +60,7 @@ const es = {
   },
   componentes: {
     estrellas: '{valor} de 5 estrellas',
+    nEstrellas: { one: '1 estrella', other: '{n} estrellas' },
     quitarFavorito: 'Quitar de favoritos',
     agregarFavorito: 'Agregar a favoritos',
     carritoVacio: 'Carrito vacío',

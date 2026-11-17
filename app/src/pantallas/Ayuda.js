@@ -210,7 +210,9 @@ export default function Ayuda({ navigation, route }) {
     return {
       conversacion,
       pagina: desde,
-      idioma, // 'es' o 'en': para que Lü conteste en el idioma de la app (ver la nota en contexto/Idioma.js)
+      // 'es' o 'en': para que Lü conteste en el idioma de la app. OJO: Django todavía no lo lee
+      // (soporte/asistente.py usa el idioma activo y scr/lup/idioma.py fija español en /api/).
+      idioma,
       ...(usuario ? {} : { invitado: await leerClaveInvitado() }),
     };
   }

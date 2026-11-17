@@ -174,7 +174,9 @@ export default function FormProducto({ navigation, route }) {
     try {
       const datos = new FormData();
       datos.append('imagen', new File(fotoNueva.uri)); // igual que al publicar (ver más abajo)
-      datos.append('idioma', idioma); // para que la IA conteste en el idioma de la app
+      // Para que la IA conteste en el idioma de la app. OJO: Django todavía no lo lee
+      // (products/ia_fotos.py pide siempre español rioplatense).
+      datos.append('idioma', idioma);
       const s = await api('/productos/sugerir/', { metodo: 'POST', datos, espera: 60000 });
       setValores((v) => ({
         ...v,
