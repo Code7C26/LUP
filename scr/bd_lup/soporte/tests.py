@@ -307,6 +307,21 @@ class ApiSoporteTests(TestCase):
         r = self.enviar('my emails never arrive')
         self.assertIn('Mis datos', r.json()['respuesta'])
 
+    def test_la_api_responde_en_ingles_con_accept_language(self):
+        # La app manda el idioma elegido en Perfil (app/src/api/cliente.js)
+        r = self.api.post(self.url, {'texto': 'my emails never arrive'}, format='json', HTTP_ACCEPT_LANGUAGE='en')
+        self.assertIn('My details', r.json()['respuesta'])
+        self.assertIn('Spam', r.json()['respuesta'])
+
+    @override_settings(ANTHROPIC_API_KEY='clave-test')
+    def test_con_ia_contesta_en_el_idioma_de_la_app(self):
+        for encabezado, idioma in ((None, '(español)'), ('es-AR', '(español)'), ('en', '(inglés)')):
+            extra = {'HTTP_ACCEPT_LANGUAGE': encabezado} if encabezado else {}
+            with mock.patch('scr.bd_lup.soporte.asistente.urlopen', return_value=respuesta_api('Hi!')) as api:
+                self.api.post(self.url, {'texto': 'hello'}, format='json', **extra)
+            instrucciones = json.loads(api.call_args[0][0].data)['system'][0]['text']
+            self.assertIn(f'Respondé en el idioma de la persona {idioma}', instrucciones, encabezado)
+
     @override_settings(ANTHROPIC_API_KEY='clave-test')
     def test_con_ia_sabe_que_es_la_app(self):
         comercio = Usuario.objects.create_user('pan', 'p@lup.test', 'Clave#2026', rol=Usuario.COMERCIO)

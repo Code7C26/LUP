@@ -1,5 +1,10 @@
-// Menú ☰ de Inicio (como el mockup): un panel que entra desde la izquierda con
-// Perfil, Mis reservas, Mis favoritos, Apariencia (Auto / Claro / Oscuro) y Soporte (WhatsApp).
+// Menú ☰ (como el mockup): un panel que entra desde la izquierda. Las opciones cambian según la cuenta:
+//   consumidor (y invitado): Perfil, Mis reservas, Mis favoritos, Apariencia y Soporte (WhatsApp)
+//   comercio: Mi perfil, Mis productos, Publicar producto, Confirmar retiro, Solicitudes de donación,
+//             Datos de mi comercio, Apariencia, Idioma y Soporte
+//   organización: Mi perfil, Donaciones disponibles, Mis solicitudes, Datos de mi organización,
+//                 Apariencia, Idioma y Soporte
+// Cada opción abre una pestaña o pantalla que ya existe (navegacion/index.js y Tabs*.js).
 // Se cierra tocando afuera, con la X o con el botón "atrás" de Android.
 // Uso:  <MenuLateral visible={verMenu} alCerrar={() => setVerMenu(false)} navigation={navigation} />
 import { useEffect, useRef, useState } from 'react';
@@ -24,6 +29,7 @@ import { espacio, fuentes, sombra, tamanos, useTema } from '../tema';
 import Icono from './Icono';
 import Logo from './Logo';
 import SelectorApariencia from './SelectorApariencia';
+import SelectorIdioma from './SelectorIdioma';
 
 // Mismo número que el pie de la web y que Perfil
 const WHATSAPP_SOPORTE = 'https://wa.me/5493547620629';
@@ -86,10 +92,13 @@ export default function MenuLateral({ visible, alCerrar, navigation }) {
     navigation?.navigate?.(pantalla);
   }
 
+  const rol = usuario?.rol;
+  const deCuenta = rol === 'comercio' || rol === 'organizacion';
+
   function soporte() {
-    Linking.openURL(WHATSAPP_SOPORTE).catch(() =>
-      Alert.alert(t('menu.soporteTitulo'), t('menu.escribinosAl', { tel: TELEFONO_SOPORTE }))
-    );
+    const titulo =
+      rol === 'comercio' ? t('menu.soporteComercio') : rol === 'organizacion' ? t('menu.soporteOrganizacion') : t('menu.soporteTitulo');
+    Linking.openURL(WHATSAPP_SOPORTE).catch(() => Alert.alert(titulo, t('menu.escribinosAl', { tel: TELEFONO_SOPORTE })));
   }
 
   const nombre = usuario?.nombre?.split(' ')[0];
@@ -140,11 +149,29 @@ export default function MenuLateral({ visible, alCerrar, navigation }) {
         </Text>
 
         <ScrollView contentContainerStyle={estilos.contenido} showsVerticalScrollIndicator={false}>
-          <View>
-            <Opcion icono="person-outline" texto={t('menu.perfil')} alTocar={() => ir('Perfil')} />
-            <Opcion icono="ticket-outline" texto={t('menu.misReservas')} alTocar={() => ir('MisReservas')} />
-            <Opcion icono="heart-outline" texto={t('menu.misFavoritos')} numero={favoritos.length} alTocar={() => ir('MisFavoritos')} />
-          </View>
+          {rol === 'comercio' ? (
+            <View>
+              <Opcion icono="person-outline" texto={t('menu.miPerfil')} alTocar={() => ir('Perfil')} />
+              <Opcion icono="cube-outline" texto={t('menu.misProductos')} alTocar={() => ir('MisProductos')} />
+              <Opcion icono="add-circle-outline" texto={t('menu.publicarProducto')} alTocar={() => ir('FormProducto')} />
+              <Opcion icono="qr-code-outline" texto={t('menu.confirmarRetiro')} alTocar={() => ir('ConfirmarRetiro')} />
+              <Opcion icono="heart-outline" texto={t('menu.solicitudesDonacion')} alTocar={() => ir('Solicitudes')} />
+              <Opcion icono="storefront-outline" texto={t('menu.datosComercio')} alTocar={() => ir('EditarComercio')} />
+            </View>
+          ) : rol === 'organizacion' ? (
+            <View>
+              <Opcion icono="person-outline" texto={t('menu.miPerfil')} alTocar={() => ir('Perfil')} />
+              <Opcion icono="heart-outline" texto={t('menu.donacionesDisponibles')} alTocar={() => ir('Donaciones')} />
+              <Opcion icono="clipboard-outline" texto={t('menu.misSolicitudes')} alTocar={() => ir('MisSolicitudes')} />
+              <Opcion icono="people-outline" texto={t('menu.datosOrganizacion')} alTocar={() => ir('EditarOrganizacion')} />
+            </View>
+          ) : (
+            <View>
+              <Opcion icono="person-outline" texto={t('menu.perfil')} alTocar={() => ir('Perfil')} />
+              <Opcion icono="ticket-outline" texto={t('menu.misReservas')} alTocar={() => ir('MisReservas')} />
+              <Opcion icono="heart-outline" texto={t('menu.misFavoritos')} numero={favoritos.length} alTocar={() => ir('MisFavoritos')} />
+            </View>
+          )}
 
           <View style={[estilos.separador, { backgroundColor: colores.borde }]} />
 
@@ -152,6 +179,14 @@ export default function MenuLateral({ visible, alCerrar, navigation }) {
             <Text style={[estilos.tituloGrupo, { color: colores.gris }]}>{t('menu.apariencia')}</Text>
             <SelectorApariencia />
           </View>
+
+          {/* Comercio y organización: también el idioma (el consumidor lo tiene en Perfil) */}
+          {deCuenta ? (
+            <View style={{ gap: espacio(1) }}>
+              <Text style={[estilos.tituloGrupo, { color: colores.gris }]}>{t('idioma.titulo')}</Text>
+              <SelectorIdioma />
+            </View>
+          ) : null}
 
           <View style={[estilos.separador, { backgroundColor: colores.borde }]} />
 

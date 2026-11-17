@@ -1,61 +1,71 @@
-// PASO 48 · Organización: mis solicitudes.
-// Cada pedido de donación con su estado: pendiente, aprobada o rechazada.
-// Las aprobadas muestran dónde y cuándo retirar.
+// PASO 48 · Organización: mis solicitudes (con el estilo de Inicio y del comercio).
+// Arriba la misma barra que Inicio: el menú ☰ y el botón verde "Ayuda" (chat con Lü), y el círculo con el
+// nombre de la organización y un resumen ("1 para retirar · 2 esperando respuesta").
+// Cada pedido de donación en una tarjeta, con su estado como etiqueta de color:
+// Aprobada verde, Pendiente naranja, Rechazada gris. Las aprobadas muestran dónde y cuándo retirar.
 // Usa GET /api/mis-solicitudes-donacion/ (paso 31).
 import { useCallback, useEffect, useState } from 'react';
 import { RefreshControl, SectionList, StyleSheet, Text, View } from 'react-native';
 
 import { api } from '../../api/cliente';
+import BarraSuperior from '../../componentes/BarraSuperior';
 import Boton from '../../componentes/Boton';
+import CabeceraCuenta from '../../componentes/CabeceraCuenta';
 import Cargando from '../../componentes/Cargando';
-import MensajeError from '../../componentes/MensajeError';
-import { textoDeOpcion, useIdioma } from '../../contexto/Idioma';
-import { espacio, fuentes, radio, tamanos, useTema } from '../../tema';
-import Encabezado from '../../componentes/Encabezado';
+import { EtiquetaEstado } from '../../componentes/EtiquetaEstado';
 import Icono from '../../componentes/Icono';
+import MensajeError from '../../componentes/MensajeError';
 import Vacio from '../../componentes/Vacio';
+import { useSesion } from '../../contexto/Sesion';
+import { textoDeOpcion, useIdioma } from '../../contexto/Idioma';
+import { espacio, fuentes, radio, sombra, tamanos, useTema } from '../../tema';
 import { formatoDiaMes } from '../../utilidades';
 
+const TONOS = { aprobada: 'verde', pendiente: 'naranja', rechazada: 'gris' };
 
 function TarjetaSolicitud({ solicitud, alVerComercio }) {
   const { colores } = useTema();
   const { t } = useIdioma();
-  const colorEstado = {
-    aprobada: { backgroundColor: colores.menta, color: colores.verdeHover },
-    pendiente: { backgroundColor: colores.ambarClaro, color: colores.texto },
-    rechazada: { backgroundColor: colores.fondo, color: colores.gris },
-  }[solicitud.estado];
 
   return (
-    <View style={[estilos.tarjeta, { backgroundColor: colores.superficie, borderColor: colores.borde }]}>
-      <View style={estilos.fila}>
-        <View style={{ flex: 1, gap: 2 }}>
-          <Text style={[estilos.producto, { color: colores.titulo }]} numberOfLines={2}>
-            {solicitud.producto}
-          </Text>
-          <Text style={[estilos.detalle, { color: colores.gris }]}>
-            {solicitud.comercio} · {formatoDiaMes(solicitud.creada_en)}
-          </Text>
+    <View style={[estilos.tarjeta, { backgroundColor: colores.panel }, sombra(colores)]}>
+      <View style={{ gap: espacio(0.5) }}>
+        <Text style={[estilos.producto, { color: colores.texto }]} numberOfLines={3}>
+          {solicitud.producto}
+        </Text>
+        <Text style={[estilos.detalle, { color: colores.gris }]}>
+          {solicitud.comercio}
+          {'  ·  '}
+          {formatoDiaMes(solicitud.creada_en)}
+        </Text>
+        <View style={estilos.infos}>
+          <EtiquetaEstado
+            texto={textoDeOpcion(t, 'estadosSolicitud', solicitud.estado, solicitud.estado_texto)}
+            tono={TONOS[solicitud.estado] || 'gris'}
+          />
         </View>
-        <Text style={[estilos.estado, colorEstado]}>{textoDeOpcion(t, 'estadosSolicitud', solicitud.estado, solicitud.estado_texto)}</Text>
       </View>
 
-      <Text style={[estilos.mensaje, { color: colores.texto, backgroundColor: colores.fondo }]}>
-        “{solicitud.mensaje}”
-      </Text>
+      <Text style={[estilos.mensaje, { color: colores.texto, backgroundColor: colores.fondo }]}>“{solicitud.mensaje}”</Text>
 
       {solicitud.estado === 'aprobada' ? (
         <View style={[estilos.aviso, { backgroundColor: colores.menta }]}>
           <Text style={[estilos.textoAviso, { color: colores.titulo }]}>{t('misSolicitudes.aprobadaRetirar')}</Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <View style={estilos.dato}>
             <Icono nombre="location-outline" tamano={15} color={colores.verdeHover} />
             <Text style={[estilos.detalle, { color: colores.texto, flex: 1 }]}>{solicitud.direccion}</Text>
           </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <View style={estilos.dato}>
             <Icono nombre="time-outline" tamano={15} color={colores.verdeHover} />
             <Text style={[estilos.detalle, { color: colores.texto, flex: 1 }]}>{solicitud.horario}</Text>
           </View>
-          <Boton texto={t('misSolicitudes.comoLlegar')} icono="navigate" chico onPress={alVerComercio} />
+          <Boton
+            texto={t('misSolicitudes.comoLlegar')}
+            icono="navigate"
+            chico
+            onPress={alVerComercio}
+            estilo={estilos.principal}
+          />
         </View>
       ) : solicitud.estado === 'pendiente' ? (
         <Text style={[estilos.detalle, { color: colores.gris }]}>{t('misSolicitudes.esperando')}</Text>
@@ -67,6 +77,7 @@ function TarjetaSolicitud({ solicitud, alVerComercio }) {
 export default function MisSolicitudes({ navigation }) {
   const { colores } = useTema();
   const { t } = useIdioma();
+  const { usuario } = useSesion();
   const [solicitudes, setSolicitudes] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [actualizando, setActualizando] = useState(false);
@@ -101,6 +112,12 @@ export default function MisSolicitudes({ navigation }) {
     .map((s) => ({ ...s, data: solicitudes.filter((sol) => sol.estado === s.estado) }))
     .filter((s) => s.data.length > 0);
 
+  const nombre = usuario?.organizacion?.nombre || usuario?.nombre || t('donaciones.miOrganizacion');
+  const contar = (estado) => solicitudes.filter((s) => s.estado === estado).length;
+  const resumen = `${t('misSolicitudes.resumenParaRetirar', { n: contar('aprobada') })} · ${t('misSolicitudes.resumenEsperando', {
+    n: contar('pendiente'),
+  })}`;
+
   return (
     <SectionList
       style={{ backgroundColor: colores.fondo }}
@@ -119,8 +136,13 @@ export default function MisSolicitudes({ navigation }) {
         />
       }
       ListHeaderComponent={
-        <View style={{ gap: espacio(1.5) }}>
-          <Encabezado titulo={t('misSolicitudes.titulo')} />
+        <View style={estilos.cabecera}>
+          {/* Igual que Inicio: ☰ y "Ayuda" */}
+          <BarraSuperior navigation={navigation} desde="MisSolicitudes" estilo={estilos.barra} />
+          <CabeceraCuenta nombre={nombre} resumen={resumen} alTocar={() => navigation.navigate('Perfil')} />
+          <Text style={[estilos.tituloPantalla, { color: colores.titulo }]} accessibilityRole="header">
+            {t('misSolicitudes.titulo')}
+          </Text>
           <MensajeError mensaje={error} alReintentar={cargar} />
         </View>
       }
@@ -135,7 +157,9 @@ export default function MisSolicitudes({ navigation }) {
         ) : null
       }
       renderSectionHeader={({ section }) => (
-        <Text style={[estilos.subtitulo, { color: colores.gris }]}>{section.titulo}</Text>
+        <Text style={[estilos.subtitulo, { color: colores.gris }]} accessibilityRole="header">
+          {section.titulo}
+        </Text>
       )}
       renderItem={({ item }) => (
         <TarjetaSolicitud
@@ -150,53 +174,57 @@ export default function MisSolicitudes({ navigation }) {
 
 const estilos = StyleSheet.create({
   contenido: {
-    padding: espacio(2),
+    paddingHorizontal: espacio(2),
+    paddingBottom: espacio(4),
   },
-  titulo: {
-    fontFamily: fuentes.negrita,
-    fontSize: tamanos.grande,
+  cabecera: {
+    gap: espacio(2),
+  },
+  barra: {
+    paddingHorizontal: 0, // la lista ya tiene el margen a los costados
+    marginBottom: -espacio(1),
+  },
+  // Igual que estilos.titulo de Inicio.js
+  tituloPantalla: {
+    fontFamily: fuentes.normal,
+    fontSize: 18,
+    marginTop: espacio(0.5),
   },
   subtitulo: {
-    fontFamily: fuentes.negrita,
-    fontSize: tamanos.mediano,
-    marginTop: espacio(2.5),
-    marginBottom: espacio(1.5),
+    fontFamily: fuentes.media,
+    fontSize: tamanos.chico,
+    marginTop: espacio(2),
+    marginBottom: espacio(1),
   },
   tarjeta: {
     borderRadius: radio,
-    padding: espacio(2),
-    gap: espacio(1),
-  },
-  fila: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: espacio(1),
+    padding: espacio(1.5),
+    gap: espacio(1.5),
   },
   producto: {
     fontFamily: fuentes.negrita,
-    fontSize: tamanos.mediano,
+    fontSize: tamanos.normal,
   },
   detalle: {
     fontFamily: fuentes.normal,
     fontSize: tamanos.chico,
   },
-  estado: {
-    fontFamily: fuentes.media,
-    fontSize: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
-    overflow: 'hidden',
+  infos: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: espacio(1),
+    marginTop: 2,
   },
   mensaje: {
     fontFamily: fuentes.normal,
-    fontSize: tamanos.normal,
+    fontSize: tamanos.chico,
     borderRadius: 12,
-    padding: espacio(1.5),
+    padding: espacio(1.25),
     overflow: 'hidden',
   },
   aviso: {
-    borderRadius: 14,
+    borderRadius: 12,
     padding: espacio(1.5),
     gap: espacio(0.75),
   },
@@ -204,17 +232,16 @@ const estilos = StyleSheet.create({
     fontFamily: fuentes.media,
     fontSize: tamanos.normal,
   },
-  vacio: {
+  dato: {
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: espacio(1.5),
-    marginTop: espacio(4),
+    gap: 6,
   },
-  emojiVacio: {
-    fontSize: 40,
-  },
-  textoVacio: {
-    fontFamily: fuentes.normal,
-    fontSize: tamanos.normal,
-    textAlign: 'center',
+  principal: {
+    alignSelf: 'flex-start',
+    minHeight: 36,
+    height: 36,
+    maxWidth: '100%',
+    marginTop: espacio(0.5),
   },
 });

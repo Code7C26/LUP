@@ -4,6 +4,7 @@ from django.db.models import Q, Sum
 from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import localdate
+from django.utils.translation import gettext as _
 from rest_framework import serializers, viewsets
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import api_view, authentication_classes, parser_classes, permission_classes
@@ -136,11 +137,11 @@ def reservar(request, pk):
     try:
         cantidad = int(request.data.get('cantidad', 1))
     except (TypeError, ValueError):
-        return Response({'error': 'Cantidad inválida.'}, status=400)
+        return Response({'error': _('Cantidad inválida.')}, status=400)
     with transaction.atomic():
         producto = get_object_or_404(Producto.objects.select_for_update(), pk=pk)
         if not producto.esta_disponible or not 1 <= cantidad <= producto.stock:
-            return Response({'error': 'No hay stock suficiente.'}, status=400)
+            return Response({'error': _('No hay stock suficiente.')}, status=400)
         reserva = Reserva.objects.create(
             consumidor=request.user, producto=producto, cantidad=cantidad,
             precio_total=producto.precio_descuento * cantidad,
@@ -198,7 +199,7 @@ class MiProductoSerializer(ProductoSerializer):
 
     def validate_stock(self, stock):
         if stock < 1:
-            raise serializers.ValidationError('Publicá al menos una unidad.')
+            raise serializers.ValidationError(_('Publicá al menos una unidad.'))
         return stock
 
     def validate(self, datos):
@@ -206,11 +207,11 @@ class MiProductoSerializer(ProductoSerializer):
         descuento = datos.get('precio_descuento', getattr(self.instance, 'precio_descuento', None))
         if original is not None and descuento is not None and descuento > original:
             raise serializers.ValidationError(
-                {'precio_descuento': 'El precio Lüp no puede ser mayor al precio original.'})
+                {'precio_descuento': _('El precio Lüp no puede ser mayor al precio original.')})
         fecha = datos.get('fecha_vencimiento')
         if fecha and fecha < localdate():
             raise serializers.ValidationError(
-                {'fecha_vencimiento': 'La fecha límite no puede estar en el pasado.'})
+                {'fecha_vencimiento': _('La fecha límite no puede estar en el pasado.')})
         return datos
 
 
@@ -225,7 +226,7 @@ class MisProductosViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         tienda = getattr(self.request.user, 'tienda', None)
         if tienda is None:
-            raise serializers.ValidationError({'error': 'Completá los datos de tu comercio antes de publicar.'})
+            raise serializers.ValidationError({'error': _('Completá los datos de tu comercio antes de publicar.')})
         serializer.save(comercio=tienda)
 
     def perform_update(self, serializer):
@@ -242,9 +243,9 @@ def cambiar_estado(request, pk):
     producto = get_object_or_404(Producto, pk=pk, comercio__usuario=request.user)
     nuevo = request.data.get('estado')
     if nuevo not in Producto.ESTADOS_MANUALES or producto.estado == Producto.DONADO:
-        return Response({'error': 'Estado inválido.'}, status=400)
+        return Response({'error': _('Estado inválido.')}, status=400)
     if nuevo == Producto.DISPONIBLE and producto.stock <= 0:
-        return Response({'error': 'Cargá stock antes de volver a publicarlo.'}, status=400)
+        return Response({'error': _('Cargá stock antes de volver a publicarlo.')}, status=400)
     producto.estado = nuevo
     producto.save(update_fields=['estado', 'actualizado_en'])
     return Response(MiProductoSerializer(producto).data)
@@ -267,13 +268,15 @@ def confirmar_retiro(request):
         codigo_retiro=codigo, producto__comercio__usuario=request.user
     ).select_related('producto', 'consumidor').first()
     if reserva is None:
-        return Response({'error': f'No encontramos una reserva con el código "{codigo}".'}, status=404)
+        return Response({'error': _('No encontramos una reserva con el código "%(codigo)s".') % {'codigo': codigo}}, status=404)
     if reserva.estado != Reserva.PENDIENTE:
-        return Response({'error': f'Esa reserva ya está {reserva.get_estado_display().lower()}.'}, status=400)
+        return Response({'error': _('Esa reserva ya está %(estado)s.') % {'estado': reserva.get_estado_display().lower()}}, status=400)
     reserva.marcar_retirada()
     return Response({
-        'mensaje': f'Retiro confirmado: {reserva.cantidad} × {reserva.producto.titulo} '
-                   f'para {reserva.consumidor.nombre_visible}.',
+        'mensaje': _('Retiro confirmado: %(cantidad)s × %(producto)s para %(cliente)s.') % {
+            'cantidad': reserva.cantidad, 'producto': reserva.producto.titulo,
+            'cliente': reserva.consumidor.nombre_visible,
+        },
         'reserva': ReservaSerializer(reserva).data,
     })
 
@@ -310,7 +313,7 @@ def mis_solicitudes(request):
 @permission_classes([EsComercio])
 def responder_solicitud(request, pk, accion):
     if accion not in ('aprobar', 'rechazar'):
-        return Response({'error': 'Acción inválida.'}, status=404)
+        return Response({'error': _('Acción inválida.')}, status=404)
     solicitud = get_object_or_404(
         SolicitudDonacion, pk=pk, producto__comercio__usuario=request.user, estado=SolicitudDonacion.PENDIENTE
     )
@@ -318,7 +321,7 @@ def responder_solicitud(request, pk, accion):
         with transaction.atomic():
             producto = Producto.objects.select_for_update().get(pk=solicitud.producto_id)
             if not producto.esta_disponible:
-                return Response({'error': 'Este producto ya no está disponible para donar.'}, status=400)
+                return Response({'error': _('Este producto ya no está disponible para donar.')}, status=400)
             solicitud.estado = SolicitudDonacion.APROBADA
             solicitud.save(update_fields=['estado'])
             producto.estado = Producto.DONADO
@@ -366,12 +369,12 @@ def solicitar_donacion(request, pk):
     """La organización pide un producto. La app manda: {"mensaje": "Para 40 chicos del comedor"}"""
     producto = get_object_or_404(Producto, pk=pk, es_donacion=True)
     if not producto.esta_disponible:
-        return Response({'error': 'Esta donación ya no está disponible.'}, status=400)
+        return Response({'error': _('Esta donación ya no está disponible.')}, status=400)
     if producto.solicitudes_donacion.filter(organizacion=request.user).exists():
-        return Response({'error': 'Ya enviaste una solicitud por este producto.'}, status=400)
+        return Response({'error': _('Ya enviaste una solicitud por este producto.')}, status=400)
     mensaje = str(request.data.get('mensaje', '')).strip()
     if not mensaje:
-        return Response({'mensaje': ['Escribí un mensaje para el comercio.']}, status=400)
+        return Response({'mensaje': [_('Escribí un mensaje para el comercio.')]}, status=400)
     solicitud = SolicitudDonacion.objects.create(
         organizacion=request.user, producto=producto, mensaje=mensaje
     )
@@ -407,7 +410,7 @@ def calificar_reserva(request, pk):
     except (TypeError, ValueError):
         puntaje = 0
     if not 1 <= puntaje <= 5:
-        return Response({'puntaje': ['Elegí de 1 a 5 estrellas.']}, status=400)
+        return Response({'puntaje': [_('Elegí de 1 a 5 estrellas.')]}, status=400)
     comentario = str(request.data.get('comentario', '')).strip()[:500]
     datos = {'tienda': reserva.producto.comercio, 'producto': reserva.producto, 'consumidor': request.user,
              'puntaje': puntaje, 'comentario': comentario}
@@ -418,7 +421,7 @@ def calificar_reserva(request, pk):
         except (TypeError, ValueError):
             puntaje_producto = 0
         if not 1 <= puntaje_producto <= 5:
-            return Response({'puntaje_producto': ['Elegí de 1 a 5 estrellas.']}, status=400)
+            return Response({'puntaje_producto': [_('Elegí de 1 a 5 estrellas.')]}, status=400)
         datos['puntaje_producto'] = puntaje_producto
     Calificacion.objects.update_or_create(reserva=reserva, defaults=datos)
     return Response(ReservaSerializer(reserva).data)
