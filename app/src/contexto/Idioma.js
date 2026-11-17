@@ -19,6 +19,9 @@ const TEXTOS = { es, en };
 const CLAVE = 'lup_idioma';
 let opcion = 'auto'; // 'auto' | 'es' | 'en'
 const oyentes = new Set();
+// La primera vez que se abre la app no hay nada guardado: se muestra "Elegí tu idioma" (pantallas/ElegirIdioma.js).
+// cargado = ya se leyó el celular · elegido = hay un idioma guardado (o se acaba de elegir)
+let inicio = { cargado: false, elegido: false };
 
 // El idioma del celular, sin librerías nativas (así el APK no cambia)
 export function idiomaDelCelular() {
@@ -39,17 +42,30 @@ function avisar() {
 // Al abrir la app se lee lo que eligió la última vez
 SecureStore.getItemAsync(CLAVE)
   .then((guardada) => {
-    if (guardada === 'es' || guardada === 'en') {
-      opcion = guardada;
-      avisar();
-    }
+    if (guardada === 'es' || guardada === 'en') opcion = guardada;
+    inicio = { cargado: true, elegido: guardada === 'es' || guardada === 'en' || guardada === 'auto' };
+    avisar();
   })
-  .catch(() => {});
+  .catch(() => {
+    // Si no se puede leer, no se pregunta (tampoco se podría guardar la respuesta)
+    inicio = { cargado: true, elegido: true };
+    avisar();
+  });
 
 export function cambiarIdioma(nueva) {
   opcion = nueva === 'es' || nueva === 'en' ? nueva : 'auto';
+  inicio = { cargado: true, elegido: true };
   avisar();
   SecureStore.setItemAsync(CLAVE, opcion).catch(() => {});
+}
+
+// SOLO PARA PROBAR (Configuración, en modo desarrollo): olvida el idioma guardado y vuelve a "Elegí tu idioma".
+// Hace falta porque en iPhone lo guardado en SecureStore queda aunque se borre Expo Go.
+export function olvidarIdiomaElegido() {
+  opcion = 'auto';
+  inicio = { cargado: true, elegido: false };
+  avisar();
+  SecureStore.deleteItemAsync(CLAVE).catch(() => {});
 }
 
 // 'es' o 'en' (ya resuelto "auto"): para el código que no es un componente
@@ -105,6 +121,11 @@ export function textoDesdeEspanol(traducirCon, seccion, textoEspanol) {
 
 // Para servicios y funciones sueltas (usa el idioma de este momento)
 export const t = (clave, variables) => traducir(idiomaActual(), clave, variables);
+
+// Para la navegación: { cargado, elegido }. Mientras no esté cargado se espera; si no se eligió, "Elegí tu idioma".
+export function useIdiomaInicial() {
+  return useSyncExternalStore(suscribirse, () => inicio);
+}
 
 // Hook para usar en cualquier pantalla o componente: al cambiar el idioma se vuelve a dibujar
 export function useIdioma() {

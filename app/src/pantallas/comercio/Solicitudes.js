@@ -224,9 +224,6 @@ const estilos = StyleSheet.create({
     gap: espacio(1),
     marginTop: espacio(4),
   },
-  emojiVacio: {
-    fontSize: 40,
-  },
   textoVacio: {
     fontFamily: fuentes.normal,
     fontSize: tamanos.normal,

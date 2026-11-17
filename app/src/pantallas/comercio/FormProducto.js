@@ -18,9 +18,10 @@ import MensajeError from '../../componentes/MensajeError';
 import PublicarDeNuevo from '../../componentes/PublicarDeNuevo';
 import { idiomaActual, useIdioma } from '../../contexto/Idioma';
 import { espacio, fuentes, radio, tamanos, useTema } from '../../tema';
-import { emojiCategoria, formatoFecha, textoError, vibrar } from '../../utilidades';
+import { formatoFecha, textoError, vibrar } from '../../utilidades';
 import { Opciones } from '../Registro';
 import Icono from '../../componentes/Icono';
+import IconoCategoria from '../../componentes/IconoCategoria';
 
 // Mismas categorías que products/models.py (CATEGORIAS). El texto sale de t('categorias.X')
 const CATEGORIAS = ['panificados', 'comidas', 'frutas_verduras', 'lacteos', 'carnes', 'almacen', 'bolsa_sorpresa', 'otros'];
@@ -293,7 +294,13 @@ export default function FormProducto({ navigation, route }) {
           {foto ? (
             <Image source={{ uri: foto }} style={StyleSheet.absoluteFill} accessibilityLabel={t('formProducto.fotoTitulo')} />
           ) : (
-            <Icono nombre="image-outline" tamano={44} color={colores.titulo} />
+            // Sin foto: así se va a ver en la app (el ícono de la categoría elegida), con la cámara para agregar una
+            <>
+              <IconoCategoria categoria={valores.categoria} llenar />
+              <View style={[estilos.camara, { backgroundColor: colores.verdeProfundo }]}>
+                <Icono nombre="camera-outline" tamano={16} color={colores.sobreVerdeProfundo} />
+              </View>
+            </>
           )}
         </Pressable>
         {errores.imagen ? <Text style={[estilos.ayuda, { color: colores.error }]}>{textoError(errores.imagen)}</Text> : null}
@@ -422,7 +429,7 @@ export default function FormProducto({ navigation, route }) {
 
         <Opciones
           etiqueta={t('formProducto.categoria')}
-          opciones={CATEGORIAS.map((c) => [c, `${emojiCategoria(c)} ${t(`categorias.${c}`)}`])}
+          opciones={CATEGORIAS.map((c) => [c, t(`categorias.${c}`)])}
           valor={valores.categoria}
           alElegir={cambiar('categoria')}
           error={errores.categoria}
@@ -483,6 +490,16 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  camara: {
+    position: 'absolute',
+    right: 6,
+    bottom: 6,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   leyenda: {
     fontFamily: fuentes.normal,
     fontSize: 11,
@@ -492,9 +509,6 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: espacio(1),
-  },
-  emoji: {
-    fontSize: 48,
   },
   ayuda: {
     fontFamily: fuentes.normal,

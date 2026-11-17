@@ -9,8 +9,9 @@ import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import { urlCompleta } from '../api/cliente';
 import { t as traducir, useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, sombra, useTema } from '../tema';
-import { emojiCategoria, formatoPrecio } from '../utilidades';
+import { formatoPrecio } from '../utilidades';
 import Icono from './Icono';
+import IconoCategoria from './IconoCategoria';
 
 // Devuelve [{ producto, ultimo, vendidos }] (uno o dos): el último publicado y el más vendido.
 // Las copias de un mismo producto ("Medialunas" de cada día) se suman como uno solo, por el nombre,
@@ -68,7 +69,7 @@ export default function PublicarDeNuevo({ productos, alElegir, compacto = false 
                 pressed && { opacity: 0.8 },
               ]}
             >
-              <Icono nombre={a.masVendido ? 'flame' : 'time-outline'} tamano={15} color={colores.verdeHover} />
+              <Icono nombre={a.masVendido ? 'flame-outline' : 'time-outline'} tamano={15} color={colores.verdeHover} />
               <Text style={[estilos.textoChip, { color: colores.texto }]} numberOfLines={1}>
                 {a.producto.titulo}
               </Text>
@@ -102,15 +103,18 @@ export default function PublicarDeNuevo({ productos, alElegir, compacto = false 
               pressed && { opacity: 0.85 },
             ]}
           >
-            <Text style={[estilos.etiqueta, { color: colores.verdeHover }]} numberOfLines={1}>
-              {textoEtiqueta(a)}
-            </Text>
+            <View style={estilos.filaEtiqueta}>
+              <Icono nombre={a.masVendido ? 'flame-outline' : 'time-outline'} tamano={13} color={colores.verdeHover} />
+              <Text style={[estilos.etiqueta, { color: colores.verdeHover, flexShrink: 1 }]} numberOfLines={1}>
+                {textoEtiqueta(a)}
+              </Text>
+            </View>
             <View style={estilos.filaProducto}>
               <View style={[estilos.foto, { backgroundColor: colores.panel }]}>
                 {a.producto.imagen ? (
                   <Image source={{ uri: urlCompleta(a.producto.imagen) }} style={StyleSheet.absoluteFill} />
                 ) : (
-                  <Text style={estilos.emoji}>{emojiCategoria(a.producto.categoria)}</Text>
+                  <IconoCategoria categoria={a.producto.categoria} llenar tamano={22} />
                 )}
               </View>
               <View style={{ flex: 1 }}>
@@ -154,6 +158,11 @@ const estilos = StyleSheet.create({
     padding: espacio(1.25),
     gap: espacio(1),
   },
+  filaEtiqueta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
   etiqueta: {
     fontFamily: fuentes.negrita,
     fontSize: 11,
@@ -170,9 +179,6 @@ const estilos = StyleSheet.create({
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  emoji: {
-    fontSize: 22,
   },
   titulo: {
     fontFamily: fuentes.negrita,

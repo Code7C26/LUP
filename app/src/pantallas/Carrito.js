@@ -10,13 +10,14 @@ import { api, urlCompleta } from '../api/cliente';
 import Boton from '../componentes/Boton';
 import Cargando from '../componentes/Cargando';
 import Icono from '../componentes/Icono';
+import IconoCategoria from '../componentes/IconoCategoria';
 import Vacio from '../componentes/Vacio';
 import { useCarrito } from '../contexto/Carrito';
 import { useSesion } from '../contexto/Sesion';
 import { programarRecordatorio } from '../servicios/recordatorios';
 import { useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, sombra, tamanos, useTema } from '../tema';
-import { emojiCategoria, formatoPrecio, PESOS_POR_PUNTO, puntosPorMonto, textoError, vibrar } from '../utilidades';
+import { formatoPrecio, PESOS_POR_PUNTO, puntosPorMonto, textoError, vibrar } from '../utilidades';
 
 // Botón redondo − / +
 function BotonMasMenos({ icono, onPress, deshabilitado, etiqueta }) {
@@ -178,7 +179,8 @@ export default function Carrito({ navigation }) {
                     {p?.imagen ? (
                       <Image source={{ uri: urlCompleta(p.imagen) }} style={StyleSheet.absoluteFill} />
                     ) : (
-                      <Text style={{ fontSize: 26 }}>{p ? emojiCategoria(p.categoria) : '🚫'}</Text>
+                      // Sin foto: el ícono de su categoría (o una cruz si ya no está disponible)
+                      <IconoCategoria categoria={p?.categoria} icono={p ? undefined : 'close-circle-outline'} llenar tamano={26} />
                     )}
                   </View>
                   <View style={{ flex: 1, gap: 4 }}>

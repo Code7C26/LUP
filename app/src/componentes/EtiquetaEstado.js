@@ -20,7 +20,8 @@ function tonos(colores) {
   return {
     verde: { fondo: colores.menta, punto: colores.verde, texto: colores.verdeHover },
     naranja: { fondo: colores.ambarClaro, punto: colores.ambar, texto: colores.texto },
-    gris: { fondo: colores.campo, punto: colores.gris, texto: colores.gris },
+    // texto "titulo" (no "gris"): el gris sobre gris no llega al contraste mínimo en modo claro
+    gris: { fondo: colores.campo, punto: colores.gris, texto: colores.titulo },
   };
 }
 

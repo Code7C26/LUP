@@ -1,10 +1,9 @@
-// Menú ☰ (como el mockup): un panel que entra desde la izquierda. Las opciones cambian según la cuenta:
-//   consumidor (y invitado): Perfil, Mis reservas, Mis favoritos, Mis puntos (solo con cuenta),
-//                            Apariencia y Soporte (WhatsApp)
-//   comercio: Mi perfil, Mis productos, Publicar producto, Confirmar retiro, Solicitudes de donación,
-//             Datos de mi comercio, Apariencia, Idioma y Soporte
-//   organización: Mi perfil, Donaciones disponibles, Mis solicitudes, Datos de mi organización,
-//                 Apariencia, Idioma y Soporte
+// Menú ☰ (como el mockup): un panel que entra desde la izquierda, con UNA sola lista de opciones:
+//   consumidor (y invitado): Perfil, Mis reservas, Mis favoritos, Mis puntos (solo con cuenta)
+//   comercio: Mi perfil, Mis productos, Publicar producto, Confirmar retiro, Solicitudes de donación, Datos de mi comercio
+//   organización: Mi perfil, Donaciones disponibles, Mis solicitudes, Datos de mi organización
+//   y para todos, en la misma lista: Configuración (apariencia, idioma y links legales) y Soporte (WhatsApp).
+// Abajo de todo, en chico: Términos y condiciones · Política de privacidad (abren la web).
 // Cada opción abre una pestaña o pantalla que ya existe (navegacion/index.js y Tabs*.js).
 // Se cierra tocando afuera, con la X o con el botón "atrás" de Android.
 // Uso:  <MenuLateral visible={verMenu} alCerrar={() => setVerMenu(false)} navigation={navigation} />
@@ -29,8 +28,7 @@ import { useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, sombra, tamanos, useTema } from '../tema';
 import Icono from './Icono';
 import Logo from './Logo';
-import SelectorApariencia from './SelectorApariencia';
-import SelectorIdioma from './SelectorIdioma';
+import LinksLegales from './LinksLegales';
 
 // Mismo número que el pie de la web y que Perfil
 const WHATSAPP_SOPORTE = 'https://wa.me/5493547620629';
@@ -94,7 +92,6 @@ export default function MenuLateral({ visible, alCerrar, navigation }) {
   }
 
   const rol = usuario?.rol;
-  const deCuenta = rol === 'comercio' || rol === 'organizacion';
 
   function soporte() {
     const titulo =
@@ -150,52 +147,44 @@ export default function MenuLateral({ visible, alCerrar, navigation }) {
         </Text>
 
         <ScrollView contentContainerStyle={estilos.contenido} showsVerticalScrollIndicator={false}>
-          {rol === 'comercio' ? (
-            <View>
-              <Opcion icono="person-outline" texto={t('menu.miPerfil')} alTocar={() => ir('Perfil')} />
-              <Opcion icono="cube-outline" texto={t('menu.misProductos')} alTocar={() => ir('MisProductos')} />
-              <Opcion icono="add-circle-outline" texto={t('menu.publicarProducto')} alTocar={() => ir('FormProducto')} />
-              <Opcion icono="qr-code-outline" texto={t('menu.confirmarRetiro')} alTocar={() => ir('ConfirmarRetiro')} />
-              <Opcion icono="heart-outline" texto={t('menu.solicitudesDonacion')} alTocar={() => ir('Solicitudes')} />
-              <Opcion icono="storefront-outline" texto={t('menu.datosComercio')} alTocar={() => ir('EditarComercio')} />
-            </View>
-          ) : rol === 'organizacion' ? (
-            <View>
-              <Opcion icono="person-outline" texto={t('menu.miPerfil')} alTocar={() => ir('Perfil')} />
-              <Opcion icono="heart-outline" texto={t('menu.donacionesDisponibles')} alTocar={() => ir('Donaciones')} />
-              <Opcion icono="clipboard-outline" texto={t('menu.misSolicitudes')} alTocar={() => ir('MisSolicitudes')} />
-              <Opcion icono="people-outline" texto={t('menu.datosOrganizacion')} alTocar={() => ir('EditarOrganizacion')} />
-            </View>
-          ) : (
-            <View>
-              <Opcion icono="person-outline" texto={t('menu.perfil')} alTocar={() => ir('Perfil')} />
-              <Opcion icono="ticket-outline" texto={t('menu.misReservas')} alTocar={() => ir('MisReservas')} />
-              <Opcion icono="heart-outline" texto={t('menu.misFavoritos')} numero={favoritos.length} alTocar={() => ir('MisFavoritos')} />
-              {/* Puntos Lüp: solo con una cuenta de consumidor (el invitado no suma puntos) */}
-              {rol === 'consumidor' ? (
-                <Opcion icono="star-outline" texto={t('menu.misPuntos')} alTocar={() => ir('MisPuntos')} />
-              ) : null}
-            </View>
-          )}
-
-          <View style={[estilos.separador, { backgroundColor: colores.borde }]} />
-
-          <View style={{ gap: espacio(1) }}>
-            <Text style={[estilos.tituloGrupo, { color: colores.gris }]}>{t('menu.apariencia')}</Text>
-            <SelectorApariencia />
+          {/* Una sola lista: las opciones de la cuenta, Configuración y Soporte, todas con el mismo estilo */}
+          <View>
+            {rol === 'comercio' ? (
+              <>
+                <Opcion icono="person-outline" texto={t('menu.miPerfil')} alTocar={() => ir('Perfil')} />
+                <Opcion icono="cube-outline" texto={t('menu.misProductos')} alTocar={() => ir('MisProductos')} />
+                <Opcion icono="add-circle-outline" texto={t('menu.publicarProducto')} alTocar={() => ir('FormProducto')} />
+                <Opcion icono="qr-code-outline" texto={t('menu.confirmarRetiro')} alTocar={() => ir('ConfirmarRetiro')} />
+                <Opcion icono="heart-outline" texto={t('menu.solicitudesDonacion')} alTocar={() => ir('Solicitudes')} />
+                <Opcion icono="storefront-outline" texto={t('menu.datosComercio')} alTocar={() => ir('EditarComercio')} />
+              </>
+            ) : rol === 'organizacion' ? (
+              <>
+                <Opcion icono="person-outline" texto={t('menu.miPerfil')} alTocar={() => ir('Perfil')} />
+                <Opcion icono="heart-outline" texto={t('menu.donacionesDisponibles')} alTocar={() => ir('Donaciones')} />
+                <Opcion icono="clipboard-outline" texto={t('menu.misSolicitudes')} alTocar={() => ir('MisSolicitudes')} />
+                <Opcion icono="people-outline" texto={t('menu.datosOrganizacion')} alTocar={() => ir('EditarOrganizacion')} />
+              </>
+            ) : (
+              <>
+                <Opcion icono="person-outline" texto={t('menu.perfil')} alTocar={() => ir('Perfil')} />
+                <Opcion icono="ticket-outline" texto={t('menu.misReservas')} alTocar={() => ir('MisReservas')} />
+                <Opcion icono="heart-outline" texto={t('menu.misFavoritos')} numero={favoritos.length} alTocar={() => ir('MisFavoritos')} />
+                {/* Puntos Lüp: solo con una cuenta de consumidor (el invitado no suma puntos) */}
+                {rol === 'consumidor' ? (
+                  <Opcion icono="star-outline" texto={t('menu.misPuntos')} alTocar={() => ir('MisPuntos')} />
+                ) : null}
+              </>
+            )}
+            {/* Apariencia e idioma están adentro de Configuración (no se repiten acá) */}
+            <Opcion icono="settings-outline" texto={t('menu.configuracion')} alTocar={() => ir('Configuracion')} />
+            <Opcion icono="logo-whatsapp" texto={t('menu.soporte')} subtitulo={t('menu.escribinos')} alTocar={soporte} />
           </View>
 
-          {/* Comercio y organización: también el idioma (el consumidor lo tiene en Perfil) */}
-          {deCuenta ? (
-            <View style={{ gap: espacio(1) }}>
-              <Text style={[estilos.tituloGrupo, { color: colores.gris }]}>{t('idioma.titulo')}</Text>
-              <SelectorIdioma />
-            </View>
-          ) : null}
-
-          <View style={[estilos.separador, { backgroundColor: colores.borde }]} />
-
-          <Opcion icono="logo-whatsapp" texto={t('menu.soporte')} subtitulo={t('menu.escribinos')} alTocar={soporte} />
+          {/* Abajo de todo, en chico: Términos y condiciones · Política de privacidad (abren la web) */}
+          <View style={[estilos.pie, { borderTopColor: colores.borde }]}>
+            <LinksLegales chico />
+          </View>
         </ScrollView>
       </Animated.View>
     </Modal>
@@ -231,8 +220,14 @@ const estilos = StyleSheet.create({
     marginBottom: espacio(2),
   },
   contenido: {
+    flexGrow: 1,
     gap: espacio(2),
     paddingBottom: espacio(2),
+  },
+  pie: {
+    marginTop: 'auto', // siempre abajo de todo
+    paddingTop: espacio(1.5),
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
   opcion: {
     flexDirection: 'row',
@@ -269,12 +264,5 @@ const estilos = StyleSheet.create({
   textoNumero: {
     fontFamily: fuentes.negrita,
     fontSize: tamanos.mini,
-  },
-  separador: {
-    height: StyleSheet.hairlineWidth,
-  },
-  tituloGrupo: {
-    fontFamily: fuentes.media,
-    fontSize: tamanos.chico,
   },
 });

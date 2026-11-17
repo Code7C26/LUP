@@ -2,7 +2,7 @@
 // Arriba la misma barra que Inicio: el menú ☰ (MenuLateral de la organización) y el botón verde "Ayuda" (chat con Lü).
 // Después el círculo con la inicial y el nombre de la organización, con un resumen abajo ("4 donaciones disponibles").
 // Lista los productos que los comercios marcaron como aptos para donar (GET /api/donaciones/), cada uno en una
-// tarjeta: foto o emoji, nombre, comercio y distancia, cantidad, "hasta el dd/mm" y el estado como etiqueta de color
+// tarjeta: foto o ícono de la categoría, nombre, comercio y distancia, cantidad, "hasta el dd/mm" y el estado como etiqueta de color
 // (Disponible verde, Ya lo pediste naranja). Abajo, "Pedir" abre el cuadro para escribirle al comercio
 // (POST /api/productos/<id>/solicitar-donacion/, paso 31). Tocar la tarjeta abre el detalle.
 import { useCallback, useEffect, useState } from 'react';
@@ -14,13 +14,14 @@ import Boton from '../../componentes/Boton';
 import CabeceraCuenta from '../../componentes/CabeceraCuenta';
 import Cargando from '../../componentes/Cargando';
 import { EtiquetaEstado } from '../../componentes/EtiquetaEstado';
+import IconoCategoria from '../../componentes/IconoCategoria';
 import MensajeError from '../../componentes/MensajeError';
 import ModalSolicitudDonacion from '../../componentes/ModalSolicitudDonacion';
 import Vacio from '../../componentes/Vacio';
 import { useSesion } from '../../contexto/Sesion';
 import { useIdioma } from '../../contexto/Idioma';
 import { espacio, fuentes, radio, sombra, tamanos, useTema } from '../../tema';
-import { emojiCategoria, formatoDiaMes, textoKm } from '../../utilidades';
+import { formatoDiaMes, textoKm } from '../../utilidades';
 
 function TarjetaDonacion({ producto, alVer, alPedir }) {
   const { colores } = useTema();
@@ -40,7 +41,7 @@ function TarjetaDonacion({ producto, alVer, alPedir }) {
           {producto.imagen ? (
             <Image source={{ uri: urlCompleta(producto.imagen) }} style={StyleSheet.absoluteFill} accessibilityIgnoresInvertColors />
           ) : (
-            <Text style={estilos.emoji}>{emojiCategoria(producto.categoria)}</Text>
+            <IconoCategoria categoria={producto.categoria} llenar tamano={28} />
           )}
         </View>
         <View style={estilos.datos}>
@@ -200,9 +201,6 @@ const estilos = StyleSheet.create({
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  emoji: {
-    fontSize: 30,
   },
   datos: {
     flex: 1,
