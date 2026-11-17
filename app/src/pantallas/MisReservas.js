@@ -212,9 +212,20 @@ function FilaHistorial({ reserva, alEnviarOpinion }) {
             {reserva.comercio} · {formatoDiaMes(reserva.creada_en)}
           </Text>
         </View>
-        <View style={estilos.linea}>
-          <View style={[estilos.punto, { backgroundColor: retirada ? colores.verde : colores.borde }]} />
-          <Text style={[estilos.detalle, { color: colores.gris }]}>{retirada ? t('misReservas.retirada') : t('misReservas.cancelada')}</Text>
+        <View style={estilos.estadoHistorial}>
+          <View style={estilos.linea}>
+            <View style={[estilos.punto, { backgroundColor: retirada ? colores.verde : colores.borde }]} />
+            <Text style={[estilos.detalle, { color: colores.gris }]}>{retirada ? t('misReservas.retirada') : t('misReservas.cancelada')}</Text>
+          </View>
+          {/* Puntos Lüp que sumó esta compra (Django manda "puntos_sumados" solo en las retiradas) */}
+          {retirada && reserva.puntos_sumados > 0 ? (
+            <View style={estilos.linea}>
+              <Icono nombre="star" tamano={12} color={colores.verdeHover} />
+              <Text style={[estilos.puntosSumados, { color: colores.verdeHover }]}>
+                {t('misReservas.puntosSumados', { n: reserva.puntos_sumados })}
+              </Text>
+            </View>
+          ) : null}
         </View>
       </View>
       {retirada ? (
@@ -410,6 +421,14 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+  },
+  estadoHistorial: {
+    alignItems: 'flex-end',
+    gap: 2,
+  },
+  puntosSumados: {
+    fontFamily: fuentes.negrita,
+    fontSize: tamanos.chico,
   },
   detalle: {
     fontFamily: fuentes.normal,

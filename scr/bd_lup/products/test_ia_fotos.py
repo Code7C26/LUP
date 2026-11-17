@@ -111,6 +111,23 @@ class SugerirProductoApiTests(TestCase):
         with Image.open(io.BytesIO(base64.b64decode(imagen['source']['data']))) as img:
             self.assertLessEqual(max(img.size), 1024)
 
+    def test_escribe_en_el_idioma_de_la_app(self):
+        for encabezado, idioma in ((None, 'español rioplatense'), ('es-AR', 'español rioplatense'), ('en', 'inglés')):
+            extra = {'HTTP_ACCEPT_LANGUAGE': encabezado} if encabezado else {}
+            cache.clear()
+            with mock.patch(URLOPEN, return_value=respuesta_api(SUGERENCIA)) as api:
+                r = self.api.post(self.url, {'imagen': foto()}, format='multipart', **extra)
+            self.assertEqual(r.status_code, 200)
+            instrucciones = json.loads(api.call_args[0][0].data)['system']
+            self.assertIn(f'Escribí el título y la descripción en {idioma}.', instrucciones, encabezado)
+            self.assertNotIn('{idioma}', instrucciones)
+
+    @override_settings(ANTHROPIC_API_KEY='')
+    def test_error_en_ingles_con_accept_language(self):
+        r = self.api.post(self.url, {'imagen': foto()}, format='multipart', HTTP_ACCEPT_LANGUAGE='en')
+        self.assertEqual(r.status_code, 503)
+        self.assertEqual(r.json()['error'], '"Fill in with AI" isn\'t enabled on Lüp. Fill in the details yourself.')
+
     def test_ajusta_valores_fuera_de_rango(self):
         raros = {**SUGERENCIA, 'categoria': 'joyeria', 'dias_hasta_vencer': 90, 'precio_sugerido': -5,
                  'titulo': 'x' * 300}

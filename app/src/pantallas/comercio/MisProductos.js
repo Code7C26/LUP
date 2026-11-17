@@ -1,77 +1,67 @@
-// PASO 45 · Comercio: "Mi Perfil" IGUAL AL MOCKUP (página 11 del PDF):
-// arriba el círculo del comercio y "Mi Perfil", el ícono de soporte con su cartelito,
-// "Productos disponibles +" y cada producto con la foto a la izquierda y una tarjeta gris con:
-//   arriba a la derecha: 🚫 "Marcar como producto no disponible" y ✔ "Marcar como vendido/reservado"
-//   (agregado) 📄 "Duplicar" en todos y, en lo vendido, donado o vencido, el botón verde "Publicar de nuevo":
-//              copian el producto (foto, precios y descripción) con la fecha de hoy
-//   abajo: las etiquetas "Descuento" y "Donaciones" (verdes si aplican), "Editar producto" y "Eliminar"
-// (agregado) Arriba de la lista, "Publicar de nuevo": atajos a lo último publicado y a lo más vendido.
+// PASO 45 · Comercio: pantalla principal (basada en la página 11 del mockup, con el estilo de Inicio).
+// Arriba la misma barra que Inicio: el menú ☰ (MenuLateral del comercio) y el botón verde "Ayuda" (chat con Lü).
+// Después el círculo con la inicial y el nombre del comercio, con un resumen abajo ("3 disponibles · 12 vendidos").
+// (agregado) "Publicar de nuevo": atajos a lo último publicado y a lo más vendido.
+// "Productos disponibles +" y cada producto en una tarjeta:
+//   arriba: foto o emoji, nombre, precio, cantidad, "hasta el dd/mm" y el estado como etiqueta de color
+//           (Disponible verde, Vendido/Donado naranja, Vencido/No disponible gris)
+//   "Descuento" y "Donaciones" son datos (etiquetas suaves), no botones
+//   abajo, una fila de acciones del mismo alto: "Editar" (si está disponible) o "Publicar de nuevo" (copia con
+//   la fecha de hoy) y botones redondos: Duplicar, Marcar como vendido, No disponible, Volver a publicar y Eliminar.
+//   Si no entran en el ancho, bajan a otra línea.
 // Usa GET /api/mis-productos/, POST /api/mis-productos/<id>/estado/ y DELETE /api/mis-productos/<id>/ (paso 30).
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, FlatList, Image, Linking, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { Alert, FlatList, Image, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
 import { api, urlCompleta } from '../../api/cliente';
+import BarraSuperior from '../../componentes/BarraSuperior';
+import Boton from '../../componentes/Boton';
+import CabeceraCuenta from '../../componentes/CabeceraCuenta';
 import Esqueleto from '../../componentes/Esqueleto';
+import { EtiquetaEstado, EtiquetaInfo } from '../../componentes/EtiquetaEstado';
 import Icono from '../../componentes/Icono';
 import MensajeError from '../../componentes/MensajeError';
 import PublicarDeNuevo from '../../componentes/PublicarDeNuevo';
 import Vacio from '../../componentes/Vacio';
 import { useSesion } from '../../contexto/Sesion';
 import { textoDeOpcion, useIdioma } from '../../contexto/Idioma';
-import { espacio, fuentes, sombra, useTema } from '../../tema';
+import { espacio, fuentes, radio, sombra, tamanos, useTema } from '../../tema';
 import { emojiCategoria, formatoDiaMes, formatoPrecio, textoError } from '../../utilidades';
 
-const WHATSAPP_SOPORTE = 'https://wa.me/5493547620629';
-
 // Los estados (products/models.py) se muestran con t('estadosProducto.X'): ver idiomas/es.js
+
+const TAMANO_ACCION = 36; // alto de todos los botones de la fila de acciones
 
 function hoyIso() {
   const hoy = new Date();
   return `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
 }
 
-// Etiqueta "Descuento" / "Donaciones": verde oscuro si aplica, solo texto si no (como el mockup)
-function Etiqueta({ texto, activa }) {
-  const { colores } = useTema();
-  const { t } = useIdioma();
-  return (
-    <Text
-      style={[
-        estilos.etiqueta,
-        activa ? { backgroundColor: colores.verdeProfundo, color: colores.sobreVerdeProfundo } : { color: colores.gris },
-      ]}
-    >
-      {texto}
-    </Text>
-  );
+// Color de la etiqueta de estado
+function tonoEstado(estado, vencido) {
+  if (estado === 'DISPONIBLE') return vencido ? 'gris' : 'verde';
+  if (estado === 'AGOTADO' || estado === 'DONADO') return 'naranja';
+  return 'gris'; // PAUSADO (no disponible)
 }
 
-// Botón redondo chiquito de arriba a la derecha de la tarjeta
-function BotonRedondo({ icono, color, fondo, etiqueta, onPress, deshabilitado }) {
+// Botón redondo de la fila de acciones (solo ícono, con su texto para lectores de pantalla)
+function BotonRedondo({ icono, color, etiqueta, onPress, deshabilitado }) {
+  const { colores } = useTema();
   return (
     <Pressable
       onPress={onPress}
       disabled={deshabilitado}
-      hitSlop={6}
+      hitSlop={4}
       accessibilityRole="button"
       accessibilityLabel={etiqueta}
-      style={({ pressed }) => [estilos.redondo, { backgroundColor: fondo }, (pressed || deshabilitado) && { opacity: 0.5 }]}
+      accessibilityState={{ disabled: !!deshabilitado }}
+      style={({ pressed }) => [
+        estilos.redondo,
+        { backgroundColor: colores.fondo, borderColor: colores.borde },
+        (pressed || deshabilitado) && { opacity: 0.5 },
+      ]}
     >
-      <Icono nombre={icono} tamano={fondo === 'transparent' ? 24 : 15} color={color} />
-    </Pressable>
-  );
-}
-
-// Botón chiquito tipo píldora ("Editar producto", "Eliminar")
-function Pildora({ texto, fondo, onPress, deshabilitado }) {
-  return (
-    <Pressable
-      onPress={onPress}
-      disabled={deshabilitado}
-      accessibilityRole="button"
-      style={({ pressed }) => [estilos.pildora, { backgroundColor: fondo }, (pressed || deshabilitado) && { opacity: 0.6 }]}
-    >
-      <Text style={estilos.textoPildora}>{texto}</Text>
+      <Icono nombre={icono} tamano={18} color={color || colores.texto} />
     </Pressable>
   );
 }
@@ -82,89 +72,100 @@ function FilaMiProducto({ producto, ocupado, alCambiarEstado, alEditar, alElimin
   const vencido = producto.fecha_vencimiento < hoyIso();
   const disponible = producto.estado === 'DISPONIBLE';
   const textoEstado = disponible && vencido ? t('estadosProducto.vencido') : textoDeOpcion(t, 'estadosProducto', producto.estado, producto.estado);
+  const conDescuento = producto.porcentaje_descuento > 0;
 
   return (
-    <View style={estilos.fila}>
-      <View style={[estilos.foto, { backgroundColor: colores.panel }]}>
-        {producto.imagen ? (
-          <Image source={{ uri: urlCompleta(producto.imagen) }} style={StyleSheet.absoluteFill} />
-        ) : (
-          <Text style={estilos.emoji}>{emojiCategoria(producto.categoria)}</Text>
-        )}
+    <View style={[estilos.tarjeta, { backgroundColor: colores.panel }, sombra(colores)]}>
+      {/* Arriba: foto, nombre, precio, cantidad, fecha y estado */}
+      <View style={estilos.arriba}>
+        <View style={[estilos.foto, { backgroundColor: colores.superficie }]}>
+          {producto.imagen ? (
+            <Image source={{ uri: urlCompleta(producto.imagen) }} style={StyleSheet.absoluteFill} accessibilityIgnoresInvertColors />
+          ) : (
+            <Text style={estilos.emoji}>{emojiCategoria(producto.categoria)}</Text>
+          )}
+        </View>
+
+        <View style={estilos.datos}>
+          <Text style={[estilos.titulo, { color: colores.texto }]} numberOfLines={3}>
+            {producto.titulo}
+          </Text>
+          <Text style={[estilos.detalle, { color: colores.gris }]}>
+            <Text style={[estilos.precio, { color: colores.texto }]}>{formatoPrecio(producto.precio_descuento)}</Text>
+            {'  ·  '}
+            {t('misProductos.cantidad', { n: producto.stock })}
+            {'  ·  '}
+            {t('misProductos.hasta', { fecha: formatoDiaMes(producto.fecha_vencimiento) })}
+          </Text>
+          {/* El estado (etiqueta de color) y los datos "Descuento" / "Donaciones" (etiquetas suaves, no botones) */}
+          <View style={estilos.infos}>
+            <EtiquetaEstado texto={textoEstado} tono={tonoEstado(producto.estado, vencido)} />
+            {conDescuento ? (
+              <EtiquetaInfo icono="pricetag-outline" texto={`${t('misProductos.descuento')} ${producto.porcentaje_descuento}%`} />
+            ) : null}
+            {producto.es_donacion ? <EtiquetaInfo icono="heart-outline" texto={t('misProductos.donaciones')} /> : null}
+          </View>
+        </View>
       </View>
 
-      <View style={[estilos.tarjeta, { backgroundColor: colores.panel }, sombra(colores)]}>
-        <View style={estilos.arriba}>
-          <View style={{ flex: 1, gap: 1 }}>
-            <Text style={[estilos.titulo, { color: colores.texto }]} numberOfLines={1}>
-              {producto.titulo}
-            </Text>
-            <Text style={[estilos.chico, { color: colores.gris }]} numberOfLines={1}>
-              {t('misProductos.resumen', {
-                precio: formatoPrecio(producto.precio_descuento),
-                n: producto.stock,
-                fecha: formatoDiaMes(producto.fecha_vencimiento),
-              })}
-            </Text>
-            {!disponible || vencido ? (
-              <Text style={[estilos.chico, { color: colores.ambar, fontFamily: fuentes.negrita }]}>{textoEstado}</Text>
-            ) : null}
-          </View>
-          {disponible ? (
-            <>
-              <BotonRedondo
-                icono="ban-outline"
-                color={colores.error}
-                fondo="transparent"
-                etiqueta={t('misProductos.marcarNoDisponible')}
-                onPress={() => alCambiarEstado('PAUSADO')}
-                deshabilitado={ocupado}
-              />
-              <BotonRedondo
-                icono="checkmark"
-                color={colores.sobreVerdeProfundo}
-                fondo={colores.verdeProfundo}
-                etiqueta={t('misProductos.marcarVendido')}
-                onPress={() => alCambiarEstado('AGOTADO')}
-                deshabilitado={ocupado}
-              />
-            </>
-          ) : producto.estado === 'PAUSADO' && producto.stock > 0 ? (
-            <BotonRedondo
-              icono="play"
-              color={colores.sobreVerdeProfundo}
-              fondo={colores.verdeProfundo}
-              etiqueta={t('misProductos.volverAPublicar')}
-              onPress={() => alCambiarEstado('DISPONIBLE')}
-              deshabilitado={ocupado}
-            />
-          ) : null}
-          {/* Duplicar: copia el producto (foto, precios, descripción) con la fecha de hoy */}
-          <BotonRedondo
-            icono="copy-outline"
-            color={colores.texto}
-            fondo="transparent"
-            etiqueta={t('misProductos.duplicar')}
+      {/* Abajo: las acciones, todas del mismo alto. Si no entran, bajan a otra línea. */}
+      <View style={[estilos.acciones, { borderTopColor: colores.borde }]}>
+        {disponible && !vencido ? (
+          <Boton
+            texto={t('misProductos.editar')}
+            etiqueta={t('misProductos.editarProducto')}
+            icono="create-outline"
+            chico
+            onPress={alEditar}
+            deshabilitado={ocupado}
+            estilo={estilos.principal}
+          />
+        ) : (
+          // Vendido, donado, vencido o pausado: el botón principal es volver a publicarlo (copia con la fecha de hoy)
+          <Boton
+            texto={t('misProductos.publicarDeNuevo')}
+            icono="refresh"
+            chico
             onPress={alCopiar}
             deshabilitado={ocupado}
+            estilo={estilos.principal}
           />
-        </View>
-
-        <View style={estilos.abajo}>
-          <View style={estilos.etiquetas}>
-            <Etiqueta texto={t('misProductos.descuento')} activa={producto.porcentaje_descuento > 0} />
-            <Etiqueta texto={t('misProductos.donaciones')} activa={producto.es_donacion} />
-          </View>
-          <View style={estilos.etiquetas}>
-            {!disponible || vencido ? (
-              // Vendido, donado o vencido: el botón principal es volver a publicarlo (copia con la fecha de hoy)
-              <Pildora texto={t('misProductos.publicarDeNuevo')} fondo="#4E8A2E" onPress={alCopiar} deshabilitado={ocupado} />
-            ) : (
-              <Pildora texto={t('misProductos.editarProducto')} fondo="#073425" onPress={alEditar} deshabilitado={ocupado} />
-            )}
-            <Pildora texto={t('misProductos.eliminar')} fondo="#E02424" onPress={alEliminar} deshabilitado={ocupado} />
-          </View>
-        </View>
+        )}
+        {/* Duplicar: copia el producto (foto, precios, descripción) con la fecha de hoy */}
+        <BotonRedondo icono="copy-outline" etiqueta={t('misProductos.duplicar')} onPress={alCopiar} deshabilitado={ocupado} />
+        {disponible ? (
+          <>
+            <BotonRedondo
+              icono="checkmark-done"
+              color={colores.verdeHover}
+              etiqueta={t('misProductos.marcarVendido')}
+              onPress={() => alCambiarEstado('AGOTADO')}
+              deshabilitado={ocupado}
+            />
+            <BotonRedondo
+              icono="ban-outline"
+              color={colores.gris}
+              etiqueta={t('misProductos.marcarNoDisponible')}
+              onPress={() => alCambiarEstado('PAUSADO')}
+              deshabilitado={ocupado}
+            />
+          </>
+        ) : producto.estado === 'PAUSADO' && producto.stock > 0 ? (
+          <BotonRedondo
+            icono="play"
+            color={colores.verdeHover}
+            etiqueta={t('misProductos.volverAPublicar')}
+            onPress={() => alCambiarEstado('DISPONIBLE')}
+            deshabilitado={ocupado}
+          />
+        ) : null}
+        <BotonRedondo
+          icono="trash-outline"
+          color={colores.error}
+          etiqueta={t('misProductos.eliminar')}
+          onPress={alEliminar}
+          deshabilitado={ocupado}
+        />
       </View>
     </View>
   );
@@ -179,7 +180,6 @@ export default function MisProductos({ navigation }) {
   const [actualizando, setActualizando] = useState(false);
   const [error, setError] = useState('');
   const [ocupado, setOcupado] = useState(null); // id del producto que se está cambiando
-  const [verSoporte, setVerSoporte] = useState(false);
 
   const cargar = useCallback(async () => {
     setError('');
@@ -239,7 +239,12 @@ export default function MisProductos({ navigation }) {
 
   if (cargando) return <Esqueleto tipo="filas" />;
 
-  const nombre = usuario?.nombre || t('misProductos.miComercio');
+  const nombre = usuario?.comercio?.nombre || usuario?.nombre || t('misProductos.miComercio');
+  // Resumen de la cabecera: lo que está a la venta ahora y las unidades vendidas en total
+  const hoy = hoyIso();
+  const enVenta = productos.filter((p) => p.estado === 'DISPONIBLE' && p.fecha_vencimiento >= hoy).length;
+  const vendidos = productos.reduce((suma, p) => suma + (Number(p.vendidos) || 0), 0);
+  const resumen = `${t('misProductos.resumenDisponibles', { n: enVenta })} · ${t('misProductos.resumenVendidos', { n: vendidos })}`;
 
   return (
     <FlatList
@@ -258,39 +263,11 @@ export default function MisProductos({ navigation }) {
         />
       }
       ListHeaderComponent={
-        <View style={{ gap: espacio(2), marginBottom: espacio(2) }}>
-          {/* Soporte arriba a la derecha, con su cartelito */}
-          <View style={estilos.barra}>
-            <Pressable
-              onPress={() => setVerSoporte((v) => !v)}
-              hitSlop={8}
-              accessibilityRole="button"
-              accessibilityLabel={t('misProductos.soporte')}
-              style={[estilos.botonBarra, { backgroundColor: colores.panel }]}
-            >
-              <Icono nombre="headset-outline" tamano={20} color={colores.texto} />
-            </Pressable>
-          </View>
-          {verSoporte ? (
-            <Pressable
-              onPress={() => Linking.openURL(WHATSAPP_SOPORTE).catch(() => {})}
-              style={[estilos.soporte, { backgroundColor: colores.panel }]}
-            >
-              <Text style={[estilos.tituloSoporte, { color: colores.titulo }]}>{t('misProductos.soporte')}</Text>
-              <Text style={[estilos.chico, { color: colores.titulo }]}>
-                {t('misProductos.soporteTexto')}{' '}
-                <Text style={{ textDecorationLine: 'underline' }}>+54 9 3547620629</Text>
-              </Text>
-            </Pressable>
-          ) : null}
+        <View style={estilos.cabecera}>
+          {/* Igual que Inicio: ☰ y "Ayuda" */}
+          <BarraSuperior navigation={navigation} desde="MisProductos" estilo={estilos.barra} />
 
-          {/* Círculo del comercio y "Mi Perfil" */}
-          <Pressable onPress={() => navigation.navigate('Perfil')} accessibilityRole="link" style={estilos.perfil}>
-            <View style={[estilos.circulo, { backgroundColor: colores.verdeProfundo }]}>
-              <Text style={[estilos.inicial, { color: colores.sobreVerdeProfundo }]}>{nombre.charAt(0).toUpperCase()}</Text>
-            </View>
-            <Text style={[estilos.miPerfil, { color: colores.titulo }]}>{t('misProductos.miPerfil')}</Text>
-          </Pressable>
+          <CabeceraCuenta nombre={nombre} resumen={resumen} alTocar={() => navigation.navigate('Perfil')} />
 
           {/* Atajos: volver a cargar lo último o lo más vendido */}
           <PublicarDeNuevo
@@ -298,16 +275,21 @@ export default function MisProductos({ navigation }) {
             alElegir={(p) => navigation.navigate('FormProducto', { copiarDe: p.id })}
           />
 
-          {/* "Productos disponibles +" */}
-          <Pressable
-            onPress={() => navigation.navigate('FormProducto')}
-            accessibilityRole="button"
-            accessibilityLabel={t('misProductos.nuevoProducto')}
-            style={estilos.filaNuevo}
-          >
-            <Text style={[estilos.productos, { color: colores.titulo }]}>{t('misProductos.disponibles')}</Text>
-            <Icono nombre="add" tamano={24} color={colores.titulo} />
-          </Pressable>
+          {/* "Productos disponibles +" (mismo estilo que los títulos de Inicio) */}
+          <View style={estilos.filaNuevo}>
+            <Text style={[estilos.tituloSeccion, { color: colores.titulo }]} accessibilityRole="header">
+              {t('misProductos.disponibles')}
+            </Text>
+            <Pressable
+              onPress={() => navigation.navigate('FormProducto')}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={t('misProductos.nuevoProducto')}
+              style={({ pressed }) => [estilos.botonNuevo, { backgroundColor: colores.verdeProfundo }, pressed && { opacity: 0.8 }]}
+            >
+              <Icono nombre="add" tamano={22} color={colores.sobreVerdeProfundo} />
+            </Pressable>
+          </View>
 
           <MensajeError mensaje={error} alReintentar={cargar} />
         </View>
@@ -332,7 +314,7 @@ export default function MisProductos({ navigation }) {
           alCopiar={() => navigation.navigate('FormProducto', { copiarDe: item.id })}
         />
       )}
-      ItemSeparatorComponent={() => <View style={{ height: espacio(2) }} />}
+      ItemSeparatorComponent={() => <View style={{ height: espacio(1.5) }} />}
     />
   );
 }
@@ -342,131 +324,98 @@ const estilos = StyleSheet.create({
     paddingHorizontal: espacio(2),
     paddingBottom: espacio(4),
   },
-  barra: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    paddingTop: espacio(1),
+  cabecera: {
+    gap: espacio(2),
+    marginBottom: espacio(1.5),
   },
-  botonBarra: {
+  barra: {
+    paddingHorizontal: 0, // la lista ya tiene el margen a los costados
+    marginBottom: -espacio(1),
+  },
+  filaNuevo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: espacio(1.5),
+    marginTop: espacio(0.5),
+  },
+  // Igual que estilos.titulo de Inicio.js
+  tituloSeccion: {
+    flex: 1,
+    fontFamily: fuentes.normal,
+    fontSize: 18,
+  },
+  botonNuevo: {
     width: 38,
     height: 38,
     borderRadius: 19,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  soporte: {
-    alignSelf: 'flex-end',
-    maxWidth: 240,
-    borderRadius: 10,
-    padding: espacio(1.25),
-    gap: 2,
-    marginTop: -espacio(1),
-  },
-  tituloSoporte: {
-    fontFamily: fuentes.normal,
-    fontSize: 13,
-    textDecorationLine: 'underline',
-  },
-  perfil: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  tarjeta: {
+    borderRadius: radio,
+    padding: espacio(1.5),
     gap: espacio(1.5),
   },
-  circulo: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  inicial: {
-    fontFamily: fuentes.marca,
-    fontSize: 26,
-  },
-  miPerfil: {
-    fontFamily: fuentes.normal,
-    fontSize: 26,
-    textDecorationLine: 'underline',
-  },
-  filaNuevo: {
+  arriba: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  productos: {
-    fontFamily: fuentes.normal,
-    fontSize: 16,
-  },
-  fila: {
-    flexDirection: 'row',
+    alignItems: 'flex-start',
     gap: espacio(1.5),
   },
   foto: {
-    width: 92,
-    height: 92,
+    width: 64,
+    height: 64,
     borderRadius: 12,
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
   },
   emoji: {
-    fontSize: 36,
+    fontSize: 30,
   },
-  tarjeta: {
+  datos: {
     flex: 1,
-    borderRadius: 12,
-    padding: espacio(1),
-    paddingLeft: espacio(1.25),
-    justifyContent: 'space-between',
-    gap: espacio(1),
-  },
-  arriba: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 4,
+    minWidth: 0,
+    gap: espacio(0.5),
   },
   titulo: {
     fontFamily: fuentes.negrita,
-    fontSize: 13,
+    fontSize: tamanos.normal,
   },
-  chico: {
+  detalle: {
     fontFamily: fuentes.normal,
-    fontSize: 11,
+    fontSize: tamanos.chico,
+  },
+  precio: {
+    fontFamily: fuentes.negrita,
+  },
+  infos: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    columnGap: espacio(1.5),
+    rowGap: 4,
+    marginTop: 2,
+  },
+  acciones: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: espacio(1),
+    paddingTop: espacio(1.5),
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  principal: {
+    minHeight: TAMANO_ACCION,
+    height: TAMANO_ACCION,
+    maxWidth: '100%',
   },
   redondo: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
+    width: TAMANO_ACCION,
+    height: TAMANO_ACCION,
+    borderRadius: TAMANO_ACCION / 2,
+    borderWidth: StyleSheet.hairlineWidth,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  abajo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 4,
-  },
-  etiquetas: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  etiqueta: {
-    fontFamily: fuentes.normal,
-    fontSize: 10,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  pildora: {
-    borderRadius: 999,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  textoPildora: {
-    color: '#FFFFFF',
-    fontFamily: fuentes.botonMedio,
-    fontSize: 9.5,
   },
 });

@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate, update_session_auth_hash
+from django.utils.translation import gettext as _
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes
@@ -65,7 +66,7 @@ def datos_perfil(usuario):
 def login(request):
     usuario = authenticate(request, username=request.data.get('username'), password=request.data.get('password'))
     if usuario is None:
-        return Response({'error': 'Usuario/email o contraseña incorrectos.'}, status=400)
+        return Response({'error': _('Usuario/email o contraseña incorrectos.')}, status=400)
     return Response(datos_sesion(usuario))
 
 @api_view(['POST'])
@@ -73,7 +74,7 @@ def login(request):
 def registro(request, rol):
     Formulario = FORMULARIOS_REGISTRO.get(rol)
     if Formulario is None:
-        return Response({'error': 'Tipo de cuenta inexistente.'}, status=404)
+        return Response({'error': _('Tipo de cuenta inexistente.')}, status=404)
     form = Formulario(request.data)
     if not form.is_valid():
         return Response(form.errors, status=400)
@@ -173,7 +174,7 @@ def mi_comercio(request):
     """
     tienda = getattr(request.user, 'tienda', None)
     if tienda is None:
-        return Response({'error': 'Todavía no completaste los datos de tu comercio.'}, status=404)
+        return Response({'error': _('Todavía no completaste los datos de tu comercio.')}, status=404)
     return _editar_perfil_de_rol(request, tienda, TiendaForm, datos_comercio)
 
 
@@ -183,7 +184,7 @@ def mi_organizacion(request):
     """Los datos de la organización de quien está logueado, con OrganizacionForm (igual que la web)."""
     organizacion = getattr(request.user, 'organizacion', None)
     if organizacion is None:
-        return Response({'error': 'Todavía no completaste los datos de tu organización.'}, status=404)
+        return Response({'error': _('Todavía no completaste los datos de tu organización.')}, status=404)
     return _editar_perfil_de_rol(request, organizacion, OrganizacionForm, datos_organizacion)
 
 
@@ -217,7 +218,7 @@ def cambiar_clave(request):
     usuario = form.save()
     if isinstance(request.successful_authenticator, SessionAuthentication):
         update_session_auth_hash(request, usuario)
-    return Response({'ok': True, 'mensaje': 'Listo, cambiaste tu contraseña.'})
+    return Response({'ok': True, 'mensaje': _('Listo, cambiaste tu contraseña.')})
 
 
 @api_view(['POST'])
@@ -229,12 +230,12 @@ def recuperar(request):
     """
     form = RecuperarClaveForm({'email': _enviados(request).get('email', '')})
     if not form.is_valid():
-        return Response({'error': 'Escribí un email válido.'}, status=400)
+        return Response({'error': _('Escribí un email válido.')}, status=400)
     form.save()
     return Response({
         'ok': True,
-        'mensaje': 'Si ese email tiene una cuenta en Lüp, en unos minutos te llega un link para elegir '
-                   'una contraseña nueva. Fijate también en Spam o Promociones.',
+        'mensaje': _('Si ese email tiene una cuenta en Lüp, en unos minutos te llega un link para elegir '
+                     'una contraseña nueva. Fijate también en Spam o Promociones.'),
     })
 
 
@@ -248,10 +249,10 @@ def dispositivo_push(request):
     """
     token = str(request.data.get('token', '')).strip()
     if not token.startswith(('ExponentPushToken[', 'ExpoPushToken[')) or len(token) > 200:
-        return Response({'error': 'Token de notificaciones inválido.'}, status=400)
+        return Response({'error': _('Token de notificaciones inválido.')}, status=400)
     if request.method == 'DELETE':
         DispositivoPush.objects.filter(usuario=request.user, token=token).delete()
         return Response(status=204)
     # Si el celular estaba con otra cuenta, pasa a esta
-    _, creado = DispositivoPush.objects.update_or_create(token=token, defaults={'usuario': request.user})
+    __, creado = DispositivoPush.objects.update_or_create(token=token, defaults={'usuario': request.user})
     return Response({'ok': True}, status=201 if creado else 200)

@@ -28,6 +28,7 @@ import EditarPerfil from '../pantallas/EditarPerfil';
 import Login from '../pantallas/Login';
 import Mapa from '../pantallas/Mapa';
 import MisFavoritos from '../pantallas/MisFavoritos';
+import MisPuntos from '../pantallas/MisPuntos';
 import Portada from '../pantallas/Portada';
 import RecuperarClave from '../pantallas/RecuperarClave';
 import Registro from '../pantallas/Registro';
@@ -118,6 +119,10 @@ export default function Navegacion() {
                 <Stack.Screen name="EditarComercio" component={EditarComercio} options={{ title: '' }} />
                 <Stack.Screen name="EditarOrganizacion" component={EditarOrganizacion} options={{ title: '' }} />
                 <Stack.Screen name="CambiarClave" component={CambiarClave} options={{ title: '' }} />
+                {/* Puntos Lüp: solo cuentas de consumidor (desde Perfil y el menú ☰). Título grande adentro */}
+                {usuario.rol === 'consumidor' ? (
+                  <Stack.Screen name="MisPuntos" component={MisPuntos} options={{ title: '' }} />
+                ) : null}
               </>
             ) : null}
             <Stack.Screen

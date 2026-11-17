@@ -3321,3 +3321,60 @@ msgstr "Your details were updated successfully."
 #: scr/bd_lup/users/views.py:145
 msgid "El link no es válido."
 msgstr "The link isn't valid."
+
+#: scr/bd_lup/products/api.py:140
+msgid "Cantidad inválida."
+msgstr "Invalid quantity."
+
+#: scr/bd_lup/products/api.py:144
+msgid "No hay stock suficiente."
+msgstr "There isn't enough stock."
+
+#: scr/bd_lup/products/api.py:246
+msgid "Estado inválido."
+msgstr "Invalid status."
+
+#: scr/bd_lup/products/api.py:248
+msgid "Cargá stock antes de volver a publicarlo."
+msgstr "Add units before publishing it again."
+
+#: scr/bd_lup/products/api.py:273
+#, python-format
+msgid "Esa reserva ya está %(estado)s."
+msgstr "That reservation is already %(estado)s."
+
+#: scr/bd_lup/products/api.py:316
+msgid "Acción inválida."
+msgstr "Invalid action."
+
+#: scr/bd_lup/products/api.py:324
+msgid "Este producto ya no está disponible para donar."
+msgstr "This product is no longer available to donate."
+
+#: scr/bd_lup/products/api.py:413 scr/bd_lup/products/api.py:424
+msgid "Elegí de 1 a 5 estrellas."
+msgstr "Choose from 1 to 5 stars."
+
+#: scr/bd_lup/users/api.py:77
+msgid "Tipo de cuenta inexistente."
+msgstr "Account type doesn't exist."
+
+#: scr/bd_lup/users/api.py:177
+msgid "Todavía no completaste los datos de tu comercio."
+msgstr "You haven't completed your store details yet."
+
+#: scr/bd_lup/users/api.py:187
+msgid "Todavía no completaste los datos de tu organización."
+msgstr "You haven't completed your organization details yet."
+
+#: scr/bd_lup/users/api.py:221
+msgid "Listo, cambiaste tu contraseña."
+msgstr "Done, you changed your password."
+
+#: scr/bd_lup/users/api.py:233
+msgid "Escribí un email válido."
+msgstr "Enter a valid email."
+
+#: scr/bd_lup/users/api.py:252
+msgid "Token de notificaciones inválido."
+msgstr "Invalid notification token."

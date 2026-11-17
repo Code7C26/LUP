@@ -70,20 +70,26 @@ function Dato({ icono, valor, ultimo }) {
 }
 
 // Fila que se toca (con flecha) para abrir una pantalla: "Cambiar contraseña", "Editar datos del comercio"
-function FilaAccion({ icono, texto, alTocar }) {
+// "valor" (opcional): un dato a la derecha, antes de la flecha (el saldo en "Mis puntos")
+function FilaAccion({ icono, texto, valor, alTocar }) {
   const { colores } = useTema();
   const { t } = useIdioma();
   return (
     <Pressable
       onPress={alTocar}
       accessibilityRole="button"
-      accessibilityLabel={texto}
+      accessibilityLabel={valor ? `${texto}, ${valor}` : texto}
       style={({ pressed }) => [estilos.fila, pressed && { opacity: 0.7 }]}
     >
       <View style={[estilos.iconoFila, { backgroundColor: colores.verdeProfundo }]}>
         <Icono nombre={icono} tamano={17} color={colores.sobreVerdeProfundo} />
       </View>
       <Text style={[estilos.valor, { color: colores.texto, fontFamily: fuentes.media }]}>{texto}</Text>
+      {valor ? (
+        <Text style={[estilos.valorDerecha, { color: colores.verdeHover }]} numberOfLines={1}>
+          {valor}
+        </Text>
+      ) : null}
       <Icono nombre="chevron-forward" tamano={16} color={colores.gris} />
     </Pressable>
   );
@@ -189,10 +195,17 @@ export default function Perfil({ navigation }) {
   const [saliendo, setSaliendo] = useState(false);
 
   const [impacto, setImpacto] = useState(null); // los números de "Tu impacto"
+  const [saldoPuntos, setSaldoPuntos] = useState(null); // Puntos Lüp (solo consumidor)
 
   const cargar = useCallback(async () => {
     if (!usuario) return;
     setError('');
+    // El saldo de puntos va aparte: si falla, el resto del Perfil se ve igual
+    if (usuario.rol === 'consumidor') {
+      api('/puntos/')
+        .then((r) => setSaldoPuntos(r.saldo))
+        .catch(() => {});
+    }
     try {
       setDatos(await api('/auth/yo/'));
       setImpacto(await calcularImpacto(usuario.rol));
@@ -311,6 +324,17 @@ export default function Perfil({ navigation }) {
       {impacto ? (
         <Grupo titulo={t('perfil.tuImpacto')}>
           <Cifras datos={impacto.map((d) => ({ ...d, texto: t(d.texto) }))} />
+        </Grupo>
+      ) : null}
+
+      {datos?.rol === 'consumidor' ? (
+        <Grupo titulo={t('perfil.puntosLup')}>
+          <FilaAccion
+            icono="star-outline"
+            texto={t('perfil.misPuntos')}
+            valor={saldoPuntos === null ? null : t('puntos.pts', { n: saldoPuntos })}
+            alTocar={() => navigation.navigate('MisPuntos')}
+          />
         </Grupo>
       ) : null}
 
@@ -441,6 +465,11 @@ const estilos = StyleSheet.create({
   valor: {
     flex: 1,
     fontFamily: fuentes.normal,
+    fontSize: tamanos.normal,
+  },
+  valorDerecha: {
+    flexShrink: 0,
+    fontFamily: fuentes.negrita,
     fontSize: tamanos.normal,
   },
   soporte: {

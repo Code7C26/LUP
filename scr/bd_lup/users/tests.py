@@ -288,6 +288,45 @@ class IdiomaTests(TestCase):
         self.assertEqual(r.json()['error'], 'Usuario/email o contraseña incorrectos.')
         self.assertEqual(r['Content-Language'], 'es-ar')
 
+    # ---------- La API usa el Accept-Language que manda la app (lup/idioma.py) ----------
+    def test_la_api_en_espanol_sin_encabezado(self):
+        r = self.client.post(reverse('api_login'), {'username': 'nadie', 'password': 'x'})
+        self.assertEqual(r.json()['error'], 'Usuario/email o contraseña incorrectos.')
+        self.assertEqual(r['Content-Language'], 'es-ar')
+        self.assertIn('Accept-Language', r['Vary'])
+
+    def test_la_api_en_espanol_con_accept_language_es(self):
+        for encabezado in ('es', 'es-AR', 'es-AR,en;q=0.8', 'fr'):
+            r = self.client.post(reverse('api_login'), {'username': 'nadie', 'password': 'x'},
+                                 HTTP_ACCEPT_LANGUAGE=encabezado)
+            self.assertEqual(r.json()['error'], 'Usuario/email o contraseña incorrectos.', encabezado)
+            self.assertEqual(r['Content-Language'], 'es-ar', encabezado)
+
+    def test_la_api_en_ingles_con_accept_language_en(self):
+        for encabezado in ('en', 'EN', 'en-US,en;q=0.9'):
+            r = self.client.post(reverse('api_login'), {'username': 'nadie', 'password': 'x'},
+                                 HTTP_ACCEPT_LANGUAGE=encabezado)
+            self.assertEqual(r.json()['error'], 'Incorrect username/email or password.', encabezado)
+            self.assertEqual(r['Content-Language'], 'en', encabezado)
+        r = self.client.post(reverse('api_registro', args=['nada']), {}, HTTP_ACCEPT_LANGUAGE='en')
+        self.assertEqual(r.json()['error'], "Account type doesn't exist.")
+        r = self.client.post(reverse('api_recuperar'), {'email': 'no'}, HTTP_ACCEPT_LANGUAGE='en')
+        self.assertEqual(r.json()['error'], 'Enter a valid email.')
+
+    def test_en_la_api_la_cookie_de_la_web_no_cuenta(self):
+        self.cambiar('en')
+        r = self.client.post(reverse('api_login'), {'username': 'nadie', 'password': 'x'}, HTTP_ACCEPT_LANGUAGE='es')
+        self.assertEqual(r.json()['error'], 'Usuario/email o contraseña incorrectos.')
+
+    def test_la_web_sigue_con_la_cookie_y_no_con_accept_language(self):
+        r = self.client.get(reverse('home'), HTTP_ACCEPT_LANGUAGE='en')
+        self.assertContains(r, 'Ofertas cerca tuyo')
+        self.assertEqual(r['Content-Language'], 'es-ar')
+        self.cambiar('en')
+        r = self.client.get(reverse('catalogo'), HTTP_ACCEPT_LANGUAGE='es-AR')
+        self.assertContains(r, 'Offers to rescue today')
+        self.assertEqual(r['Content-Language'], 'en')
+
     def test_traducciones_compiladas_al_dia(self):
         """El .mo tiene que estar compilado desde el .po (python manage.py compilar_traducciones)."""
         import gettext

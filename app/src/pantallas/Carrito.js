@@ -16,7 +16,7 @@ import { useSesion } from '../contexto/Sesion';
 import { programarRecordatorio } from '../servicios/recordatorios';
 import { useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, sombra, tamanos, useTema } from '../tema';
-import { emojiCategoria, formatoPrecio, textoError, vibrar } from '../utilidades';
+import { emojiCategoria, formatoPrecio, PESOS_POR_PUNTO, puntosPorMonto, textoError, vibrar } from '../utilidades';
 
 // Botón redondo − / +
 function BotonMasMenos({ icono, onPress, deshabilitado, etiqueta }) {
@@ -123,6 +123,18 @@ export default function Carrito({ navigation }) {
     }
   }
 
+  // Puntos Lüp: misma regla que la web (1 cada $2.000, bloques completos). Como cada producto del carrito
+  // es una reserva aparte y Django suma los puntos por reserva, se calcula por producto y se suman.
+  const subtotales = items.filter((i) => detalles[i.id]).map((i) => i.cantidad * i.precio);
+  const puntos = subtotales.reduce((suma, s) => suma + puntosPorMonto(s), 0);
+  const faltan = subtotales.length ? PESOS_POR_PUNTO - Math.max(...subtotales) : 0;
+  const sumaPuntos = !usuario || usuario.rol === 'consumidor';
+  const aviso = !sumaPuntos || !subtotales.length
+    ? ''
+    : puntos > 0
+      ? t('carrito.sumasPuntos', { n: puntos })
+      : t('carrito.faltanParaPunto', { monto: formatoPrecio(faltan) });
+
   if (cargando && items.length) return <Cargando texto={t('carrito.abriendo')} />;
 
   if (!items.length) {
@@ -215,6 +227,13 @@ export default function Carrito({ navigation }) {
 
       {/* Total y "Realizar compra", fijos abajo */}
       <View style={[estilos.barra, { backgroundColor: colores.fondo, borderColor: colores.borde, paddingBottom: bottom + espacio(1.5) }]}>
+        {/* Puntos Lüp que suma esta compra al retirarla (no para comercios ni organizaciones) */}
+        {aviso ? (
+          <View style={[estilos.puntos, { backgroundColor: colores.menta }]} accessible accessibilityLabel={aviso}>
+            <Icono nombre="star" tamano={15} color={colores.verdeHover} />
+            <Text style={[estilos.chico, { color: colores.verdeHover, flex: 1 }]}>{aviso}</Text>
+          </View>
+        ) : null}
         <View style={estilos.filaTotal}>
           <Text style={[estilos.chico, { color: colores.gris }]}>
             {t('carrito.pagasAlRetirar', { productos: t('comun.productos', { n: cantidadTotal }) })}
@@ -311,6 +330,14 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  puntos: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: espacio(1),
+    paddingHorizontal: espacio(1.5),
+    paddingVertical: espacio(1),
+    borderRadius: 12,
   },
   total: {
     fontFamily: fuentes.negrita,
