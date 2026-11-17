@@ -10,6 +10,7 @@ from scr.bd_lup.stores import api as stores_api
 from scr.bd_lup.products import api as products_api
 from scr.bd_lup.products import views as product_views
 from scr.bd_lup.products.api import ProductoViewSet
+from scr.bd_lup.puntos import api as puntos_api
 from scr.bd_lup.soporte import api as soporte_api
 from scr.bd_lup.stores import views as store_views
 from scr.bd_lup.users import api as users_api
@@ -56,6 +57,10 @@ urlpatterns = [
     path('api/mis-reservas/', products_api.mis_reservas, name='api_mis_reservas'),
     path('api/reservas/<int:pk>/cancelar/', products_api.cancelar_reserva, name='api_cancelar_reserva'),
     path('api/reservas/<int:pk>/calificar/', products_api.calificar_reserva, name='api_calificar_reserva'),
+    # Puntos Lüp (mismas reglas que la web: puntos/servicios.py)
+    path('api/puntos/', puntos_api.mis_puntos, name='api_puntos'),
+    path('api/puntos/canjear/<int:pk>/', puntos_api.canjear_producto, name='api_canjear_merch'),
+    path('api/puntos/canjes/<int:pk>/cancelar/', puntos_api.cancelar, name='api_cancelar_canje'),
 
     # API: comercio 
     path('api/mis-productos/<int:pk>/estado/', products_api.cambiar_estado, name='api_cambiar_estado'),

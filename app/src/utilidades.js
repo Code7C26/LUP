@@ -64,6 +64,15 @@ export function formatoHora(valor) {
   return f ? `${dos(f.getHours())}:${dos(f.getMinutes())}` : '';
 }
 
+// ---- Puntos Lüp: la MISMA regla que la web (scr/bd_lup/puntos/models.py → puntos_por_monto) ----
+// 1 punto cada $2.000, solo bloques completos: $1.900 → 0 · $2.000 → 1 · $3.900 → 1 · $6.500 → 3
+export const PESOS_POR_PUNTO = 2000;
+
+export function puntosPorMonto(monto) {
+  const numero = Number(monto);
+  return numero > 0 ? Math.floor(numero / PESOS_POR_PUNTO) : 0;
+}
+
 // Mismo emoji por categoría que usa la web (templatetags/lup_tags.py)
 const EMOJIS_CATEGORIA = {
   panificados: '🥐',

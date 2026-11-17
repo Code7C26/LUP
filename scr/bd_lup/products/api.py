@@ -1,4 +1,5 @@
 """API REST de Lüp para la app móvil."""
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.db.models import Q, Sum
 from django.db.models.functions import Coalesce
@@ -130,6 +131,16 @@ class ReservaSerializer(serializers.ModelSerializer):
         return {'puntaje': c.puntaje, 'comentario': c.comentario,
                 'puntaje_producto': c.puntaje_producto, 'respuesta': c.respuesta}
 
+    def to_representation(self, reserva):
+        datos = super().to_representation(reserva)
+        # Puntos Lüp: solo en las reservas ya retiradas, lo que sumó esa compra (0 si fue menos de $2.000)
+        if reserva.estado == Reserva.RETIRADA:
+            try:
+                datos['puntos_sumados'] = reserva.movimiento_puntos.puntos
+            except ObjectDoesNotExist:
+                datos['puntos_sumados'] = 0
+        return datos
+
 
 @api_view(['POST'])
 @permission_classes([EsConsumidor])
@@ -153,7 +164,7 @@ def reservar(request, pk):
 @api_view(['GET'])
 @permission_classes([EsConsumidor])
 def mis_reservas(request):
-    reservas = Reserva.objects.filter(consumidor=request.user).select_related('producto__comercio')
+    reservas = Reserva.objects.filter(consumidor=request.user).select_related('producto__comercio', 'movimiento_puntos')
     return Response(ReservaSerializer(reservas, many=True).data)
 
 

@@ -1,5 +1,6 @@
 // Menú ☰ (como el mockup): un panel que entra desde la izquierda. Las opciones cambian según la cuenta:
-//   consumidor (y invitado): Perfil, Mis reservas, Mis favoritos, Apariencia y Soporte (WhatsApp)
+//   consumidor (y invitado): Perfil, Mis reservas, Mis favoritos, Mis puntos (solo con cuenta),
+//                            Apariencia y Soporte (WhatsApp)
 //   comercio: Mi perfil, Mis productos, Publicar producto, Confirmar retiro, Solicitudes de donación,
 //             Datos de mi comercio, Apariencia, Idioma y Soporte
 //   organización: Mi perfil, Donaciones disponibles, Mis solicitudes, Datos de mi organización,
@@ -170,6 +171,10 @@ export default function MenuLateral({ visible, alCerrar, navigation }) {
               <Opcion icono="person-outline" texto={t('menu.perfil')} alTocar={() => ir('Perfil')} />
               <Opcion icono="ticket-outline" texto={t('menu.misReservas')} alTocar={() => ir('MisReservas')} />
               <Opcion icono="heart-outline" texto={t('menu.misFavoritos')} numero={favoritos.length} alTocar={() => ir('MisFavoritos')} />
+              {/* Puntos Lüp: solo con una cuenta de consumidor (el invitado no suma puntos) */}
+              {rol === 'consumidor' ? (
+                <Opcion icono="star-outline" texto={t('menu.misPuntos')} alTocar={() => ir('MisPuntos')} />
+              ) : null}
             </View>
           )}
 
