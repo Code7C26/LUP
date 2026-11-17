@@ -250,6 +250,13 @@
             v = Math.max(1, Math.min(max, v));
             input.value = v;
             if (total) total.textContent = '$' + (precio * v).toLocaleString(LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            // Puntos Lüp: 1 cada $2.000 (solo bloques completos)
+            const puntos = $('[data-puntos-reserva]');
+            if (puntos) {
+                const n = Math.floor((precio * v) / parseFloat(puntos.dataset.pesosPorPunto || '2000'));
+                $('[data-puntos-cantidad]', puntos).textContent = n;
+                puntos.hidden = n < 1;
+            }
         };
         caja.addEventListener('click', (ev) => {
             const b = ev.target.closest('button[data-delta]');
@@ -335,7 +342,11 @@
                 estado.textContent = texto;
                 estado.className = tipo === 'error' ? 'small text-danger' : tipo === 'ok' ? 'small text-lup' : 'small text-muted-lup';
             };
-            img.addEventListener('change', () => { boton.disabled = !hayFoto(); });
+            img.addEventListener('change', () => {
+                boton.disabled = !hayFoto();
+                // Se completa solo al elegir la foto, si todavía no se escribió nada (al editar, con el botón)
+                if (hayFoto() && !campo('titulo').value.trim() && !campo('descripcion').value.trim()) boton.click();
+            });
             boton.addEventListener('click', async () => {
                 if (!hayFoto()) return;
                 const datos = new FormData();

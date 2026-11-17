@@ -2,6 +2,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path, re_path
+from django.views.generic import TemplateView
 from django.views.static import serve
 from rest_framework.routers import DefaultRouter
 from scr.bd_lup.stores import api as stores_api
@@ -12,6 +13,8 @@ from scr.bd_lup.products.api import ProductoViewSet
 from scr.bd_lup.soporte import api as soporte_api
 from scr.bd_lup.stores import views as store_views
 from scr.bd_lup.users import api as users_api
+
+from . import paginas_legales
 
 router = DefaultRouter()
 router.register('productos', ProductoViewSet, basename='api-productos')
@@ -29,6 +32,10 @@ urlpatterns = [
     path('ubicacion/buscar/', product_views.buscar_direccion, name='buscar_direccion'),
     path('usuarios/', include('scr.bd_lup.users.urls')),
     path('ayuda/', include('scr.bd_lup.soporte.urls')),  # chat de soporte
+    path('puntos/', include('scr.bd_lup.puntos.urls')),  # puntos Lüp y canje de merch
+    path('nosotros/', TemplateView.as_view(template_name='nosotros.html'), name='nosotros'),
+    path('terminos/', paginas_legales.terminos, name='terminos'),
+    path('privacidad/', paginas_legales.privacidad, name='privacidad'),
     
     # API: comercios 
     path('api/comercios/', stores_api.comercios, name='api_comercios'),

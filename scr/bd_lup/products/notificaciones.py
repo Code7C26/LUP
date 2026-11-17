@@ -245,10 +245,12 @@ def recordar_retiro(reserva):
 
 def pedir_opinion(reserva):
     """Cuando el comercio confirma el retiro: "¿Cómo te fue?"."""
+    from scr.bd_lup.puntos.models import puntos_por_monto
     _programar(
         f'¿Cómo te fue con {reserva.producto.titulo}?',
         'pedir_opinion',
-        {**_contexto_reserva(reserva), 'url_opinar': _url('calificar_reserva', reserva.pk)},
+        {**_contexto_reserva(reserva), 'url_opinar': _url('calificar_reserva', reserva.pk),
+         'puntos_sumados': puntos_por_monto(reserva.precio_total), 'url_puntos': _url('mis_puntos')},
         reserva.consumidor,
     )
     _programar_push(
@@ -375,3 +377,37 @@ def avisar_nueva_donacion(producto):
         'Nueva donación disponible 💚', f'{producto.comercio} publicó {producto.titulo} para donar.',
         {'pantalla': 'DetalleProducto', 'id': producto.pk},
     )
+
+
+def avisar_canje(canje):
+    """Canje de puntos: a quien canjeó (con el código) y al equipo de Lüp, que entrega el merch."""
+    _programar(
+        f'Canjeaste {canje.producto.nombre} con tus puntos Lüp',
+        'canje_puntos', {'canje': canje, 'url_puntos': _url('mis_puntos')}, canje.usuario, obligatorio=True,
+    )
+    if not settings.SOPORTE_EMAIL:
+        return
+    u = canje.usuario
+    cuerpo = (
+        f'{u.nombre_visible} ({u.username}, {u.email or "sin email"}) canjeó {canje.puntos} puntos por: '
+        f'{canje.producto.nombre}.\nCódigo del canje: {canje.codigo}\n\n'
+        f'Coordiná la entrega y marcalo como entregado en: {settings.SITIO_URL}/admin/puntos/canje/{canje.pk}/change/'
+    )
+
+    def tarea():
+        from django.core.mail import EmailMessage
+        mensaje = EmailMessage(f'[Lüp] Canje de puntos {canje.codigo}', cuerpo, to=[settings.SOPORTE_EMAIL],
+                               reply_to=[u.email] if u.email else None)
+
+        def mandar():
+            try:
+                mensaje.send()
+            except Exception:
+                logger.exception('No se pudo avisar al equipo del canje %s', canje.codigo)
+        if settings.EMAIL_EN_SEGUNDO_PLANO:
+            threading.Thread(target=mandar, daemon=True).start()
+        else:
+            mandar()
+
+    if not _silencio.get():
+        transaction.on_commit(tarea)

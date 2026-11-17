@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load lup_tags humanize %}
+
+{% block title %}{% translate "Puntos Lüp" %} · Lüp{% endblock %}
+
+{% block content %}
+<div class="container pt-4 pb-2">
+
+    {# ---------- Saldo y cómo se ganan ---------- #}
+    <section class="puntos-hero">
+        <div class="puntos-saldo">
+            <span class="eyebrow">{% translate "Puntos Lüp" %}</span>
+            {% if es_consumidor %}
+                <p class="puntos-numero mb-0"><i class="bi bi-star-fill" aria-hidden="true"></i> {{ saldo|intcomma }}</p>
+                <p class="mb-0">{% blocktranslate count n=saldo %}punto para canjear{% plural %}puntos para canjear{% endblocktranslate %}</p>
+            {% else %}
+                <h1 class="h2 mb-2">{% translate "Rescatá comida, sumá puntos y canjealos por merch" %}</h1>
+                <p class="mb-3">{% translate "Los puntos son para cuentas de consumidor." %}</p>
+                {% if not user.is_authenticated %}<a href="{% url 'registro_seleccion' %}" class="btn btn-ambar">{% translate "Crear mi cuenta" %}</a>{% endif %}
+            {% endif %}
+        </div>
+        <div class="puntos-como">
+            <h2 class="h5 mb-2">{% translate "Cómo se ganan" %}</h2>
+            <p class="small mb-3">{% blocktranslate with monto=pesos_por_punto|intcomma %}Cada <strong>${{ monto }}</strong> de una compra retirada suman <strong>1 punto</strong>. Solo cuentan los bloques completos: lo que sobra no suma.{% endblocktranslate %}</p>
+            <div class="tabla-puntos" role="table" aria-label="{% translate 'Ejemplos de puntos por compra' %}">
+                <div role="row" class="encabezado"><span role="columnheader">{% translate "Compra" %}</span>{% for monto, pts in ejemplos %}<span role="cell">${{ monto|intcomma }}</span>{% endfor %}</div>
+                <div role="row"><span role="columnheader">{% translate "Puntos" %}</span>{% for monto, pts in ejemplos %}<span role="cell" class="fw-semibold">{{ pts }}</span>{% endfor %}</div>
+            </div>
+            <p class="small text-muted-lup mt-2 mb-0">{% translate "Se suman cuando el comercio confirma que retiraste tu reserva." %}</p>
+        </div>
+    </section>
+
+    {# ---------- Merch para canjear ---------- #}
+    <h2 class="h4 mt-5 mb-1">{% translate "Merch para canjear" %}</h2>
+    <p class="text-muted-lup mb-3">{% translate "Cada producto se puede comprar con plata o canjear con puntos. Para comprarlo con plata, escribinos por WhatsApp." %}</p>
+    <div class="merch-grilla">
+        {% for p in productos %}
+            <article class="merch-card{% if p.alcanza %} alcanza{% endif %}">
+                <div class="merch-foto">{% if p.imagen %}<img src="{{ p.imagen.url }}" alt="{{ p.nombre }}" loading="lazy">{% else %}<i class="bi {{ p.icono }}" aria-hidden="true"></i>{% endif %}</div>
+                <h3 class="h6 mb-1">{{ p.nombre }}</h3>
+                {% if p.descripcion %}<p class="small text-muted-lup mb-2">{{ p.descripcion }}</p>{% endif %}
+                <div class="merch-precios">
+                    <span class="merch-pts"><i class="bi bi-star-fill" aria-hidden="true"></i> {{ p.puntos|intcomma }} {% translate "pts" %}</span>
+                    <span class="small text-muted-lup">{% translate "o" %} ${{ p.precio|floatformat:0|intcomma }}</span>
+                </div>
+                {% if es_consumidor %}
+                    <div class="merch-barra" role="progressbar" aria-valuenow="{{ p.progreso }}" aria-valuemin="0" aria-valuemax="100" aria-label="{% blocktranslate with nombre=p.nombre %}Progreso para {{ nombre }}{% endblocktranslate %}"><span style="width: {{ p.progreso }}%"></span></div>
+                    {% if p.alcanza %}
+                        <form method="post" action="{% url 'canjear_merch' p.pk %}" class="mt-auto" data-confirmar="{% blocktranslate with nombre=p.nombre n=p.puntos %}¿Canjear {{ nombre }} por {{ n }} puntos?{% endblocktranslate %}">
+                            {% csrf_token %}
+                            <button class="btn btn-lup btn-sm w-100">{% translate "Canjear" %}</button>
+                        </form>
+                    {% else %}
+                        <p class="small text-muted-lup mt-auto mb-0">{% blocktranslate count n=p.faltan %}Te falta {{ n }} punto{% plural %}Te faltan {{ n }} puntos{% endblocktranslate %}</p>
+                    {% endif %}
+                {% endif %}
+            </article>
+        {% empty %}
+            <p class="text-muted-lup">{% translate "Pronto vas a poder canjear tus puntos acá." %}</p>
+        {% endfor %}
+    </div>
+
+    {% if es_consumidor %}
+    <div class="row g-4 mt-4">
+        {# ---------- Mis canjes ---------- #}
+        <div class="col-lg-5">
+            <h2 class="min-titulo">{% translate "Mis canjes" %}</h2>
+            <ul class="min-lista">
+                {% for c in canjes %}
+                    <li>
+                        <div class="min-w-0 flex-grow-1">
+                            <span class="d-block text-truncate">{{ c.producto.nombre }}</span>
+                            <small class="text-muted-lup">{{ c.puntos }} {% translate "pts" %} · {{ c.creado_en|date:"d/m/Y" }} · <span class="min-estado {% if c.estado == 'entregado' %}ok{% elif c.estado == 'cancelado' %}mal{% endif %}">{{ c.get_estado_display }}</span></small>
+                        </div>
+                        {% if c.estado == 'pendiente' %}
+                            <code class="min-codigo">{{ c.codigo }}</code>
+                            <form method="post" action="{% url 'cancelar_canje' c.pk %}" data-confirmar="{% translate '¿Cancelar este canje? Los puntos vuelven a tu cuenta.' %}">
+                                {% csrf_token %}
+                                <button class="btn btn-min btn-sm">{% translate "Cancelar" %}</button>
+                            </form>
+                        {% endif %}
+                    </li>
+                {% empty %}
+                    <li class="min-vacio">{% translate "Todavía no canjeaste nada." %}</li>
+                {% endfor %}
+            </ul>
+            <p class="small text-muted-lup mt-2">{% translate "Después de canjear, el equipo de Lüp te escribe para coordinar la entrega." %}</p>
+        </div>
+
+        {# ---------- Historial ---------- #}
+        <div class="col-lg-7">
+            <h2 class="min-titulo">{% translate "Historial de puntos" %}</h2>
+            <ul class="min-lista">
+                {% for m in movimientos %}
+                    <li>
+                        <div class="min-w-0 flex-grow-1">
+                            <span class="d-block text-truncate">{{ m.get_motivo_display }}{% if m.detalle %} · {{ m.detalle }}{% endif %}</span>
+                            <small class="text-muted-lup">{{ m.creado_en|date:"d/m/Y H:i" }}</small>
+                        </div>
+                        <span class="fw-semibold {% if m.puntos > 0 %}text-lup{% else %}text-ambar{% endif %}">{% if m.puntos > 0 %}+{% endif %}{{ m.puntos }}</span>
+                    </li>
+                {% empty %}
+                    <li class="min-vacio">{% translate "Cuando retires tu primera compra, tus puntos van a aparecer acá." %} <a href="{% url 'catalogo' %}">{% translate "Ver ofertas" %}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

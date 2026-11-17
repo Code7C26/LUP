@@ -61,7 +61,9 @@
                 {% include 'includes/_campo.html' with campo=form.password2 clase='col-md-6 mb-3' %}
             </div>
 
-            {% include 'includes/_campo.html' with campo=form.acepta_terminos clase='mt-2 mb-4' %}
+            {% include 'includes/_campo.html' with campo=form.acepta_terminos clase='mt-2 mb-1' %}
+            {% url 'terminos' as url_terminos %}{% url 'privacidad' as url_privacidad %}
+            <p class="small text-muted-lup ms-4 mb-4">{% blocktranslate %}Leé los <a href="{{ url_terminos }}" target="_blank" rel="noopener">Términos y Condiciones</a> y la <a href="{{ url_privacidad }}" target="_blank" rel="noopener">Política de Privacidad</a>.{% endblocktranslate %}</p>
 
             <button type="submit" class="btn btn-lup btn-lg w-100">{% translate "Crear mi cuenta" %}</button>
         </form>

@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% translate "Nosotros" %} · Lüp{% endblock %}
+
+{% block content %}
+<div class="container pt-4">
+
+    {# ---------- Quiénes somos ---------- #}
+    <section class="hero nosotros-hero">
+        <span class="burbuja b1" aria-hidden="true"></span>
+        <span class="burbuja b3" aria-hidden="true"></span>
+        <div class="position-relative">
+            <span class="nosotros-chip"><i class="bi bi-mortarboard-fill me-1" aria-hidden="true"></i>{% translate "Proyecto FAT 2026 · 7.º año, Informática · Alta Gracia" %}</span>
+            <h1 class="mt-3">{% blocktranslate %}Somos tres estudiantes que no queremos que en <span class="resaltado">Alta Gracia</span> se tire comida{% endblocktranslate %}</h1>
+            <p class="lead mt-3">{% translate "Lüp nació en el aula, buscando una solución tecnológica a un problema social y ambiental de nuestra ciudad: la comida apta para consumir que se descarta todos los días. Unimos tecnología, innovación y conciencia ambiental para darle a esos alimentos una segunda oportunidad." %}</p>
+        </div>
+    </section>
+
+    {# ---------- El problema ---------- #}
+    <section class="seccion">
+        <div class="row g-4 align-items-center">
+            <div class="col-lg-5">
+                <span class="eyebrow">{% translate "Por qué existe Lüp" %}</span>
+                <p class="nosotros-dato mb-1">16.000.000</p>
+                <p class="fw-semibold mb-1">{% translate "toneladas de alimentos se pierden o desperdician por año en Argentina." %}</p>
+                <p class="small text-muted-lup mb-0">{% translate "Fuente: Ministerio de Agroindustria / FAO." %}</p>
+            </div>
+            <div class="col-lg-7">
+                <p class="mb-3">{% translate "Descartar comida apta también desperdicia todo lo que se usó para producirla, transportarla y conservarla. Para el comercio es plata perdida, para el ambiente son recursos tirados, y es comida que no llega a quien la necesita." %}</p>
+                <p class="mb-0">{% translate "En Alta Gracia no había ninguna herramienta que resolviera esto. Por eso creamos Lüp: los comercios publican lo que está por vencer con descuento, los vecinos lo reservan y lo retiran, y lo que no se vende puede donarse a organizaciones sociales." %}</p>
+            </div>
+        </div>
+    </section>
+
+    {# ---------- Objetivos ---------- #}
+    <section class="seccion">
+        <span class="eyebrow">{% translate "Qué buscamos lograr" %}</span>
+        <h2 class="mb-4">{% translate "Nuestros objetivos" %}</h2>
+        <div class="row g-3">
+            <div class="col-sm-6 col-lg-4"><div class="objetivo"><i class="bi bi-recycle" aria-hidden="true"></i><span>{% translate "Reducir el desperdicio de alimentos." %}</span></div></div>
+            <div class="col-sm-6 col-lg-4"><div class="objetivo"><i class="bi bi-shop" aria-hidden="true"></i><span>{% translate "Disminuir las pérdidas económicas de los comercios." %}</span></div></div>
+            <div class="col-sm-6 col-lg-4"><div class="objetivo"><i class="bi bi-basket2" aria-hidden="true"></i><span>{% translate "Facilitar el acceso a alimentos a precios más accesibles." %}</span></div></div>
+            <div class="col-sm-6 col-lg-4"><div class="objetivo"><i class="bi bi-heart" aria-hidden="true"></i><span>{% translate "Favorecer las donaciones a organizaciones sociales." %}</span></div></div>
+            <div class="col-sm-6 col-lg-4"><div class="objetivo"><i class="bi bi-flower1" aria-hidden="true"></i><span>{% translate "Promover hábitos de consumo responsable." %}</span></div></div>
+            <div class="col-sm-6 col-lg-4"><div class="objetivo"><i class="bi bi-arrow-repeat" aria-hidden="true"></i><span>{% translate "Contribuir a un modelo de economía circular." %}</span></div></div>
+        </div>
+    </section>
+
+    {# ---------- Equipo ---------- #}
+    <section class="seccion">
+        <span class="eyebrow">{% translate "El equipo" %}</span>
+        <h2 class="mb-4">{% translate "Quiénes hacemos Lüp" %}</h2>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="persona">
+                    <span class="persona-iniciales" aria-hidden="true">SS</span>
+                    <h3 class="h5 mb-2">Sofía Silva</h3>
+                    <ul class="persona-roles">
+                        <li>{% translate "Project Manager" %}</li>
+                        <li>{% translate "Desarrolladora backend y frontend" %}</li>
+                        <li>{% translate "Branding y comunicación visual" %}</li>
+                        <li>{% translate "QA / Tester" %}</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="persona">
+                    <span class="persona-iniciales" aria-hidden="true">JC</span>
+                    <h3 class="h5 mb-2">Josefina Caggiano</h3>
+                    <ul class="persona-roles">
+                        <li>{% translate "Analista de sistemas" %}</li>
+                        <li>{% translate "Desarrolladora backend y frontend" %}</li>
+                        <li>{% translate "Diseño UX/UI" %}</li>
+                        <li>{% translate "QA / Tester" %}</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="persona">
+                    <span class="persona-iniciales" aria-hidden="true">TB</span>
+                    <h3 class="h5 mb-2">Trinidad Bossi</h3>
+                    <ul class="persona-roles">
+                        <li>{% translate "Desarrolladora de base de datos" %}</li>
+                        <li>{% translate "Desarrolladora backend y frontend" %}</li>
+                        <li>{% translate "Sostenibilidad y aspectos legales" %}</li>
+                        <li>{% translate "QA / Tester" %}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {# ---------- Proyectos a futuro ---------- #}
+    <section class="seccion">
+        <span class="eyebrow">{% translate "Lo que viene" %}</span>
+        <h2 class="mb-4">{% translate "Proyectos a futuro" %}</h2>
+        <ol class="ruta">
+            <li class="ruta-item hecho">
+                <span class="ruta-estado">{% translate "Ya disponible" %}</span>
+                <h3 class="h6 mb-1">{% translate "Puntos Lüp y merchandising sustentable" %}</h3>
+                <p class="small text-muted-lup mb-0">{% translate "Cada compra suma puntos que se canjean por productos reutilizables, como bolsas, tuppers y botellas de vidrio." %} <a href="{% url 'mis_puntos' %}">{% translate "Ver puntos" %}</a></p>
+            </li>
+            <li class="ruta-item hecho">
+                <span class="ruta-estado">{% translate "Ya disponible" %}</span>
+                <h3 class="h6 mb-1">{% translate "Inteligencia artificial al servicio de los comercios" %}</h3>
+                <p class="small text-muted-lup mb-0">{% translate "Un asistente que responde dudas al instante, y la carga de productos a partir de una foto." %}</p>
+            </li>
+            <li class="ruta-item">
+                <span class="ruta-estado">{% translate "Próximamente" %}</span>
+                <h3 class="h6 mb-1">{% translate "La app de Lüp en Google Play" %}</h3>
+                <p class="small text-muted-lup mb-0">{% translate "Para reservar, publicar y recibir avisos desde el celular." %}</p>
+            </li>
+            <li class="ruta-item">
+                <span class="ruta-estado">{% translate "A futuro" %}</span>
+                <h3 class="h6 mb-1">{% translate "Lüp para municipios e instituciones" %}</h3>
+                <p class="small text-muted-lup mb-0">{% translate "Datos de impacto para medir y reducir el desperdicio de alimentos de toda la ciudad." %}</p>
+            </li>
+            <li class="ruta-item">
+                <span class="ruta-estado">{% translate "A futuro" %}</span>
+                <h3 class="h6 mb-1">{% translate "Más comercios y organizaciones" %}</h3>
+                <p class="small text-muted-lup mb-0">{% translate "Sumar a cada panadería, verdulería, rotisería y comedor de Alta Gracia, y después llegar a otras ciudades." %}</p>
+            </li>
+        </ol>
+    </section>
+
+    {# ---------- Sumate ---------- #}
+    <section class="seccion">
+        <div class="nosotros-cta">
+            <div>
+                <h2 class="h3 mb-1">{% translate "Más valor. Menos desperdicio." %}</h2>
+                <p class="mb-0">{% translate "Sumate como consumidor, comercio u organización." %}</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'catalogo' %}" class="btn btn-ambar">{% translate "Ver ofertas" %}</a>
+                {% else %}
+                    <a href="{% url 'registro_seleccion' %}" class="btn btn-ambar">{% translate "Crear cuenta" %}</a>
+                    <a href="{% url 'catalogo' %}" class="btn btn-blanco">{% translate "Ver ofertas" %}</a>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

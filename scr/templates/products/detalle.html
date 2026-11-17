@@ -92,6 +92,7 @@
                     </div>
                     <button type="submit" class="btn btn-lup btn-lg w-100 mt-4"><i class="bi bi-bag-check me-2"></i>{% translate "Reservar ahora" %}</button>
                     <p class="small text-muted-lup text-center mt-2 mb-0">{% translate "Recibirás un código para mostrar al retirar." %}</p>
+                    {% if user.is_anonymous or user.es_consumidor %}<p class="small text-center mt-1 mb-0 text-ambar" data-puntos-reserva data-pesos-por-punto="2000"><i class="bi bi-star-fill me-1" aria-hidden="true"></i><span>{% translate "Con esta compra sumás" %} <strong data-puntos-cantidad>0</strong> {% translate "puntos Lüp al retirarla." %}</span> <a href="{% url 'mis_puntos' %}" class="text-ambar">{% translate "¿Qué son?" %}</a></p>{% endif %}
                 </form>
 
             {% elif form_donacion %}

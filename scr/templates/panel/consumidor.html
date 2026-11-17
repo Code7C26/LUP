@@ -16,9 +16,10 @@
     </div>
 
     <div class="row g-3 mb-5">
-        <div class="col-md-4"><div class="stat"><div class="icono"><i class="bi bi-bag-check"></i></div><div class="numero">{{ stats.reservas }}</div><div class="etiqueta">{% translate "Reservas realizadas" %}</div></div></div>
-        <div class="col-md-4"><div class="stat azul"><div class="icono"><i class="bi bi-recycle"></i></div><div class="numero">{{ stats.rescatados }}</div><div class="etiqueta">{% translate "Productos rescatados" %}</div></div></div>
-        <div class="col-md-4"><div class="stat ambar"><div class="icono"><i class="bi bi-piggy-bank"></i></div><div class="numero">${{ stats.ahorro|floatformat:0|intcomma }}</div><div class="etiqueta">{% translate "Ahorrado con Lüp" %}</div></div></div>
+        <div class="col-6 col-md-3"><div class="stat"><div class="icono"><i class="bi bi-bag-check"></i></div><div class="numero">{{ stats.reservas }}</div><div class="etiqueta">{% translate "Reservas realizadas" %}</div></div></div>
+        <div class="col-6 col-md-3"><div class="stat azul"><div class="icono"><i class="bi bi-recycle"></i></div><div class="numero">{{ stats.rescatados }}</div><div class="etiqueta">{% translate "Productos rescatados" %}</div></div></div>
+        <div class="col-6 col-md-3"><div class="stat ambar"><div class="icono"><i class="bi bi-piggy-bank"></i></div><div class="numero">${{ stats.ahorro|floatformat:0|intcomma }}</div><div class="etiqueta">{% translate "Ahorrado con Lüp" %}</div></div></div>
+        <div class="col-6 col-md-3"><a href="{% url 'mis_puntos' %}" class="stat stat-puntos d-block text-decoration-none"><div class="icono"><i class="bi bi-star-fill"></i></div><div class="numero">{{ SALDO_PUNTOS|default:0 }}</div><div class="etiqueta">{% translate "Puntos Lüp" %} <i class="bi bi-arrow-right"></i></div></a></div>
     </div>
 
     <div class="row g-4">
