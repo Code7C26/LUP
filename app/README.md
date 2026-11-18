@@ -23,4 +23,28 @@ Cuentas de prueba (después de `python manage.py cargar_demo`): `consumidor_demo
 - `src/navegacion/` pantallas según el tipo de cuenta · `src/pantallas/` todas las pantallas
 - `src/servicios/` notificaciones push y recordatorios · `assets/` logo, íconos y video de la intro
 
+## Armar el APK (EAS)
+
+Perfiles en `eas.json`: `preview` arma un **APK** para instalar directo; `production` arma el **AAB** para Google Play.
+Los dos usan la web publicada (`EXPO_PUBLIC_URL_SERVIDOR=https://lupalimentos.com`).
+
+Las claves NO están en el repo: son variables de EAS que lee `app.config.js`.
+
+| Variable | Tipo | Para qué |
+|---|---|---|
+| `EXPO_PUBLIC_URL_SERVIDOR` | texto, `plaintext` | La web (también la usan los `eas update`, que NO leen el `env` de `eas.json`) |
+| `GOOGLE_MAPS_API_KEY` | texto, `sensitive` | Mapas en Android (sin ella, el mapa cierra la app) |
+| `GOOGLE_SERVICES_JSON` | archivo, `secret` | Notificaciones push (Firebase) |
+
+```bash
+npx eas-cli@latest env:set --name EXPO_PUBLIC_URL_SERVIDOR --value https://lupalimentos.com --environment preview --environment production --visibility plaintext
+npx eas-cli@latest env:set --name GOOGLE_MAPS_API_KEY --value "LA_CLAVE" --environment preview --environment production --visibility sensitive
+npx eas-cli@latest env:set --name GOOGLE_SERVICES_JSON --type file --value ./google-services.json --environment preview --environment production --visibility secret
+npx eas-cli@latest build -p android --profile preview
+```
+
+Cambios solo de JavaScript (pantallas, textos), sin reinstalar: `npx eas-cli@latest update --channel preview --environment preview --message "..."`.
+Si se agrega una librería nativa o cambia `app.json`, hay que subir `version` y armar un APK nuevo.
+`google-services.json` y la clave de servicio de Firebase están en `.gitignore`: no se suben.
+
 Más información en el [README principal](../README.md).

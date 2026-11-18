@@ -54,7 +54,7 @@ export default function Boton({
         <View style={estilos.fila}>
           {icono ? <Icono nombre={icono} tamano={chico ? 16 : 19} color={colorTexto} /> : null}
           {texto ? (
-            <Text numberOfLines={1} style={[estilos.texto, chico && estilos.textoChico, { color: colorTexto }]}>
+            <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} maxFontSizeMultiplier={1.2} style={[estilos.texto, chico && estilos.textoChico, { color: colorTexto }]}>
               {texto}
             </Text>
           ) : null}
@@ -80,8 +80,10 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: espacio(1),
+    maxWidth: '100%',
   },
   texto: {
+    flexShrink: 1, // si el texto no entra, se achica un poco en vez de cortarse con "..."
     fontFamily: fuentes.boton,
     fontSize: 14,
   },
