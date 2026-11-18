@@ -130,9 +130,12 @@ export default function Login({ navigation, route }) {
                 accessibilityState={{ selected: activo }}
                 style={[estilos.rol, activo && { backgroundColor: colores.verdeProfundo }]}
               >
-                <Icono nombre={r.icono} tamano={14} color={color} />
+                <Icono nombre={r.icono} tamano={13} color={color} />
                 <Text
                   numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.75}
+                  maxFontSizeMultiplier={1.1}
                   style={[estilos.textoRol, { color, fontFamily: activo ? fuentes.negrita : fuentes.normal }]}
                 >
                   {t(r.titulo)}
@@ -225,15 +228,18 @@ const estilos = StyleSheet.create({
   },
   rol: {
     flex: 1,
+    minWidth: 0, // así ninguna pestaña empuja a las otras
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
-    paddingVertical: 7,
+    gap: 3,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
     borderRadius: 8,
   },
   textoRol: {
-    fontSize: 13,
+    flexShrink: 1, // si no entra, la letra se achica en vez de salirse (adjustsFontSizeToFit)
+    fontSize: 12.5,
   },
   frase: {
     borderWidth: 1,
@@ -253,7 +259,7 @@ const estilos = StyleSheet.create({
   },
   boton: {
     alignSelf: 'center',
-    width: '82%',
+    width: '92%',
     marginTop: espacio(2),
   },
   olvide: {

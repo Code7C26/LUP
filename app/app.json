@@ -3,14 +3,21 @@
     "name": "Lüp",
     "slug": "lup",
     "version": "1.0.0",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
+    "updates": {
+      "url": "https://u.expo.dev/659308e2-51d2-42c2-838e-3d7ef9a45e98"
+    },
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "package": "ar.com.lup",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#B6D1A1",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -43,6 +50,27 @@
         {
           "icon": "./assets/android-icon-monochrome.png",
           "color": "#71A24D"
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Lüp usa la cámara para escanear el código QR de los retiros y sacar fotos de los productos.",
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Lüp usa tus fotos para que elijas la imagen de un producto o de tu perfil.",
+          "cameraPermission": "Lüp usa la cámara para sacar fotos de los productos y de tu perfil.",
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Lüp usa tu ubicación para mostrarte los comercios y las ofertas más cerca tuyo."
         }
       ]
     ],
