@@ -25,31 +25,54 @@ function projectId() {
 
 export async function registrarPush() {
   try {
+    // En Expo Go en Android, las notificaciones push NO funcionan (es una limitación de Expo Go)
     if (Platform.OS === 'android' && Constants.executionEnvironment === ExecutionEnvironment.StoreClient) {
-      console.info('Push: Expo Go en Android no recibe notificaciones push. Probá con un development build.');
+      console.info('Push: Expo Go en Android no recibe notificaciones push. Probá con el APK de EAS.');
       return;
     }
     const id = projectId();
     if (!id) {
-      console.info('Push: falta el projectId de EAS en app.json (correr "npx eas init").');
+      console.error('Push: falta el projectId en app.json (correr "npx eas init")');
       return;
     }
-    // En Android, el canal "avisos" tiene que existir antes de pedir permiso (y es el que usa Django)
+
+    // En Android, crear el canal "avisos" ANTES de pedir permiso (obligatorio en Android 8+)
     if (Platform.OS === 'android') {
+      console.info('Push: creando canal "avisos" en Android');
       await Notifications.setNotificationChannelAsync('avisos', {
         name: t('push.canal'),
         importance: Notifications.AndroidImportance.HIGH,
         lightColor: '#71A24D',
+        enableSound: true,
+        enableVibrate: true,
+        sound: 'default',
       });
+      console.info('Push: canal "avisos" creado');
     }
-    const permiso = await Notifications.requestPermissionsAsync();
-    if (!permiso.granted) return;
 
+    // En Android 13+, pedir permiso explícito (en versiones anteriores se da automático)
+    console.info('Push: pidiendo permiso de notificaciones');
+    const permiso = await Notifications.requestPermissionsAsync();
+    if (!permiso.granted) {
+      console.warn('Push: permiso denegado por el usuario');
+      return;
+    }
+    console.info('Push: permiso otorgado');
+
+    console.info('Push: obteniendo token de Expo');
     const { data: token } = await Notifications.getExpoPushTokenAsync({ projectId: id });
+    console.info(`Push: token obtenido: ${token.substring(0, 20)}...`);
+
+    console.info('Push: registrando token en el servidor');
     await api('/auth/push/', { metodo: 'POST', datos: { token } });
     await SecureStore.setItemAsync(CLAVE, token);
+    console.info('Push: token registrado en el servidor y guardado localmente');
   } catch (e) {
-    console.warn('Push: no se pudo registrar el celular', e?.message || e?.error || e);
+    console.error('Push: error al registrar', {
+      mensaje: e?.message,
+      codigo: e?.code,
+      error: e?.error || String(e),
+    });
   }
 }
 
