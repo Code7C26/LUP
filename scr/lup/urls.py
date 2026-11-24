@@ -15,7 +15,7 @@ from scr.bd_lup.soporte import api as soporte_api
 from scr.bd_lup.stores import views as store_views
 from scr.bd_lup.users import api as users_api
 
-from . import paginas_legales
+from . import descargas, paginas_legales
 
 router = DefaultRouter()
 router.register('productos', ProductoViewSet, basename='api-productos')
@@ -35,6 +35,7 @@ urlpatterns = [
     path('ayuda/', include('scr.bd_lup.soporte.urls')),  # chat de soporte
     path('puntos/', include('scr.bd_lup.puntos.urls')),  # puntos Lüp y canje de merch
     path('nosotros/', TemplateView.as_view(template_name='nosotros.html'), name='nosotros'),
+    path('app/android/', descargas.app_android, name='descargar_app'),  # APK de la app
     path('terminos/', paginas_legales.terminos, name='terminos'),
     path('privacidad/', paginas_legales.privacidad, name='privacidad'),
     

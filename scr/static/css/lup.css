@@ -1195,3 +1195,14 @@ h1, h2, h3, h4, h5, .h1, .h2, .h3, .h4, .h5 { color: var(--lup-titulo); font-wei
 .aviso-item, .aviso-carrito { color: var(--lup-ambar-texto); }
 .carrito-resumen { position: sticky; top: 100px; padding: 1.75rem; }
 @media (max-width: 991.98px) { .carrito-resumen { position: static; } }
+
+/* ---------- Botón "Descargá la app" (footer) ---------- */
+.footer-lup .btn-app {
+    display: inline-flex; align-items: center; gap: .65rem;
+    padding: .5rem 1.1rem .5rem .9rem; border-radius: 14px;
+    background: #fff; color: var(--lup-oscuro); text-decoration: none; line-height: 1.15;
+    font-weight: 700; font-size: .95rem; box-shadow: 0 6px 18px rgba(0, 0, 0, .15);
+}
+.footer-lup .btn-app i { font-size: 1.6rem; color: var(--lup-verde); }
+.footer-lup .btn-app small { display: block; font-weight: 500; font-size: .72rem; color: #5c6b62; }
+.footer-lup .btn-app:hover { color: var(--lup-oscuro); transform: translateY(-1px); }

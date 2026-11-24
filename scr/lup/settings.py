@@ -262,6 +262,11 @@ IA_FOTOS_MODELO = os.environ.get('IA_FOTOS_MODELO', '').strip() or SOPORTE_MODEL
 # A dónde llegan los pedidos de "Hablar con una persona"
 SOPORTE_EMAIL = os.environ.get('SOPORTE_EMAIL', '').strip() or GMAIL_USUARIO
 
+# App para Android: el botón "Descargar la app" baja el APK guardado en scr/descargas/
+# (ver scr/lup/descargas.py). Con APP_ANDROID_URL se puede apuntar a otro enlace.
+DESCARGAS_DIR = BASE_DIR / 'descargas'
+APP_ANDROID_URL = os.environ.get('APP_ANDROID_URL', '').strip()
+
 
 # Modelo de usuario personalizado
 AUTH_USER_MODEL = 'users.Usuario'

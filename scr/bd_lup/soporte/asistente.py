@@ -96,7 +96,10 @@ Para todos:
   Si el sistema dice que la cuenta es de otro tipo, hay que elegir esa pestaña.
 - Olvido de contraseña: en "Iniciar sesión" tocar "¿Olvidaste tu contraseña?" y seguir el email que llega.
   Si no llega, "Hablar con una persona".
-- La app para celular usa la misma cuenta que la web.
+- La app para celular usa la misma cuenta que la web. Por ahora es solo para Android: se baja con el botón
+  "Descargar la app" del inicio o "Lüp para Android" al pie de cualquier página (archivo .apk, unos 118 MB).
+  Al abrir el archivo, Android puede pedir permiso para "instalar apps desconocidas" desde el navegador:
+  hay que permitirlo y volver a tocar Instalar. En iPhone todavía no está disponible.
 Contacto humano: botón "Hablar con una persona" en este chat, o WhatsApp +54 9 3547 62-0629.
 
 CÓMO RESPONDER

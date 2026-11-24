@@ -3491,3 +3491,13 @@ msgstr "You'll get a pickup code for each product, on your dashboard and by emai
 
 msgid "Podés cancelar cualquier reserva antes de retirarla."
 msgstr "You can cancel any reservation before picking it up."
+
+# Carrito
+msgid "Descargar la app"
+msgstr "Download the app"
+
+msgid "Descargá la app"
+msgstr "Download the app"
+
+msgid "Lüp para Android"
+msgstr "Lüp for Android"
