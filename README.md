@@ -179,7 +179,7 @@ Plataforma web funcional en Django con tres tipos de cuenta:
 
 | Rol | Puede |
 |-----|-------|
-| **Consumidor** | Buscar y filtrar ofertas, reservar con código de retiro, cancelar reservas, ver historial y ahorro. |
+| **Consumidor** | Buscar y filtrar ofertas, reservar con código de retiro (de a una o varias juntas con el carrito), cancelar reservas, ver historial y ahorro. |
 | **Comercio** | Publicar / editar / eliminar excedentes con vista previa en vivo, confirmar retiros por código, aprobar donaciones, ver estadísticas. |
 | **Organización** | Solicitar productos marcados como donables y seguir el estado de sus solicitudes. |
 

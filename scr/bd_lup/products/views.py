@@ -19,6 +19,7 @@ from scr.bd_lup.stores.ubicacion import (
 from scr.bd_lup.users.decorators import rol_requerido
 from scr.bd_lup.users.models import Usuario
 
+from .carrito import Carrito
 from .forms import CalificacionForm, ProductoForm, RespuestaForm, ReservaForm, SolicitudDonacionForm
 from .models import (
     Calificacion, Producto, Reserva, SolicitudDonacion, resumen_calificaciones, resumen_producto,
@@ -118,6 +119,7 @@ def detalle_producto(request, pk):
     if usuario.is_authenticated:
         if usuario.es_consumidor:
             contexto['form_reserva'] = ReservaForm(producto=producto, initial={'cantidad': 1})
+            contexto['en_carrito'] = Carrito(request).cantidad_de(producto.pk)
         elif usuario.es_organizacion and producto.es_donacion:
             contexto['form_donacion'] = SolicitudDonacionForm()
             contexto['ya_solicitada'] = producto.solicitudes_donacion.filter(organizacion=usuario).exists()

@@ -90,7 +90,11 @@
                             <span id="total-reserva" class="precio" data-precio="{{ producto.precio_descuento|stringformat:'s' }}">${{ producto.precio_descuento }}</span>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-lup btn-lg w-100 mt-4"><i class="bi bi-bag-check me-2"></i>{% translate "Reservar ahora" %}</button>
+                    <div class="d-flex flex-column flex-sm-row gap-2 mt-4">
+                        <button type="submit" class="btn btn-lup btn-lg flex-fill"><i class="bi bi-bag-check me-2"></i>{% translate "Reservar ahora" %}</button>
+                        <button type="submit" formaction="{% url 'agregar_al_carrito' producto.pk %}" class="btn btn-lup-outline btn-lg flex-fill"><i class="bi bi-cart-plus me-2"></i>{% translate "Agregar al carrito" %}</button>
+                    </div>
+                    {% if en_carrito %}<p class="small text-center mt-2 mb-0 aviso-carrito"><i class="bi bi-cart-check me-1" aria-hidden="true"></i>{% blocktranslate count n=en_carrito %}Ya tenés {{ n }} unidad en tu carrito.{% plural %}Ya tenés {{ n }} unidades en tu carrito.{% endblocktranslate %} <a href="{% url 'carrito' %}">{% translate "Ver carrito" %}</a></p>{% endif %}
                     <p class="small text-muted-lup text-center mt-2 mb-0">{% translate "Recibirás un código para mostrar al retirar." %}</p>
                     {% if user.is_anonymous or user.es_consumidor %}<p class="small text-center mt-1 mb-0 text-ambar" data-puntos-reserva data-pesos-por-punto="2000"><i class="bi bi-star-fill me-1" aria-hidden="true"></i><span>{% translate "Con esta compra sumás" %} <strong data-puntos-cantidad>0</strong> {% translate "puntos Lüp al retirarla." %}</span> <a href="{% url 'mis_puntos' %}" class="text-ambar">{% translate "¿Qué son?" %}</a></p>{% endif %}
                 </form>

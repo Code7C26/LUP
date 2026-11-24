@@ -242,7 +242,16 @@
     /* ---------- Selector de cantidad + total ---------- */
     $$('.cantidad').forEach((caja) => {
         const input = $('input', caja);
-        const total = $('#total-reserva');
+        const form = caja.closest('form');
+        const total = form ? $('#total-reserva', form) : null;
+        // Carrito: al cambiar la cantidad se guarda sola (sin botón "Actualizar")
+        const autoGuardar = form && form.hasAttribute('data-carrito-cantidad');
+        let espera;
+        const guardar = () => {
+            if (!autoGuardar) return;
+            clearTimeout(espera);
+            espera = setTimeout(() => form.submit(), 600);
+        };
         const precio = parseFloat((total && total.dataset.precio) || '0');
         const max = parseInt(input.max || '99', 10);
         const refrescar = () => {
@@ -251,7 +260,7 @@
             input.value = v;
             if (total) total.textContent = '$' + (precio * v).toLocaleString(LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             // Puntos Lüp: 1 cada $2.000 (solo bloques completos)
-            const puntos = $('[data-puntos-reserva]');
+            const puntos = form ? $('[data-puntos-reserva]', form) : null;
             if (puntos) {
                 const n = Math.floor((precio * v) / parseFloat(puntos.dataset.pesosPorPunto || '2000'));
                 $('[data-puntos-cantidad]', puntos).textContent = n;
@@ -263,8 +272,10 @@
             if (!b) return;
             input.value = (parseInt(input.value, 10) || 1) + parseInt(b.dataset.delta, 10);
             refrescar();
+            guardar();
         });
         input.addEventListener('input', refrescar);
+        input.addEventListener('change', guardar);
         refrescar();
     });
 

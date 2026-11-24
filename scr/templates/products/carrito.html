@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load lup_tags humanize %}
+
+{% block title %}{% translate "Mi carrito" %} · Lüp{% endblock %}
+
+{% block content %}
+<div class="container pt-4 pb-2">
+    <div class="d-flex flex-wrap align-items-center gap-3 mb-4">
+        <div class="me-auto">
+            <h1 class="h3 mb-1"><i class="bi bi-cart3 me-2 text-lup" aria-hidden="true"></i>{% translate "Mi carrito" %}</h1>
+            <p class="text-muted-lup mb-0 small">{% translate "Juntá varias ofertas y reservalas todas de una vez. Pagás en cada local al retirar." %}</p>
+        </div>
+        <a href="{% url 'catalogo' %}" class="btn btn-lup-outline btn-sm"><i class="bi bi-plus-lg me-1"></i>{% translate "Seguir buscando ofertas" %}</a>
+    </div>
+
+    {% if not items %}
+        <div class="vacio">
+            <div class="emoji">🛒</div>
+            <p class="text-muted-lup mb-3">{% translate "Tu carrito está vacío. Entrá a una oferta y tocá “Agregar al carrito”." %}</p>
+            <a href="{% url 'catalogo' %}" class="btn btn-lup">{% translate "Explorar ofertas" %}</a>
+        </div>
+    {% else %}
+    <div class="row g-4">
+        <div class="col-lg-8">
+            {% for grupo in grupos %}
+                <section class="carrito-grupo">
+                    <h2 class="h6 carrito-comercio">
+                        <i class="bi bi-shop me-1" aria-hidden="true"></i>{{ grupo.comercio }}
+                        <span class="text-muted-lup fw-normal small">· {{ grupo.comercio.direccion }}</span>
+                    </h2>
+                    {% for item in grupo.items %}
+                        {% with p=item.producto %}
+                        <div class="lista-item flex-wrap carrito-item{% if not item.disponible %} no-disponible{% endif %}">
+                            <a href="{% url 'detalle_producto' p.pk %}" class="flex-shrink-0">
+                                {% if p.imagen %}<img src="{{ p.imagen.url }}" class="mini-foto" alt="">{% else %}<div class="mini-foto">{{ p.categoria|emoji_categoria }}</div>{% endif %}
+                            </a>
+                            <div class="flex-grow-1" style="min-width: 160px;">
+                                <a href="{% url 'detalle_producto' p.pk %}" class="fw-semibold text-decoration-none d-block text-reset">{{ p.titulo }}</a>
+                                <small class="text-muted-lup d-block">${{ p.precio_descuento|floatformat:"-2"|intcomma }} {% translate "c/u" %} · {% blocktranslate with fecha=p.fecha_vencimiento|date:"d/m" %}retirar hasta el {{ fecha }}{% endblocktranslate %}</small>
+                                {% if item.aviso %}<small class="d-block aviso-item"><i class="bi bi-exclamation-circle me-1" aria-hidden="true"></i>{{ item.aviso }}</small>{% endif %}
+                            </div>
+                            <div class="d-flex align-items-center gap-3 ms-auto">
+                                {% if item.disponible %}
+                                    <form method="post" action="{% url 'actualizar_carrito' p.pk %}" data-carrito-cantidad>
+                                        {% csrf_token %}
+                                        <div class="cantidad cantidad-sm">
+                                            <button type="button" data-delta="-1" aria-label="{% translate 'Restar' %}">−</button>
+                                            <input type="number" name="cantidad" value="{{ item.cantidad }}" min="1" max="{{ p.stock }}" aria-label="{% translate 'Cantidad' %}">
+                                            <button type="button" data-delta="1" aria-label="{% translate 'Sumar' %}">+</button>
+                                        </div>
+                                        <noscript><button class="btn btn-sm btn-light mt-1">{% translate "Actualizar" %}</button></noscript>
+                                    </form>
+                                    <strong class="carrito-subtotal">${{ item.subtotal|floatformat:"-2"|intcomma }}</strong>
+                                {% endif %}
+                                <form method="post" action="{% url 'quitar_del_carrito' p.pk %}">
+                                    {% csrf_token %}
+                                    <button class="btn btn-sm btn-light" title="{% translate 'Quitar del carrito' %}" aria-label="{% translate 'Quitar del carrito' %}"><i class="bi bi-trash3"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endwith %}
+                    {% endfor %}
+                </section>
+            {% endfor %}
+            <form method="post" action="{% url 'vaciar_carrito' %}" class="mt-3" data-confirmar="{% translate '¿Vaciar el carrito?' %}">
+                {% csrf_token %}
+                <button class="btn btn-link btn-sm text-danger px-0"><i class="bi bi-x-circle me-1"></i>{% translate "Vaciar carrito" %}</button>
+            </form>
+        </div>
+
+        <div class="col-lg-4">
+            <aside class="tarjeta carrito-resumen">
+                <h2 class="h5 mb-3">{% translate "Resumen" %}</h2>
+                <div class="d-flex justify-content-between small mb-2"><span class="text-muted-lup">{% translate "Unidades" %}</span><span>{{ unidades }}</span></div>
+                <div class="d-flex justify-content-between small mb-2"><span class="text-muted-lup">{% translate "Comercios" %}</span><span>{{ grupos|length }}</span></div>
+                {% if ahorro > 0 %}<div class="d-flex justify-content-between small mb-2"><span class="text-muted-lup">{% translate "Ahorrás" %}</span><span class="text-lup fw-semibold">${{ ahorro|floatformat:"-2"|intcomma }}</span></div>{% endif %}
+                <hr>
+                <div class="d-flex justify-content-between align-items-baseline mb-1">
+                    <span class="fw-semibold">{% translate "Total a pagar en los locales" %}</span>
+                    <span class="precio">${{ total|floatformat:"-2"|intcomma }}</span>
+                </div>
+                {% if puntos %}<p class="small text-ambar mb-0"><i class="bi bi-star-fill me-1" aria-hidden="true"></i>{% blocktranslate count n=puntos %}Sumás {{ n }} punto Lüp al retirar.{% plural %}Sumás {{ n }} puntos Lüp al retirar.{% endblocktranslate %}</p>{% endif %}
+
+                {% if hay_no_disponibles %}<p class="small aviso-item mt-3 mb-0"><i class="bi bi-info-circle me-1" aria-hidden="true"></i>{% translate "Los productos que ya no están disponibles no se van a reservar. Quitalos para seguir." %}</p>{% endif %}
+
+                <form method="post" action="{% url 'confirmar_carrito' %}" class="mt-4">
+                    {% csrf_token %}
+                    <button class="btn btn-lup btn-lg w-100" {% if not se_puede_confirmar or hay_no_disponibles %}disabled{% endif %}><i class="bi bi-bag-check me-2"></i>{% translate "Reservar todo" %}</button>
+                </form>
+                <ul class="small text-muted-lup mt-3 mb-0 ps-3">
+                    <li>{% translate "Reservar es gratis: pagás en cada local cuando retirás." %}</li>
+                    <li>{% translate "Vas a recibir un código de retiro por cada producto, en tu panel y por email." %}</li>
+                    <li>{% translate "Podés cancelar cualquier reserva antes de retirarla." %}</li>
+                </ul>
+            </aside>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

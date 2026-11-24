@@ -3378,3 +3378,116 @@ msgstr "Enter a valid email."
 #: scr/bd_lup/users/api.py:252
 msgid "Token de notificaciones inválido."
 msgstr "Invalid notification token."
+
+# Carrito
+msgid "Solo los consumidores pueden usar el carrito."
+msgstr "Only consumers can use the cart."
+
+msgid "Ya no está disponible."
+msgstr "No longer available."
+
+msgid "Queda solo %(n)s unidad: ajustamos la cantidad."
+msgid_plural "Quedan solo %(n)s unidades: ajustamos la cantidad."
+msgstr[0] "Only %(n)s unit left: we adjusted the quantity."
+msgstr[1] "Only %(n)s units left: we adjusted the quantity."
+
+msgid "Tu carrito ya tiene %(n)s productos distintos. Reservalos antes de sumar más."
+msgstr "Your cart already has %(n)s different products. Reserve them before adding more."
+
+msgid "Solo quedan %(n)s unidades de %(producto)s: dejamos esa cantidad en tu carrito."
+msgstr "Only %(n)s units of %(producto)s are left: we put that quantity in your cart."
+
+msgid "Agregaste %(producto)s a tu carrito."
+msgstr "You added %(producto)s to your cart."
+
+msgid "Quitamos el producto de tu carrito."
+msgstr "We removed the product from your cart."
+
+msgid "Vaciaste tu carrito."
+msgstr "You emptied your cart."
+
+msgid "Tu carrito está vacío."
+msgstr "Your cart is empty."
+
+msgid "%(producto)s ya no está disponible."
+msgstr "%(producto)s is no longer available."
+
+msgid "Un producto"
+msgstr "A product"
+
+msgid "De %(producto)s queda solo %(n)s unidad."
+msgid_plural "De %(producto)s quedan solo %(n)s unidades."
+msgstr[0] "Only %(n)s unit of %(producto)s is left."
+msgstr[1] "Only %(n)s units of %(producto)s are left."
+
+msgid "No reservamos nada todavía: revisá tu carrito y confirmá de nuevo."
+msgstr "Nothing has been reserved yet: check your cart and confirm again."
+
+msgid "¡Listo! Reservaste %(n)s producto. Tu código de retiro está en tu panel."
+msgid_plural "¡Listo! Reservaste %(n)s productos en %(c)s comercio(s). Cada uno tiene su código de retiro en tu panel."
+msgstr[0] "Done! You reserved %(n)s product. Your pickup code is on your dashboard."
+msgstr[1] "Done! You reserved %(n)s products at %(c)s store(s). Each one has its own pickup code on your dashboard."
+
+msgid "Agregar al carrito"
+msgstr "Add to cart"
+
+msgid "Ya tenés %(n)s unidad en tu carrito."
+msgid_plural "Ya tenés %(n)s unidades en tu carrito."
+msgstr[0] "You already have %(n)s unit in your cart."
+msgstr[1] "You already have %(n)s units in your cart."
+
+msgid "Ver carrito"
+msgstr "View cart"
+
+msgid "Mi carrito"
+msgstr "My cart"
+
+msgid "Juntá varias ofertas y reservalas todas de una vez. Pagás en cada local al retirar."
+msgstr "Collect several offers and reserve them all at once. You pay at each store when you pick up."
+
+msgid "Seguir buscando ofertas"
+msgstr "Keep browsing offers"
+
+msgid "Tu carrito está vacío. Entrá a una oferta y tocá “Agregar al carrito”."
+msgstr "Your cart is empty. Open an offer and tap “Add to cart”."
+
+msgid "c/u"
+msgstr "each"
+
+msgid "retirar hasta el %(fecha)s"
+msgstr "pick up by %(fecha)s"
+
+msgid "Quitar del carrito"
+msgstr "Remove from cart"
+
+msgid "¿Vaciar el carrito?"
+msgstr "Empty the cart?"
+
+msgid "Vaciar carrito"
+msgstr "Empty cart"
+
+msgid "Ahorrás"
+msgstr "You save"
+
+msgid "Total a pagar en los locales"
+msgstr "Total to pay at the stores"
+
+msgid "Sumás %(n)s punto Lüp al retirar."
+msgid_plural "Sumás %(n)s puntos Lüp al retirar."
+msgstr[0] "You earn %(n)s Lüp point when you pick up."
+msgstr[1] "You earn %(n)s Lüp points when you pick up."
+
+msgid "Los productos que ya no están disponibles no se van a reservar. Quitalos para seguir."
+msgstr "Products that are no longer available won't be reserved. Remove them to continue."
+
+msgid "Reservar todo"
+msgstr "Reserve all"
+
+msgid "Reservar es gratis: pagás en cada local cuando retirás."
+msgstr "Reserving is free: you pay at each store when you pick up."
+
+msgid "Vas a recibir un código de retiro por cada producto, en tu panel y por email."
+msgstr "You'll get a pickup code for each product, on your dashboard and by email."
+
+msgid "Podés cancelar cualquier reserva antes de retirarla."
+msgstr "You can cancel any reservation before picking it up."

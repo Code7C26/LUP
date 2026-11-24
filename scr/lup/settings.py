@@ -123,6 +123,7 @@ TEMPLATES = [
                 'scr.bd_lup.products.context_processors.opinion_pendiente',
                 'scr.bd_lup.soporte.context_processors.soporte',
                 'scr.bd_lup.puntos.context_processors.puntos',
+                'scr.bd_lup.products.carrito.context_processor',
             ],
         },
     },
