@@ -164,7 +164,10 @@ class PuntosApiTests(TestCase):
         lapiz = merch['Lápiz de semillas']
         self.assertEqual(set(lapiz), {'id', 'nombre', 'descripcion', 'precio', 'puntos', 'imagen', 'icono',
                                       'puedo_canjear'})
-        self.assertEqual((lapiz['id'], lapiz['puntos'], lapiz['imagen']), (self.lapiz.pk, 30, None))
+        self.assertEqual((lapiz['id'], lapiz['puntos']), (self.lapiz.pk, 30))
+        self.assertTrue(lapiz['imagen'].endswith('.jpg') and 'img/merch/lapiz-semillas' in lapiz['imagen'])
+        # cada producto del merch inicial trae su foto
+        self.assertTrue(all(m['imagen'] for m in merch.values()))
         self.assertFalse(lapiz['puedo_canjear'])    # quedan 13
         self.assertEqual(datos['canjes'], [{
             'id': canje.id, 'producto': 'Lápiz de semillas', 'puntos': 30, 'codigo': canje.codigo,
@@ -283,3 +286,24 @@ class PuntosApiTests(TestCase):
         self.assertEqual(reservas[retirada.id]['puntos_sumados'], 3)
         self.assertEqual(reservas[chica.id]['puntos_sumados'], 0)
         self.assertNotIn('puntos_sumados', reservas[pendiente.id])
+
+
+class FotosMerchTests(TestCase):
+    def test_cada_producto_inicial_tiene_su_foto(self):
+        esperadas = {'Lápiz de semillas': 'lapiz-semillas', 'Imán': 'iman', 'Bolsa': 'bolsa',
+                     'Tupper': 'tupper', 'Botella de vidrio': 'botella'}
+        for p in ProductoMerch.objects.all():
+            self.assertIn(f'img/merch/{esperadas[p.nombre]}', p.foto_url)
+
+    def test_la_foto_subida_en_admin_tiene_prioridad(self):
+        p = ProductoMerch.objects.get(nombre='Bolsa')
+        p.imagen.name = 'merch/bolsa-nueva.jpg'
+        self.assertEqual(p.foto_url, '/media/merch/bolsa-nueva.jpg')
+
+    def test_producto_sin_foto_usa_el_icono(self):
+        p = ProductoMerch.objects.create(nombre='Gorra', precio=Decimal('9000'), puntos=135, icono='bi-gem')
+        self.assertIsNone(p.foto_url)
+        r = self.client.get(reverse('mis_puntos'))
+        self.assertContains(r, 'bi-gem')
+        self.assertContains(r, 'img/merch/botella')
+        self.assertContains(r, 'alt="Tupper"')

@@ -32,7 +32,7 @@ def _merch(producto, saldo):
         'descripcion': producto.descripcion,
         'precio': producto.precio,
         'puntos': producto.puntos,
-        'imagen': producto.imagen.url if producto.imagen else None,
+        'imagen': producto.foto_url,
         'icono': producto.icono,   # ícono de Bootstrap Icons de la web (la app lo cambia por uno suyo)
         'puedo_canjear': saldo >= producto.puntos,
     }

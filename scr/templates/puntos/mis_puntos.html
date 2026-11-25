@@ -37,7 +37,7 @@
     <div class="merch-grilla">
         {% for p in productos %}
             <article class="merch-card{% if p.alcanza %} alcanza{% endif %}">
-                <div class="merch-foto">{% if p.imagen %}<img src="{{ p.imagen.url }}" alt="{{ p.nombre }}" loading="lazy">{% else %}<i class="bi {{ p.icono }}" aria-hidden="true"></i>{% endif %}</div>
+                <div class="merch-foto">{% if p.foto_url %}<img src="{{ p.foto_url }}" alt="{{ p.nombre }}" loading="lazy">{% else %}<i class="bi {{ p.icono }}" aria-hidden="true"></i>{% endif %}</div>
                 <h3 class="h6 mb-1">{{ p.nombre }}</h3>
                 {% if p.descripcion %}<p class="small text-muted-lup mb-2">{{ p.descripcion }}</p>{% endif %}
                 <div class="merch-precios">

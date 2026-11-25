@@ -8,6 +8,7 @@ import secrets
 from django.conf import settings
 from django.db import models
 from django.db.models import Sum
+from django.templatetags.static import static
 from django.utils.translation import gettext_lazy as _
 
 PESOS_POR_PUNTO = 2000   # cada $2.000 gastados suman 1 punto (solo bloques completos)
@@ -44,6 +45,32 @@ class ProductoMerch(models.Model):
 
     def __str__(self):
         return f'{self.nombre} ({self.puntos} pts)'
+
+    @property
+    def foto_url(self):
+        """La foto subida en /admin; si no hay, la foto del merch que viene con la página (static/img/merch)."""
+        if self.imagen:
+            return self.imagen.url
+        archivo = foto_de_merch(self.nombre)
+        return static(f'img/merch/{archivo}') if archivo else None
+
+
+# Fotos del merch que vienen con la página: se eligen por el nombre del producto
+FOTOS_MERCH = (
+    (('lápiz', 'lapiz'), 'lapiz-semillas.jpg'),
+    (('imán', 'iman'), 'iman.jpg'),
+    (('bolsa', 'tote'), 'bolsa.jpg'),
+    (('tupper', 'táper', 'taper'), 'tupper.jpg'),
+    (('botella',), 'botella.jpg'),
+)
+
+
+def foto_de_merch(nombre):
+    nombre = (nombre or '').lower()
+    for palabras, archivo in FOTOS_MERCH:
+        if any(p in nombre for p in palabras):
+            return archivo
+    return None
 
 
 def _codigo_canje():
