@@ -64,6 +64,26 @@ export function formatoHora(valor) {
   return f ? `${dos(f.getHours())}:${dos(f.getMinutes())}` : '';
 }
 
+// Las categorías de los productos, como la web (products/models.py → CATEGORIAS).
+// [clave de la API, clave de idiomas/es.js con el nombre]. Las usan Inicio y Buscar.
+export const CATEGORIAS = [
+  ['panificados', 'categorias.panificados'],
+  ['comidas', 'catalogo.comidas'],
+  ['frutas_verduras', 'categorias.frutas_verduras'],
+  ['lacteos', 'categorias.lacteos'],
+  ['carnes', 'categorias.carnes'],
+  ['almacen', 'categorias.almacen'],
+  ['bolsa_sorpresa', 'categorias.bolsa_sorpresa'],
+  ['otros', 'categorias.otros'],
+];
+
+// La fecha de hoy en la hora del celular, como la manda Django: "2026-11-12"
+// (no se usa toISOString() porque está en UTC y a la noche ya daría "mañana")
+export function hoyLocal() {
+  const hoy = new Date();
+  return `${hoy.getFullYear()}-${dos(hoy.getMonth() + 1)}-${dos(hoy.getDate())}`;
+}
+
 // ---- Puntos Lüp: la MISMA regla que la web (scr/bd_lup/puntos/models.py → puntos_por_monto) ----
 // 1 punto cada $2.000, solo bloques completos: $1.900 → 0 · $2.000 → 1 · $3.900 → 1 · $6.500 → 3
 export const PESOS_POR_PUNTO = 2000;
@@ -75,7 +95,7 @@ export function puntosPorMonto(monto) {
 
 // Las ilustraciones de cada categoría y rubro están en componentes/ilustraciones.js.
 
-// Fondo suave de cada categoría (tema.js → colores.suaves[tono]), para los chips del catálogo
+// Fondo suave de cada categoría (tema.js → colores.suaves[tono]), para las pastillas de categorías
 const TONOS_CATEGORIA = {
   panificados: 'ambar',
   comidas: 'durazno',
@@ -90,6 +110,9 @@ const TONOS_CATEGORIA = {
 export function tonoCategoria(categoria) {
   return TONOS_CATEGORIA[categoria] || 'menta';
 }
+
+// Si la oferta hay que retirarla hoy
+export const venceHoy = (producto) => String(producto?.fecha_vencimiento || '').slice(0, 10) === hoyLocal();
 
 // "350 m" o "1,2 km" ("1.2 km" en inglés), sin el "a" de adelante (como el mockup)
 export function textoKm(km) {

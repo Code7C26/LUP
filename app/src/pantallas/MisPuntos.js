@@ -7,35 +7,25 @@
 // Usa GET /api/puntos/, POST /api/puntos/canjear/<id>/ y POST /api/puntos/canjes/<id>/cancelar/
 // (scr/bd_lup/puntos/api.py). Los puntos se suman solos cuando el comercio confirma el retiro.
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, Image, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { api, urlCompleta } from '../api/cliente';
+import { api } from '../api/cliente';
 import Boton from '../componentes/Boton';
 import Cargando from '../componentes/Cargando';
 import Encabezado from '../componentes/Encabezado';
-import { EtiquetaEstado } from '../componentes/EtiquetaEstado';
-import Icono from '../componentes/Icono';
+import FotoMerch, { PROPORCION_MERCH } from '../componentes/FotoMerch';
 import MensajeError from '../componentes/MensajeError';
 import { useIdioma } from '../contexto/Idioma';
-import { espacio, fuentes, radio, sombra, tamanos, useTema } from '../tema';
+import { espacio, fuentes, radio, tamanos, useTema } from '../tema';
 import { formatoFecha, formatoPrecio, PESOS_POR_PUNTO, textoError, vibrar } from '../utilidades';
 
-// El merch trae un ícono de Bootstrap Icons (el de la web): acá se usa el parecido de Ionicons
-const ICONOS_MERCH = {
-  'bi-pencil': 'pencil-outline',
-  'bi-magnet': 'magnet-outline',
-  'bi-bag': 'bag-handle-outline',
-  'bi-box-seam': 'cube-outline',
-  'bi-cup-straw': 'water-outline',
-  'bi-gift': 'gift-outline',
-};
-
-const TONO_CANJE = { pendiente: 'naranja', entregado: 'verde', cancelado: 'gris' };
+// Color del puntito del estado de un canje
+const colorCanje = (colores, estado) => ({ pendiente: colores.ambar, entregado: colores.verde }[estado] || colores.gris);
 
 function Titulo({ children }) {
   const { colores } = useTema();
   return (
-    <Text style={[estilos.titulo, { color: colores.titulo }]} accessibilityRole="header">
+    <Text style={[estilos.titulo, { color: colores.verdeProfundo }]} accessibilityRole="header">
       {children}
     </Text>
   );
@@ -47,39 +37,33 @@ function TarjetaMerch({ producto, saldo, canjeando, alCanjear }) {
   const faltan = Math.max(0, producto.puntos - saldo);
   const progreso = producto.puntos ? Math.min(1, saldo / producto.puntos) : 1;
 
+  // En fila: la foto 4:5 a la izquierda (como las fotos del merch, 800×1000: no se corta) y los datos a la derecha
   return (
-    <View style={[estilos.tarjeta, { backgroundColor: colores.panel }, sombra(colores)]}>
-      <View style={estilos.fila}>
-        <View style={[estilos.foto, { backgroundColor: colores.menta }]}>
-          {producto.imagen ? (
-            <Image source={{ uri: urlCompleta(producto.imagen) }} style={StyleSheet.absoluteFill} accessibilityIgnoresInvertColors />
-          ) : (
-            <Icono nombre={ICONOS_MERCH[producto.icono] || 'gift-outline'} tamano={26} color={colores.verdeHover} />
-          )}
-        </View>
-        <View style={estilos.datos}>
+    <View style={[estilos.tarjeta, estilos.fila]}>
+      <FotoMerch producto={producto} tamanoIcono={36} proporcion={PROPORCION_MERCH} estilo={estilos.fotoMerch} />
+
+      <View style={[estilos.datos, estilos.columnaMerch]}>
+        <View style={{ gap: 2 }}>
           <Text style={[estilos.nombre, { color: colores.texto }]}>{producto.nombre}</Text>
           {producto.descripcion ? (
             <Text style={[estilos.detalle, { color: colores.gris }]}>{producto.descripcion}</Text>
           ) : null}
         </View>
-      </View>
 
-      {!producto.puedo_canjear ? (
-        <View
-          style={[estilos.barraProgreso, { backgroundColor: colores.campo }]}
-          accessibilityRole="progressbar"
-          accessibilityValue={{ min: 0, max: producto.puntos, now: Math.min(saldo, producto.puntos) }}
-        >
-          <View style={[estilos.rellenoProgreso, { backgroundColor: colores.verde, width: `${Math.round(progreso * 100)}%` }]} />
-        </View>
-      ) : null}
-
-      <View style={estilos.acciones}>
         <Text style={[estilos.pts, { color: colores.verdeHover }]}>{t('puntos.pts', { n: producto.puntos })}</Text>
+
+        {!producto.puedo_canjear ? (
+          <View
+            style={[estilos.barraProgreso, { backgroundColor: colores.campo }]}
+            accessibilityRole="progressbar"
+            accessibilityValue={{ min: 0, max: producto.puntos, now: Math.min(saldo, producto.puntos) }}
+          >
+            <View style={[estilos.rellenoProgreso, { backgroundColor: colores.verde, width: `${Math.round(progreso * 100)}%` }]} />
+          </View>
+        ) : null}
+
         <Boton
           texto={producto.puedo_canjear ? t('puntos.canjear') : t('puntos.teFaltan', { n: faltan })}
-          icono={producto.puedo_canjear ? 'gift-outline' : 'lock-closed-outline'}
           variante={producto.puedo_canjear ? 'principal' : 'secundario'}
           chico
           deshabilitado={!producto.puedo_canjear}
@@ -98,17 +82,16 @@ function TarjetaCanje({ canje, cancelando, alCancelar }) {
   const pendiente = canje.estado === 'pendiente';
 
   return (
-    <View style={[estilos.tarjeta, { backgroundColor: colores.panel }, sombra(colores)]}>
-      <View style={estilos.fila}>
-        <View style={estilos.datos}>
-          <Text style={[estilos.nombre, { color: colores.texto }]}>{canje.producto}</Text>
-          <Text style={[estilos.detalle, { color: colores.gris }]}>
-            {t('puntos.pts', { n: canje.puntos })}
-            {'  ·  '}
-            {formatoFecha(canje.creado_en)}
+    <View style={estilos.tarjeta}>
+      <View style={estilos.datos}>
+        <Text style={[estilos.nombre, { color: colores.texto }]}>{canje.producto}</Text>
+        {/* El estado: un puntito de color y la palabra, en la línea gris */}
+        <View style={estilos.filaLinea}>
+          <View style={[estilos.puntito, { backgroundColor: colorCanje(colores, canje.estado) }]} />
+          <Text style={[estilos.detalle, { color: colores.grisVerde, flex: 1 }]}>
+            {[t(`puntos.estados.${canje.estado}`), t('puntos.pts', { n: canje.puntos }), formatoFecha(canje.creado_en)].join(' · ')}
           </Text>
         </View>
-        <EtiquetaEstado texto={t(`puntos.estados.${canje.estado}`)} tono={TONO_CANJE[canje.estado] || 'gris'} />
       </View>
 
       {pendiente ? (
@@ -125,7 +108,6 @@ function TarjetaCanje({ canje, cancelando, alCancelar }) {
           </View>
           <Boton
             texto={t('puntos.cancelar')}
-            icono="close-circle-outline"
             variante="texto"
             chico
             cargando={cancelando}
@@ -276,10 +258,7 @@ export default function MisPuntos({ navigation }) {
               monto: formatoPrecio(datos.pesos_por_punto || PESOS_POR_PUNTO),
             })}`}
           >
-            <View style={estilos.filaSaldo}>
-              <Icono nombre="star" tamano={18} color={colores.sobreVerdeProfundo} />
-              <Text style={[estilos.etiquetaSaldo, { color: colores.sobreVerdeProfundo }]}>{t('puntos.tuSaldo')}</Text>
-            </View>
+            <Text style={[estilos.etiquetaSaldo, { color: colores.sobreVerdeProfundo }]}>{t('puntos.tuSaldo')}</Text>
             <Text style={[estilos.numeroSaldo, { color: colores.sobreVerdeProfundo }]} numberOfLines={1} adjustsFontSizeToFit>
               {saldo}{' '}
               <Text style={estilos.unidadSaldo}>{t('puntos.unidad', { n: saldo })}</Text>
@@ -320,7 +299,7 @@ export default function MisPuntos({ navigation }) {
           <View style={estilos.seccion}>
             <Titulo>{t('puntos.historial')}</Titulo>
             {movimientos.length ? (
-              <View style={[estilos.lista, { backgroundColor: colores.superficie }]}>
+              <View>
                 {movimientos.map((m, i) => (
                   <FilaMovimiento key={`${m.creado_en}-${i}`} movimiento={m} ultimo={i === movimientos.length - 1} />
                 ))}
@@ -346,11 +325,6 @@ const estilos = StyleSheet.create({
     padding: espacio(2.5),
     gap: espacio(0.5),
   },
-  filaSaldo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
   etiquetaSaldo: {
     fontFamily: fuentes.media,
     fontSize: tamanos.chico,
@@ -371,37 +345,50 @@ const estilos = StyleSheet.create({
   seccion: {
     gap: espacio(1.5),
   },
-  // Igual que estilos.titulo de Inicio.js
+  // Igual que los títulos de sección de Inicio (TituloSeccion)
   titulo: {
-    fontFamily: fuentes.normal,
-    fontSize: 18,
+    fontFamily: fuentes.semi,
+    fontSize: 15,
+    marginTop: espacio(1),
   },
+  // Sin caja: el merch y los canjes, separados por el espacio de la sección
   tarjeta: {
-    borderRadius: radio,
-    padding: espacio(1.5),
     gap: espacio(1.5),
+    paddingVertical: espacio(0.5),
+  },
+  filaLinea: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  puntito: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
   },
   fila: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: espacio(1.5),
   },
-  foto: {
-    width: 56,
-    height: 56,
-    borderRadius: 12,
-    overflow: 'hidden',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   datos: {
     flex: 1,
     minWidth: 0,
     gap: 2,
   },
+  // 110 × 138: la misma proporción 4:5 que las fotos
+  fotoMerch: {
+    width: 110,
+    aspectRatio: PROPORCION_MERCH,
+    borderRadius: 14,
+  },
+  columnaMerch: {
+    alignSelf: 'stretch',
+    gap: espacio(1),
+  },
   nombre: {
-    fontFamily: fuentes.negrita,
-    fontSize: tamanos.normal,
+    fontFamily: fuentes.semi,
+    fontSize: 14,
   },
   detalle: {
     fontFamily: fuentes.normal,
@@ -416,21 +403,17 @@ const estilos = StyleSheet.create({
     height: '100%',
     borderRadius: 3,
   },
-  acciones: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: espacio(1),
-  },
   pts: {
     fontFamily: fuentes.negrita,
     fontSize: tamanos.mediano,
   },
+  // Ocupa el ancho de la columna (en celulares angostos el texto se achica un poco en vez de cortarse)
   boton: {
     minHeight: 36,
     height: 36,
-    maxWidth: '100%',
+    alignSelf: 'stretch',
+    paddingHorizontal: espacio(1),
+    marginTop: 'auto',
   },
   cajaCodigo: {
     alignItems: 'center',
@@ -447,10 +430,6 @@ const estilos = StyleSheet.create({
   botonCancelar: {
     alignSelf: 'center',
     minHeight: 34,
-  },
-  lista: {
-    borderRadius: radio,
-    paddingHorizontal: espacio(1.5),
   },
   movimiento: {
     flexDirection: 'row',

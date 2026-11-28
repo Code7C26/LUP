@@ -8,7 +8,7 @@
 //
 // <EtiquetaInfo>: un DATO (no se toca): "Descuento", "Donaciones". Más suave que un botón:
 // sin relleno fuerte ni borde, con un ícono chico.
-//   <EtiquetaInfo icono="pricetag-outline" texto={t('misProductos.descuento')} />
+//   <EtiquetaInfo icono="heart-outline" texto={t('catalogo.soloDonables')} />
 //
 // El texto del naranja va en el color de texto común (el naranja sobre naranja claro no se lee bien).
 import { StyleSheet, Text, View } from 'react-native';
