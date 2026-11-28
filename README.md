@@ -12,7 +12,9 @@
 
 <p align="center">
 
-![Estado](https://img.shields.io/badge/Estado-MVP%20funcionando-71A24D?style=for-the-badge)
+![Estado](https://img.shields.io/badge/Estado-Publicada-71A24D?style=for-the-badge)
+![Web](https://img.shields.io/badge/Web-lupalimentos.com-073425?style=for-the-badge)
+![Android](https://img.shields.io/badge/App-Android%20(APK)-073425?style=for-the-badge&logo=android&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-073425?style=for-the-badge&logo=python&logoColor=white)
 ![Django](https://img.shields.io/badge/Django-073425?style=for-the-badge&logo=django)
 ![Expo](https://img.shields.io/badge/App-React%20Native%20%2B%20Expo-073425?style=for-the-badge&logo=expo)
@@ -22,8 +24,19 @@
 </p>
 
 <p align="center">
-  Proyecto FAT 2026 · 7.º año · Especialidad Informática · Alta Gracia, Córdoba
+  Proyecto FAT 2026 · Escuela El Obraje · 7.º C · Especialidad Informática · Alta Gracia, Córdoba
 </p>
+
+---
+
+## Probá Lüp
+
+| | |
+|---|---|
+| 🌐 **Página web** | https://www.lupalimentos.com |
+| 📱 **App para Android** | Entrá a la web desde el celular y tocá **"Descargar la app"**, o usá [este link](https://drive.google.com/file/d/1A3HXX4eX8W-bLU6BY6kA4ye7r4BwRsHT/view?usp=sharing) |
+| 📖 **Manual de usuario** | [`doc/Pdf/Manuales - de empresa/Manual de usuario.pdf`](doc/Pdf/Manuales%20-%20de%20empresa/Manual%20de%20usuario.pdf) |
+| 📸 **Instagram** | [@lupalimentos](https://www.instagram.com/lupalimentos) |
 
 ---
 
@@ -74,29 +87,28 @@ Prioridad del alimento: **venta → donación → descarte** (solo si ya no es a
 
 ### Comercios
 
-- Publicación de excedentes.
-- Descuentos inteligentes.
-- Gestión de stock.
-- Estadísticas de impacto.
+- Publicación de excedentes con una foto: la IA completa los datos.
+- Descuentos con precio original y precio Lüp.
+- Gestión de stock, "Publicar de nuevo" y historial.
+- Confirmación de retiros con código o QR.
+- Impacto del mes: plata recuperada y comidas salvadas.
 
 ### Consumidores
 
-- Productos cercanos con descuento.
-- Reserva desde la aplicación.
-- Historial de compras.
+- Ofertas cercanas con mapa, buscador y filtros.
+- Reserva con código de retiro y QR (se paga en el local).
+- Historial, opiniones y favoritos.
+- **Puntos Lüp**: 1 punto cada $2.000, que se canjean por merch sustentable.
 
 ### Organizaciones
 
-- Gestión de donaciones.
-- Solicitud de alimentos.
+- Donaciones disponibles de comercios cercanos.
+- Pedidos de donación y seguimiento (enviado, aprobado, retirado).
 
 ### Inteligencia Artificial
 
-- Reconocimiento de productos.
-- Carga automática de información.
-- Recomendación de descuentos.
-- Indicadores ambientales.
-- **Chat de ayuda con IA ("Lü")**: responde dudas y problemas de los usuarios en toda la página.
+- **Completar con IA**: reconoce el producto en una foto y sugiere nombre, categoría, descripción, precio y vencimiento.
+- **Chat de ayuda con IA ("Lü")**: responde dudas y problemas de los usuarios en la web y en la app.
 
 ---
 
@@ -116,9 +128,10 @@ Prioridad del alimento: **venta → donación → descarte** (solo si ya no es a
 |---|---|
 | **Backend** | Python 3 · Django 6.1 · Django REST Framework (API con token para la app) |
 | **Página web** | HTML · CSS · JavaScript · Bootstrap · modo oscuro · español / inglés |
-| **App para celular** | React Native 0.88 · Expo SDK 58 · React Navigation · Expo Notifications (push) · react-native-maps |
-| **Base de datos** | SQLite (desarrollo) · PostgreSQL previsto para producción |
-| **Inteligencia Artificial** | Claude (API de Anthropic) para el chat de ayuda "Lü" |
+| **App para celular** | React Native 0.88 · Expo SDK 58 · React Navigation · Expo Notifications + Firebase (push) · react-native-maps · EAS Build (APK) |
+| **Base de datos** | PostgreSQL en Render (producción) · SQLite (desarrollo) |
+| **Inteligencia Artificial** | Claude (API de Anthropic) para el chat de ayuda "Lü" y para completar productos con una foto |
+| **Publicación** | Render (web, API y base de datos) · dominio www.lupalimentos.com con Cloudflare |
 | **Servicios** | Gmail (avisos por email) · Google Maps · Expo Application Services (EAS) |
 | **Organización** | Git y GitHub (ramas por integrante + Pull Requests) · GitHub Projects (Kanban) |
 | **Diseño** | Mockup propio · tipografías DM Sans y Poppins · paleta verde (#073425, #71A24D, #B6D1A1) |
@@ -139,7 +152,10 @@ LUP/
 │   ├── bd_lup/                   <-- Aplicaciones internas
 │   │   ├── users/                <-- Usuario personalizado, organizaciones, login y registro
 │   │   ├── stores/               <-- Perfil de comercio (Tienda)
-│   │   └── products/             <-- Productos, reservas, donaciones, API y paneles
+│   │   ├── products/             <-- Productos, reservas, donaciones, API, IA de fotos y paneles
+│   │   ├── puntos/               <-- Puntos Lüp y canje de merch
+│   │   └── soporte/              <-- Chat de ayuda "Lü"
+│   ├── descargas/                <-- APK de Android que se descarga desde la web
 │   ├── templates/                <-- Plantillas HTML
 │   └── static/                   <-- CSS, JS e imágenes de la web
 │
@@ -157,16 +173,19 @@ LUP/
 │       │   └── organizacion/     <-- Donaciones disponibles y mis solicitudes
 │       └── servicios/            <-- Notificaciones push y recordatorios de retiro
 │
-├── doc/                          <-- 📄 DOCUMENTACIÓN DEL PROYECTO
-│   ├── comercio/                 <-- Break-even, costos, FODA, investigación de mercado
-│   ├── legales/                  <-- Pasos legales y propiedad intelectual
-│   └── manuales - de empresa/    <-- Backlog, documentación inicial, mockup, propuesta de valor
+├── doc/                          <-- 📄 DOCUMENTACIÓN DEL PROYECTO (en Word y en PDF)
+│   ├── Pdf/ y Word/
+│   │   ├── Comercio/             <-- FODA, costos, break even, mercado, estrategias de adquisición
+│   │   ├── Diseño/               <-- Mockup y guía de merch
+│   │   ├── Legales/              <-- Pasos legales y propiedad intelectual
+│   │   └── Manuales - de empresa/ <-- Manual de usuario, lluvia de ideas, propuesta de valor, testing
+│   └── Excel/                    <-- Planilla de testing cruzado
 │
 ├── jpg/                          <-- 🖼️ IMÁGENES DE DOCUMENTACIÓN
-│   ├── diseño/                   <-- Logo y sublogo de Lüp
+│   ├── diseño/                   <-- Logo, sublogo, merch, stickers y logos adicionales
 │   ├── doc_assets/               <-- Íconos usados en este README
 │   ├── comercio/                 <-- Gráfico FODA, modelo de negocio
-│   └── manuales - de empresa/    <-- Balance del MVP
+│   └── manuales - de empresa/    <-- Balance del MVP y piezas publicitarias
 │
 └── media/                        <-- Fotos subidas desde la web (se crea sola, no se sube a git)
 ```
@@ -196,8 +215,10 @@ Plataforma web funcional en Django con tres tipos de cuenta:
 - **Consumidor:** inicio con ofertas, buscador, catálogo, mapa, favoritos, carrito con varias unidades, reservas con código de retiro, opiniones e impacto (cuánto ahorró y cuánta comida salvó).
 - **Comercio:** publicar y editar productos, confirmar retiros con el código y responder pedidos de donación.
 - **Fundación:** ver donaciones disponibles, pedirlas y seguir sus solicitudes.
-- **Notificaciones push** (Expo) y recordatorio 30 minutos antes del horario de retiro.
-- Modo claro y oscuro.
+- **Notificaciones push** (Expo + Firebase) y recordatorio 30 minutos antes del horario de retiro.
+- **Completar con IA**: el comercio saca una foto y la IA completa el producto.
+- **Puntos Lüp** con fotos del merch y canje desde la app.
+- **Chat de ayuda "Lü"**, modo claro y oscuro, español e inglés.
 
 ### Funcionalidades clave
 
@@ -210,8 +231,13 @@ Plataforma web funcional en Django con tres tipos de cuenta:
 - [x] Avisos por email y notificaciones push
 - [x] Chat de ayuda con IA
 - [x] Página bilingüe (español / inglés)
-- [ ] Carga de productos con una foto (IA)
-- [ ] Publicación en internet (deploy) y en Google Play
+- [x] Carga de productos con una foto (IA)
+- [x] Puntos Lüp con canje de merch
+- [x] App en español e inglés, modo claro y oscuro
+- [x] Página publicada en www.lupalimentos.com
+- [x] APK de Android descargable desde la web
+- [ ] Publicación en Google Play
+- [ ] Pago online con Mercado Pago
 
 ---
 
@@ -379,14 +405,16 @@ Costo aproximado: unos US$13 por mes (verificar en render.com/pricing). Se puede
 
 1. Comprá el dominio (ej. `lupalimentos.com`).
 2. En Render: servicio `lup` → **Settings → Custom Domains** → agregá `lupalimentos.com` y `www.lupalimentos.com`.
+   La dirección principal es `www.lupalimentos.com`: la versión sin www redirige ahí.
    Render muestra los registros DNS que hay que cargar donde compraste el dominio. El https es automático.
 3. En **Environment** agregá y guardá (la página se reinicia sola):
    ```
    DJANGO_ALLOWED_HOSTS=lupalimentos.com,www.lupalimentos.com
-   SITIO_URL=https://lupalimentos.com
+   SITIO_URL=https://www.lupalimentos.com
    ```
    `SITIO_URL` es la dirección que va en los links de los emails.
-4. En la app (`app/.env`): `EXPO_PUBLIC_URL_SERVIDOR=https://lupalimentos.com`.
+4. En la app (`app/.env` y en las variables de EAS): `EXPO_PUBLIC_URL_SERVIDOR=https://www.lupalimentos.com`.
+   Tiene que ir **con www**: la redirección desde la dirección sin www pierde el inicio de sesión de la app.
 
 ### Cómo se actualiza
 
@@ -432,8 +460,12 @@ Lo que cargan los usuarios (nombres de productos, comercios, opiniones) no se tr
 
 ## Estado del proyecto
 
-**MVP terminado y funcionando** en la web y en la app (Android, con Expo).
-Lista para publicarse en internet (ver "Publicar la página"). Próximos pasos: carga de productos con foto e IA, APK con EAS y Google Play.
+**Proyecto terminado y publicado.** La página está online en [www.lupalimentos.com](https://www.lupalimentos.com)
+y la app para Android se descarga desde la web, con notificaciones push funcionando.
+
+**Modelo de negocio:** alta gratuita para los comercios y comisión del 15 % por venta (20 % cuando se sume el pago online).
+
+**Próximos pasos:** publicar la app en Google Play, sumar el pago online con Mercado Pago y probar Lüp con los primeros comercios y organizaciones de Alta Gracia.
 
 ---
 
@@ -441,16 +473,21 @@ Lista para publicarse en internet (ver "Publicar la página"). Próximos pasos: 
 
 | Integrante | Rol | Rama en GitHub |
 |---|---|---|
-| **Sofía Silva** | Project Manager · Desarrolladora Backend y Frontend · Branding y Comunicación Visual · QA | `sofia` |
-| **Josefina Caggiano** | Analista de Sistemas · Desarrolladora Backend y Frontend · Diseño UX/UI · QA | `josefina` |
-| **Trinidad Bossi** | Desarrolladora de Base de Datos · Backend y Frontend · Sostenibilidad y Legales · QA | `trinidad` |
+| **Sofía Silva** | Project Manager · Desarrolladora Backend y Frontend (app) · Inteligencia Artificial · Branding y Comunicación Visual · QA · Datos e Impacto | `sofia` |
+| **Josefina Caggiano** | Analista de Sistemas · Diseño UX/UI · Branding y Comunicación Visual · QA · Marketing y Relaciones Institucionales | `josefina` |
+| **Trinidad Bossi Scaglia** | Desarrolladora de Base de Datos · Backend y Frontend (web) · Inteligencia Artificial · QA · Sostenibilidad y Legales | `trinidad` |
+
+**Docente:** Prof. Tamara Piccinni · Escuela El Obraje, Alta Gracia
 
 ---
 
 ## Enlaces importantes
 
+- Página web: https://www.lupalimentos.com
 - Repositorio: https://github.com/Code7C26/LUP
-- Mockup: [`doc/manuales - de empresa/MOCK UP - LÚP.pdf`](doc/manuales%20-%20de%20empresa/MOCK%20UP%20-%20L%C3%9AP.pdf)
+- Instagram: [@lupalimentos](https://www.instagram.com/lupalimentos)
+- Manual de usuario: [`doc/Pdf/Manuales - de empresa/Manual de usuario.pdf`](doc/Pdf/Manuales%20-%20de%20empresa/Manual%20de%20usuario.pdf)
+- Mockup: [`doc/Pdf/Diseño/Mock up.pdf`](doc/Pdf/Dise%C3%B1o/Mock%20up.pdf)
 - Documentación del negocio: [`doc/`](doc/)
 
 ---
