@@ -1,6 +1,6 @@
 // Editar mis datos (desde Perfil): foto, nombre, apellido, email, teléfono, ciudad y avisos por email.
-// Estilo del mockup (página 12, "Nuevo Producto"): título grande con ícono, la foto en un recuadro,
-// campos grises redondeados y el botón verde oscuro.
+// Con el estilo de Inicio: la tarjeta verde arriba con la foto montada sobre su borde,
+// los campos agrupados en tarjetas ("Datos personales", "Contacto", "Avisos") y el botón verde oscuro.
 // Usa GET /api/auth/yo/ para completar y PATCH /api/auth/yo/ (multipart) para guardar.
 // Django valida lo mismo que "Mis datos" de la web (la foto se recorta en un cuadrado de 400×400).
 // Para cambiar el email pide la contraseña actual (el campo aparece solo si el email cambia).
@@ -27,12 +27,36 @@ import Campo from '../componentes/Campo';
 import Cargando from '../componentes/Cargando';
 import Icono from '../componentes/Icono';
 import MensajeError from '../componentes/MensajeError';
+import TarjetaVerde from '../componentes/TarjetaVerde';
 import { useSesion } from '../contexto/Sesion';
 import { useIdioma } from '../contexto/Idioma';
-import { espacio, fuentes, tamanos, useTema } from '../tema';
+import { espacio, fuentes, sombra, tamanos, useTema } from '../tema';
 import { textoError, vibrar } from '../utilidades';
 
 const CAMPOS = ['first_name', 'last_name', 'email', 'telefono', 'ciudad'];
+const TAMANO_FOTO = 124; // con el aro de 4 incluido
+
+// Tarjeta blanca (en oscuro, colores.panel) con un título chiquito con ícono arriba
+function Grupo({ icono, titulo, children }) {
+  const { colores, esOscuro } = useTema();
+  return (
+    <View
+      style={[
+        estilos.grupo,
+        { backgroundColor: esOscuro ? colores.panel : colores.fondo, borderColor: colores.borde },
+        sombra(colores),
+      ]}
+    >
+      <View style={estilos.tituloGrupo}>
+        <Icono nombre={icono} tamano={16} color={colores.verdeHover} />
+        <Text style={[estilos.textoTituloGrupo, { color: colores.titulo }]} accessibilityRole="header">
+          {titulo}
+        </Text>
+      </View>
+      {children}
+    </View>
+  );
+}
 
 export default function EditarPerfil({ navigation }) {
   const { colores } = useTema();
@@ -162,40 +186,37 @@ export default function EditarPerfil({ navigation }) {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={estilos.contenido} keyboardShouldPersistTaps="handled">
-        <View style={estilos.cabecera}>
-          <Icono nombre="person-circle-outline" tamano={30} color={colores.titulo} />
-          <Text style={[estilos.titulo, { color: colores.titulo }]} accessibilityRole="header">
-            {t('editarPerfil.titulo')}
-          </Text>
+        {/* La tarjeta verde y la foto montada sobre su borde de abajo (mitad adentro, mitad afuera) */}
+        <View>
+          <TarjetaVerde titulo={t('editarPerfil.titulo')} abajo={t('editarPerfil.subtitulo')} estilo={estilos.cabecera} />
+          <View style={estilos.zonaFoto}>
+            <Pressable
+              onPress={opcionesFoto}
+              accessibilityRole="button"
+              accessibilityLabel={foto ? t('editarPerfil.cambiarOQuitarFoto') : t('editarPerfil.agregarFotoAccesible')}
+              style={({ pressed }) => pressed && { opacity: 0.8 }}
+            >
+              {/* El aro es del color del fondo: en claro, blanco */}
+              <View style={[estilos.foto, { backgroundColor: colores.campo, borderColor: colores.fondo }]}>
+                {foto ? (
+                  <Image source={{ uri: foto }} style={StyleSheet.absoluteFill} />
+                ) : (
+                  <Icono nombre="image-outline" tamano={40} color={colores.titulo} />
+                )}
+              </View>
+              {/* Afuera del círculo para que no lo recorte */}
+              <View style={[estilos.lapiz, { backgroundColor: colores.verdeProfundo, borderColor: colores.fondo }]}>
+                <Icono nombre="camera" tamano={15} color={colores.sobreVerdeProfundo} />
+              </View>
+            </Pressable>
+            <Boton texto={foto ? t('editarPerfil.cambiarFoto') : t('editarPerfil.agregarFoto')} variante="texto" chico onPress={opcionesFoto} />
+            {errores.foto ? (
+              <Text style={[estilos.errorFoto, { color: colores.error }]}>{textoError(errores.foto)}</Text>
+            ) : null}
+          </View>
         </View>
 
-        {/* Foto: el recuadro gris del mockup, redondo como en Perfil */}
-        <View style={estilos.zonaFoto}>
-          <Pressable
-            onPress={opcionesFoto}
-            accessibilityRole="button"
-            accessibilityLabel={foto ? t('editarPerfil.cambiarOQuitarFoto') : t('editarPerfil.agregarFotoAccesible')}
-            style={({ pressed }) => pressed && { opacity: 0.8 }}
-          >
-            <View style={[estilos.foto, { backgroundColor: colores.campo }]}>
-              {foto ? (
-                <Image source={{ uri: foto }} style={StyleSheet.absoluteFill} />
-              ) : (
-                <Icono nombre="image-outline" tamano={40} color={colores.titulo} />
-              )}
-            </View>
-            {/* Afuera del círculo para que no lo recorte */}
-            <View style={[estilos.lapiz, { backgroundColor: colores.verdeProfundo, borderColor: colores.fondo }]}>
-              <Icono nombre="camera" tamano={15} color={colores.sobreVerdeProfundo} />
-            </View>
-          </Pressable>
-          <Boton texto={foto ? t('editarPerfil.cambiarFoto') : t('editarPerfil.agregarFoto')} variante="texto" chico onPress={opcionesFoto} />
-          {errores.foto ? (
-            <Text style={[estilos.errorFoto, { color: colores.error }]}>{textoError(errores.foto)}</Text>
-          ) : null}
-        </View>
-
-        <View style={estilos.campos}>
+        <Grupo icono="person-outline" titulo={t('editarPerfil.grupoPersonales')}>
           <Campo
             etiqueta={responsable ? t('editarPerfil.nombreResponsable') : t('editarPerfil.nombre')}
             value={valores.first_name}
@@ -212,6 +233,9 @@ export default function EditarPerfil({ navigation }) {
             autoComplete="family-name"
             maxLength={150}
           />
+        </Grupo>
+
+        <Grupo icono="mail-outline" titulo={t('editarPerfil.grupoContacto')}>
           <Campo
             etiqueta={t('editarPerfil.email')}
             placeholder={t('editarPerfil.emailEjemplo')}
@@ -260,34 +284,34 @@ export default function EditarPerfil({ navigation }) {
             maxLength={100}
             onSubmitEditing={guardar}
           />
-        </View>
+        </Grupo>
 
         {/* Avisos por email (igual que "Avisos por email" de la web) */}
-        <View style={[estilos.avisos, { backgroundColor: colores.superficie, borderColor: colores.borde }]}>
-          <View style={[estilos.iconoAvisos, { backgroundColor: colores.menta }]}>
-            <Icono nombre="mail-outline" tamano={18} color={colores.verdeHover} />
+        <Grupo icono="notifications-outline" titulo={t('editarPerfil.grupoAvisos')}>
+          <View style={estilos.avisos}>
+            <View style={{ flex: 1 }}>
+              <Text style={[estilos.tituloAvisos, { color: colores.texto }]}>{t('editarPerfil.avisos')}</Text>
+              <Text style={[estilos.ayuda, { color: colores.gris }]}>
+                {t('editarPerfil.avisosAyuda')}
+              </Text>
+            </View>
+            <Switch
+              value={avisos}
+              onValueChange={setAvisos}
+              accessibilityLabel={t('editarPerfil.avisos')}
+              trackColor={{ false: colores.borde, true: colores.verde }}
+              thumbColor={Platform.OS === 'android' ? (avisos ? colores.verdeProfundo : colores.fondo) : undefined}
+              ios_backgroundColor={colores.borde}
+            />
           </View>
-          <View style={{ flex: 1 }}>
-            <Text style={[estilos.tituloAvisos, { color: colores.texto }]}>{t('editarPerfil.avisos')}</Text>
-            <Text style={[estilos.ayuda, { color: colores.gris }]}>
-              {t('editarPerfil.avisosAyuda')}
-            </Text>
-          </View>
-          <Switch
-            value={avisos}
-            onValueChange={setAvisos}
-            accessibilityLabel={t('editarPerfil.avisos')}
-            trackColor={{ false: colores.borde, true: colores.verde }}
-            thumbColor={Platform.OS === 'android' ? (avisos ? colores.verdeProfundo : colores.fondo) : undefined}
-            ios_backgroundColor={colores.borde}
-          />
-        </View>
-        {errores.avisos_email ? (
-          <Text style={[estilos.ayuda, { color: colores.error }]}>{textoError(errores.avisos_email)}</Text>
-        ) : null}
+          {errores.avisos_email ? (
+            <Text style={[estilos.ayuda, { color: colores.error }]}>{textoError(errores.avisos_email)}</Text>
+          ) : null}
+        </Grupo>
 
         <MensajeError mensaje={errorGeneral} />
 
+        {/* Boton ya es verdeProfundo, redondeado y se achica un poco al tocarlo */}
         <Boton texto={t('comun.guardarCambios')} onPress={guardar} cargando={guardando} estilo={estilos.boton} />
       </ScrollView>
     </KeyboardAvoidingView>
@@ -301,23 +325,20 @@ const estilos = StyleSheet.create({
     paddingBottom: espacio(5),
     gap: espacio(2.5),
   },
+  // Abajo queda lugar para la mitad de la foto, que se monta sobre el borde
   cabecera: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: espacio(1),
-  },
-  titulo: {
-    fontFamily: fuentes.normal,
-    fontSize: 26,
+    paddingBottom: TAMANO_FOTO / 2 + 16,
   },
   zonaFoto: {
     alignItems: 'center',
     gap: espacio(0.5),
+    marginTop: -TAMANO_FOTO / 2,
   },
   foto: {
-    width: 116,
-    height: 116,
-    borderRadius: 58,
+    width: TAMANO_FOTO,
+    height: TAMANO_FOTO,
+    borderRadius: TAMANO_FOTO / 2,
+    borderWidth: 4,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
@@ -338,12 +359,24 @@ const estilos = StyleSheet.create({
     fontSize: tamanos.chico,
     textAlign: 'center',
   },
-  campos: {
+  grupo: {
     gap: espacio(2),
+    padding: espacio(2),
+    borderRadius: 16,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  tituloGrupo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: espacio(0.75),
+    marginBottom: -espacio(0.5),
+  },
+  textoTituloGrupo: {
+    fontFamily: fuentes.negrita,
+    fontSize: tamanos.chico,
   },
   boton: {
-    alignSelf: 'center',
-    width: '82%',
+    width: '100%',
     marginTop: espacio(1),
   },
   ayuda: {
@@ -355,16 +388,6 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: espacio(1.5),
-    padding: espacio(1.5),
-    borderRadius: 14,
-    borderWidth: StyleSheet.hairlineWidth,
-  },
-  iconoAvisos: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   tituloAvisos: {
     fontFamily: fuentes.media,

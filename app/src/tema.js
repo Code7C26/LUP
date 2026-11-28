@@ -24,6 +24,7 @@ const paletaClara = {
   verdeHover: '#153D30', // links ("Regístrate gratis acá")
   verdeProfundo: '#073425', // botones y pestaña elegida
   verdeClaro: '#B6D1A1', // barra de roles y tarjeta de bienvenida
+  verdeTexto: '#4E7A30', // verde de la marca que se lee bien como texto sobre blanco (precios): contraste 5:1
   menta: '#EEF4EA', // fondos suaves (círculos de íconos)
   ambar: '#E39B2D', // avisos ("vence hoy")
   ambarClaro: '#FDF1DE',
@@ -36,6 +37,11 @@ const paletaClara = {
   marca: '#073425',
   sobreMarca: '#FFFFFF',
   sobreMarcaSuave: '#B6D1A1',
+  // Texto claro sobre "marca" (las cabeceras verdes) y su versión más tenue (el resumen "3 disponibles · …")
+  crema: '#F4F1E8',
+  sobreMarcaTenue: '#ABBFA7',
+  bordeSuave: '#CFDCC6', // borde finito de las pastillas de texto (categorías, ideas)
+  grisVerde: '#6B7A70', // "Ver todo" y las líneas grises de las tarjetas
   sombra: '#000000',
   velo: 'rgba(0, 0, 0, 0.45)',
   // Fondos suaves de la paleta de la marca (#073425, #71A24D, #B6D1A1, #E0533D) para dar un poco de color
@@ -64,10 +70,13 @@ const paletaOscura = {
   verdeHover: '#93C46E',
   verdeProfundo: '#93C46E',
   verdeClaro: '#24392D',
+  verdeTexto: '#93C46E',
   menta: '#1F3329',
   ambarClaro: '#3A2B13',
   error: '#F2B8B5',
   sobreVerdeProfundo: '#0E1713',
+  bordeSuave: '#34493D',
+  grisVerde: '#9AAA9F',
   velo: 'rgba(0, 0, 0, 0.55)',
   // Las mismas, oscurecidas sobre el fondo oscuro (el texto claro encima se lee bien)
   suaves: {
@@ -83,6 +92,7 @@ const paletaOscura = {
 export const fuentes = {
   normal: 'DMSans_400Regular',
   media: 'DMSans_500Medium',
+  semi: 'DMSans_600SemiBold', // títulos de sección y nombres en las tarjetas
   negrita: 'DMSans_700Bold',
   boton: 'Poppins_700Bold', // "Ingresar como Consumidor", "Publicar"
   botonMedio: 'Poppins_500Medium', // "Iniciar sesión", botones chicos

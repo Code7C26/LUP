@@ -1,13 +1,12 @@
-// PASO 40 · Inicio, IGUAL AL MOCKUP (página 7 del PDF):
+// PASO 40 · Inicio del consumidor:
 //   arriba: el menú ☰ a la izquierda (Perfil, Mis reservas, Mis favoritos, Apariencia y Soporte;
 //   ver componentes/MenuLateral.js), al lado el botón "Ayuda" (abre el chat con Lü, como el de la web)
 //   y compartir / carrito (con el número de productos) a la derecha
+//   la cabecera verde ("Hola, Ana" · "Salvá comida rica" y el buscador, que abre la pestaña Buscar)
+//   las categorías en pastillas de texto (abren Buscar con esa categoría)
 //   el mapa a todo lo ancho con los comercios y el logo en la esquina
-//   "Cerca tuyo" y los comercios con foto, km y "Ver catálogo" (para buscar está la pestaña "Buscar" de abajo:
-//   la lupa que había acá llevaba al mismo lugar que "Ver catálogo completo", así que se sacó)
-//   (agregado) "Vence hoy": las ofertas que hay que retirar hoy, si hay alguna
-//   "Ver catálogo completo" y las fotos de las ofertas con sus km
-//   (agregado) "Tus favoritos" al final, si marcaste alguno con el corazón
+//   "Cerca tuyo" (los comercios con foto, km y estrellas), "Vence hoy" (si hay alguna), "Ofertas"
+//   y "Tus favoritos" (si marcaste alguno con el corazón). Al final, "¿Sabías que…?" con un tip al azar.
 // Usa GET /api/comercios/?lat=&lng= y GET /api/productos/?orden=cercania&lat=&lng=
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -22,135 +21,137 @@ import {
   View,
 } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
+import { useFocusEffect } from '@react-navigation/native';
 import * as Location from 'expo-location';
 
 import { api, urlCompleta } from '../api/cliente';
 import BotonCarrito from '../componentes/BotonCarrito';
 import BotonFavorito from '../componentes/BotonFavorito';
-import CalificacionComercio, { textoCalificacion } from '../componentes/CalificacionComercio';
-import Chip from '../componentes/Chip';
+import CabeceraUsuario from '../componentes/CabeceraUsuario';
+import { promedioConComa, textoCalificacion } from '../componentes/CalificacionComercio';
 import Esqueleto from '../componentes/Esqueleto';
 import Icono from '../componentes/Icono';
 import IconoCategoria from '../componentes/IconoCategoria';
 import Logo from '../componentes/Logo';
 import MenuLateral from '../componentes/MenuLateral';
 import MensajeError from '../componentes/MensajeError';
+import Pastilla from '../componentes/Pastilla';
+import PastillaDescuento, { porcentajeDescuento } from '../componentes/PastillaDescuento';
+import TituloSeccion from '../componentes/TituloSeccion';
 import { useBusquedas } from '../contexto/Busquedas';
 import { useFavoritos } from '../contexto/Favoritos';
 import { useIdioma } from '../contexto/Idioma';
-import { espacio, fuentes, radio, useTema } from '../tema';
-import { textoKm } from '../utilidades';
+import { useSesion } from '../contexto/Sesion';
+import { espacio, fuentes, useTema } from '../tema';
+import { CATEGORIAS, formatoPrecio, hoyLocal, textoKm } from '../utilidades';
 
 // "1 km", "350 m" (sin el "a" de adelante, como el mockup)
 const km = (distancia) => textoKm(distancia) || null;
 
-// La fecha de hoy en la hora del celular, como la manda Django: "2026-11-12"
-// (no se usa toISOString() porque está en UTC y a la noche ya daría "mañana")
-function hoyLocal() {
-  const hoy = new Date();
-  return `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
-}
+const presionado = { transform: [{ scale: 0.97 }] };
 
-// Pin + distancia chiquitos
-function Distancia({ valor }) {
-  const { colores } = useTema();
-  if (!valor) return null;
-  return (
-    <View style={estilos.distancia}>
-      <Icono nombre="location-sharp" tamano={11} color={colores.titulo} />
-      <Text style={[estilos.textoKm, { color: colores.titulo }]}>{valor}</Text>
-    </View>
-  );
+// Un tip al azar que no sea el que se estaba mostrando: se sortea entre los otros n - 1
+function otroTip(anterior, cantidad) {
+  if (cantidad <= 1) return 0;
+  if (anterior === null) return Math.floor(Math.random() * cantidad);
+  const nuevo = Math.floor(Math.random() * (cantidad - 1));
+  return nuevo >= anterior ? nuevo + 1 : nuevo;
 }
 
 // Foto con bordes redondeados. Sin foto: la ilustración de la categoría (producto) o del rubro (comercio)
-function Foto({ uri, icono, categoria, rubro, estilo }) {
+function Foto({ uri, categoria, rubro, estilo }) {
   const { colores } = useTema();
   return (
     <View style={[estilo, { backgroundColor: colores.panel, overflow: 'hidden' }]}>
       {uri ? (
         <Image source={{ uri: urlCompleta(uri) }} style={StyleSheet.absoluteFill} />
       ) : (
-        categoria !== undefined || rubro !== undefined ? (
-          <IconoCategoria categoria={categoria} rubro={rubro} llenar tamano={34} />
-        ) : (
-          <View style={estilos.sinFoto}>
-            <Icono nombre={icono} tamano={30} color={colores.gris} />
-          </View>
-        )
+        <IconoCategoria categoria={categoria} rubro={rubro} llenar tamano={34} />
       )}
     </View>
   );
 }
 
-// Título de sección con su ícono en un círculo de color suave (tema.js → suaves)
-function TituloSeccion({ icono, tono, texto, alTocar, estilo }) {
+// Al final: "¿Sabías que…?" (Inicio elige el tip: cambia al abrir la pantalla y al deslizar para actualizar)
+function TarjetaTip({ tip }) {
   const { colores } = useTema();
-  const suave = colores.suaves[tono];
-  const contenido = (
-    <>
-      <View style={[estilos.circuloSeccion, { backgroundColor: suave.fondo }]}>
-        <Icono nombre={icono} tamano={16} color={suave.icono} />
-      </View>
-      <Text
-        style={[estilos.titulo, { color: colores.titulo, flexShrink: 1 }, alTocar && estilos.subrayado]}
-        accessibilityRole={alTocar ? undefined : 'header'}
-      >
-        {texto}
-      </Text>
-    </>
+  const { t } = useIdioma();
+  if (!tip) return null;
+  return (
+    <View style={[estilos.tip, { backgroundColor: colores.menta }]} accessible>
+      <Text style={[estilos.tituloTip, { color: colores.verdeProfundo }]}>{t('inicio.sabiasQue')}</Text>
+      <Text style={[estilos.textoTip, { color: colores.texto }]}>{tip}</Text>
+    </View>
   );
-  if (alTocar) {
-    return (
-      <Pressable onPress={alTocar} accessibilityRole="link" style={({ pressed }) => [estilos.filaSeccion, estilo, pressed && { opacity: 0.7 }]}>
-        {contenido}
-      </Pressable>
-    );
-  }
-  return <View style={[estilos.filaSeccion, estilo]}>{contenido}</View>;
 }
 
-// Tarjeta de oferta (foto + km), la de "Vence hoy" y "Ver catálogo completo"
+// Oferta de los carruseles ("Vence hoy" y "Ofertas"): la foto grande, el nombre y "precio · km"
 function TarjetaOferta({ producto, onPress }) {
+  const { colores } = useTema();
+  const { t } = useIdioma();
+  const porcentaje = porcentajeDescuento(producto);
+  const linea = [formatoPrecio(producto.precio_descuento), km(producto.distancia_km)].filter(Boolean).join(' · ');
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`${producto.titulo}, ${km(producto.distancia_km) || ''}`}
-      style={({ pressed }) => [{ gap: 4 }, pressed && { opacity: 0.8 }]}
+      accessibilityLabel={[producto.titulo, linea, porcentaje && t('inicio.descuentoAccesible', { n: porcentaje })]
+        .filter(Boolean)
+        .join(', ')}
+      style={({ pressed }) => [estilos.oferta, pressed && presionado]}
     >
-      <Foto uri={producto.imagen} categoria={producto.categoria} estilo={estilos.fotoProducto} />
-      <Distancia valor={km(producto.distancia_km)} />
+      <View>
+        <Foto uri={producto.imagen} categoria={producto.categoria} estilo={estilos.fotoOferta} />
+        <PastillaDescuento porcentaje={porcentaje} />
+      </View>
+      <Text style={[estilos.nombre, { color: colores.texto }]} numberOfLines={1}>
+        {producto.titulo}
+      </Text>
+      <Text style={[estilos.linea, { color: colores.grisVerde }]} numberOfLines={1}>
+        {linea}
+      </Text>
     </Pressable>
   );
 }
 
-// Tarjeta de comercio del carrusel "Cerca tuyo": foto, nombre, km, estrellas y "Ver catálogo"
+// Comercio de "Cerca tuyo" y "Tus favoritos": la foto con el corazón, el nombre y "km · ★ 4,6"
 function TarjetaComercio({ comercio, foto, onPress }) {
   const { colores } = useTema();
   const { t } = useIdioma();
-  const estrellas = textoCalificacion(comercio.calificacion_promedio, comercio.calificaciones);
+  const promedio = promedioConComa(comercio.calificacion_promedio, comercio.calificaciones);
+  const linea = [
+    km(comercio.distancia_km),
+    promedio && `★ ${promedio}`,
+    !comercio.ofertas && t('inicio.sinOfertas'),
+  ]
+    .filter(Boolean)
+    .join(' · ');
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={[comercio.nombre_fantasia, estrellas, t('inicio.verCatalogo')].filter(Boolean).join('. ')}
-      style={({ pressed }) => [estilos.comercio, pressed && { opacity: 0.8 }]}
+      accessibilityLabel={[
+        comercio.nombre_fantasia,
+        km(comercio.distancia_km),
+        textoCalificacion(comercio.calificacion_promedio, comercio.calificaciones),
+        comercio.ofertas ? t('inicio.verCatalogo') : t('inicio.sinOfertas'),
+      ]
+        .filter(Boolean)
+        .join('. ')}
+      style={({ pressed }) => [estilos.comercio, pressed && presionado]}
     >
       <View>
         <Foto uri={foto} rubro={comercio.rubro} estilo={estilos.fotoComercio} />
         <BotonFavorito id={comercio.id} chico estilo={[estilos.corazon, { backgroundColor: colores.superficie }]} />
       </View>
-      <Text style={[estilos.nombreComercio, { color: colores.titulo }]} numberOfLines={1}>
+      <Text style={[estilos.nombre, { color: colores.texto }]} numberOfLines={1}>
         {comercio.nombre_fantasia}
       </Text>
-      <View style={estilos.filaDatos}>
-        <Distancia valor={km(comercio.distancia_km)} />
-        <CalificacionComercio promedio={comercio.calificacion_promedio} cantidad={comercio.calificaciones} tamano={10} />
-      </View>
-      <Text style={[estilos.verCatalogo, { color: colores.titulo }]}>
-        {comercio.ofertas ? t('inicio.verCatalogo') : t('inicio.sinOfertas')}
-      </Text>
+      {linea ? (
+        <Text style={[estilos.linea, { color: colores.grisVerde }]} numberOfLines={1}>
+          {linea}
+        </Text>
+      ) : null}
     </Pressable>
   );
 }
@@ -160,6 +161,8 @@ export default function Inicio({ navigation }) {
   const { t } = useIdioma();
   const { favoritos } = useFavoritos();
   const { recientes } = useBusquedas();
+  const { usuario } = useSesion();
+  const primerNombre = usuario?.nombre?.split(' ')[0];
 
   const [comercios, setComercios] = useState([]);
   const [ofertas, setOfertas] = useState([]);
@@ -168,6 +171,14 @@ export default function Inicio({ navigation }) {
   const [actualizando, setActualizando] = useState(false);
   const [error, setError] = useState('');
   const [verMenu, setVerMenu] = useState(false);
+
+  const tips = t('inicio.tips');
+  const cantidadTips = Array.isArray(tips) ? tips.length : 0;
+  const [indiceTip, setIndiceTip] = useState(null);
+  const cambiarTip = useCallback(() => setIndiceTip((anterior) => otroTip(anterior, cantidadTips)), [cantidadTips]);
+
+  // Al abrir Inicio y cada vez que se vuelve a esta pestaña
+  useFocusEffect(cambiarTip);
 
   const cargar = useCallback(async () => {
     setError('');
@@ -220,6 +231,7 @@ export default function Inicio({ navigation }) {
   const hoy = hoyLocal();
   const vencenHoy = ofertas.filter((p) => String(p.fecha_vencimiento).slice(0, 10) === hoy);
   const abrirProducto = (p) => navigation?.navigate?.('DetalleProducto', { id: p.id });
+  const saludo = primerNombre ? t('inicio.holaNombre', { nombre: primerNombre }) : t('inicio.hola');
 
   return (
     <ScrollView
@@ -231,6 +243,7 @@ export default function Inicio({ navigation }) {
           tintColor={colores.verde}
           onRefresh={() => {
             setActualizando(true);
+            cambiarTip();
             cargar();
           }}
         />
@@ -270,6 +283,35 @@ export default function Inicio({ navigation }) {
       </View>
 
       <MenuLateral visible={verMenu} alCerrar={() => setVerMenu(false)} navigation={navigation} />
+
+      {/* La cabecera: tocarla (o el buscador) abre la pestaña Buscar */}
+      <CabeceraUsuario
+        foto={urlCompleta(usuario?.foto)}
+        nombre={primerNombre}
+        arriba={saludo}
+        titulo={t('inicio.saludoTitulo')}
+        alTocar={() => navigation?.navigate?.('Catalogo')}
+        accessibilityLabel={`${saludo}. ${t('inicio.saludoTitulo')}. ${t('inicio.buscar')}`}
+        accessibilityHint={t('inicio.saludoPista')}
+        estilo={estilos.cabecera}
+      >
+        <View style={estilos.buscador}>
+          <Icono nombre="search" tamano={17} color={colores.crema} />
+          <Text style={[estilos.textoBuscador, { color: colores.crema }]}>{t('inicio.buscar')}</Text>
+        </View>
+      </CabeceraUsuario>
+
+      {/* Categorías: abren "Buscar" con esa categoría ya filtrada */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={estilos.filaPastillas}>
+        {CATEGORIAS.map(([clave, texto]) => (
+          <Pastilla
+            key={clave}
+            texto={t(texto)}
+            accessibilityLabel={t('inicio.verCategoria', { nombre: t(texto) })}
+            alTocar={() => navigation?.navigate?.('Catalogo', { categoria: clave, t: Date.now() })}
+          />
+        ))}
+      </ScrollView>
 
       {/* Mapa a todo lo ancho */}
       {centro ? (
@@ -314,27 +356,21 @@ export default function Inicio({ navigation }) {
 
       <View style={estilos.cuerpo}>
         {error ? <MensajeError mensaje={error} alReintentar={cargar} /> : null}
-
-        {/* "Cerca tuyo" */}
-        <View style={estilos.filaTitulo}>
-          <TituloSeccion icono="location-outline" tono="menta" texto={t('inicio.cercaTuyo')} estilo={{ flex: 1 }} />
-        </View>
+        {/* "Cerca tuyo": "Ver todo" abre el mapa con todos los comercios */}
+        <TituloSeccion
+          texto={t('inicio.cercaTuyo')}
+          accion={t('inicio.verTodo')}
+          alTocarAccion={() => navigation?.navigate?.('Mapa')}
+        />
       </View>
 
       {/* Búsquedas recientes: al tocar una, el catálogo se abre buscándola */}
       {recientes.length ? (
         <View style={estilos.recientes}>
-          <Text style={[estilos.textoRecientes, { color: colores.gris, paddingHorizontal: espacio(2) }]}>
-            {t('inicio.buscasteHacePoco')}
-          </Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={estilos.filaRecientes}>
+          <Text style={[estilos.textoRecientes, { color: colores.grisVerde }]}>{t('inicio.buscasteHacePoco')}</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={estilos.filaPastillas}>
             {recientes.map((r) => (
-              <Chip
-                key={r}
-                texto={r}
-                icono="time-outline"
-                onPress={() => navigation?.navigate?.('Catalogo', { q: r, t: Date.now() })}
-              />
+              <Pastilla key={r} texto={r} alTocar={() => navigation?.navigate?.('Catalogo', { q: r, t: Date.now() })} />
             ))}
           </ScrollView>
         </View>
@@ -349,37 +385,34 @@ export default function Inicio({ navigation }) {
         renderItem={({ item }) => (
           <TarjetaComercio comercio={item} foto={fotoDe[item.id]} onPress={() => abrirComercio(item)} />
         )}
-        ListEmptyComponent={
-          <Text style={[estilos.vacio, { color: colores.gris }]}>{t('inicio.sinComercios')}</Text>
-        }
+        ListEmptyComponent={<Text style={[estilos.vacio, { color: colores.gris }]}>{t('inicio.sinComercios')}</Text>}
       />
 
-      {/* Agregado: "Vence hoy" (si no hay ninguna, no se muestra) */}
+      {/* "Vence hoy" (si no hay ninguna, no se muestra) */}
       {vencenHoy.length ? (
-        <View style={[estilos.bloqueVenceHoy, { backgroundColor: colores.suaves.ambar.fondo }]}>
-          <TituloSeccion icono="time-outline" tono="durazno" texto={t('inicio.venceHoy')} estilo={estilos.tituloVenceHoy} />
+        <>
+          <View style={estilos.cuerpo}>
+            <TituloSeccion texto={t('inicio.venceHoy')} />
+          </View>
           <FlatList
             horizontal
             data={vencenHoy}
             keyExtractor={(p) => `hoy-${p.id}`}
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={estilos.carruselVenceHoy}
+            contentContainerStyle={estilos.carrusel}
             renderItem={({ item }) => <TarjetaOferta producto={item} onPress={() => abrirProducto(item)} />}
           />
-        </View>
+        </>
       ) : null}
 
-      {/* "Ver catálogo completo" y las ofertas */}
+      {/* Las ofertas: "Ver todo" abre el catálogo completo */}
       <View style={estilos.cuerpo}>
         <TituloSeccion
-          icono="pricetags-outline"
-          tono="verde"
-          texto={t('inicio.catalogoCompleto')}
-          alTocar={() => navigation?.navigate?.('Catalogo')}
-          estilo={{ marginTop: espacio(3), marginBottom: espacio(1.5) }}
+          texto={t('inicio.ofertas')}
+          accion={t('inicio.verTodo')}
+          alTocarAccion={() => navigation?.navigate?.('Catalogo')}
         />
       </View>
-
       <FlatList
         horizontal
         data={ofertas.slice(0, 12)}
@@ -387,20 +420,17 @@ export default function Inicio({ navigation }) {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={estilos.carrusel}
         renderItem={({ item }) => <TarjetaOferta producto={item} onPress={() => abrirProducto(item)} />}
-        ListEmptyComponent={
-          <Text style={[estilos.vacio, { color: colores.gris }]}>{t('inicio.noHayOfertas')}</Text>
-        }
+        ListEmptyComponent={<Text style={[estilos.vacio, { color: colores.gris }]}>{t('inicio.noHayOfertas')}</Text>}
       />
 
-      {/* Agregado: favoritos */}
+      {/* Favoritos */}
       {misFavoritos.length ? (
         <>
           <View style={estilos.cuerpo}>
             <TituloSeccion
-              icono="heart-outline"
-              tono="durazno"
               texto={t('inicio.tusFavoritos')}
-              estilo={{ marginTop: espacio(3), marginBottom: espacio(1.5) }}
+              accion={t('inicio.verTodo')}
+              alTocarAccion={() => navigation?.navigate?.('MisFavoritos')}
             />
           </View>
           <FlatList
@@ -415,6 +445,10 @@ export default function Inicio({ navigation }) {
           />
         </>
       ) : null}
+
+      <View style={estilos.cuerpo}>
+        <TarjetaTip tip={indiceTip === null ? null : tips[indiceTip]} />
+      </View>
     </ScrollView>
   );
 }
@@ -446,6 +480,31 @@ const estilos = StyleSheet.create({
     fontFamily: fuentes.boton,
     fontSize: 13,
   },
+  // ---- Cabecera ----
+  cabecera: {
+    marginHorizontal: espacio(2),
+    marginTop: espacio(0.5),
+  },
+  buscador: {
+    height: 46,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: espacio(1),
+    paddingHorizontal: espacio(1.5),
+    borderRadius: 14,
+    backgroundColor: 'rgba(244, 241, 232, 0.13)',
+  },
+  textoBuscador: {
+    fontFamily: fuentes.normal,
+    fontSize: 14,
+    opacity: 0.9,
+  },
+  filaPastillas: {
+    gap: espacio(1),
+    paddingHorizontal: espacio(2),
+    paddingVertical: espacio(1.5),
+  },
+  // ---- Mapa ----
   mapa: {
     height: 230,
   },
@@ -469,118 +528,74 @@ const estilos = StyleSheet.create({
     right: espacio(1.5),
     bottom: espacio(1),
   },
+  // ---- Secciones ----
   cuerpo: {
     paddingHorizontal: espacio(2),
   },
   recientes: {
-    gap: espacio(0.75),
     marginTop: -espacio(0.5),
-    marginBottom: espacio(1.5),
   },
   textoRecientes: {
-    fontFamily: fuentes.media,
-    fontSize: 12,
-  },
-  filaRecientes: {
-    gap: espacio(1),
-    paddingHorizontal: espacio(2),
-  },
-  filaTitulo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: espacio(2.5),
-    marginBottom: espacio(1.5),
-  },
-  titulo: {
     fontFamily: fuentes.normal,
-    fontSize: 18,
-  },
-  filaSeccion: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: espacio(1),
-  },
-  circuloSeccion: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  bloqueVenceHoy: {
-    marginHorizontal: espacio(2),
-    marginTop: espacio(3),
-    paddingVertical: espacio(1.5),
-    borderRadius: radio,
-  },
-  tituloVenceHoy: {
-    paddingHorizontal: espacio(1.5),
-    marginBottom: espacio(1.5),
-  },
-  carruselVenceHoy: {
-    paddingHorizontal: espacio(1.5),
-    gap: espacio(1.5),
-  },
-  subrayado: {
-    textDecorationLine: 'underline',
+    fontSize: 12,
+    paddingHorizontal: espacio(2),
   },
   carrusel: {
     paddingHorizontal: espacio(2),
-    gap: espacio(1.5),
+    gap: espacio(1.75),
+  },
+  // ---- Tarjetas (sin caja: la foto, el nombre y una línea gris) ----
+  oferta: {
+    width: 136,
+    gap: 2,
+  },
+  fotoOferta: {
+    width: 136,
+    height: 140,
+    borderRadius: 14,
+    marginBottom: 6,
   },
   comercio: {
-    width: 150,
-    gap: 3,
+    width: 168,
+    gap: 2,
   },
   fotoComercio: {
-    width: 150,
-    height: 86,
-    borderRadius: 10,
+    width: 168,
+    height: 112,
+    borderRadius: 14,
+    marginBottom: 6,
   },
   corazon: {
     position: 'absolute',
-    top: 5,
-    right: 5,
+    top: 6,
+    right: 6,
   },
-  sinFoto: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+  nombre: {
+    fontFamily: fuentes.semi,
+    fontSize: 14,
   },
-  nombreComercio: {
-    fontFamily: fuentes.negrita,
-    fontSize: 12,
-    marginTop: 3,
-  },
-  filaDatos: {
-    flexDirection: 'row',
-    flexWrap: 'wrap', // en inglés o con muchas opiniones, las estrellas bajan abajo de los km
-    alignItems: 'center',
-    columnGap: espacio(1),
-    rowGap: 2,
-  },
-  distancia: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-  },
-  textoKm: {
-    fontFamily: fuentes.negrita,
-    fontSize: 10,
-  },
-  verCatalogo: {
+  linea: {
     fontFamily: fuentes.normal,
-    fontSize: 10,
-    textDecorationLine: 'underline',
-  },
-  fotoProducto: {
-    width: 100,
-    height: 100,
-    borderRadius: 12,
+    fontSize: 12,
   },
   vacio: {
     fontFamily: fuentes.normal,
     fontSize: 13,
+  },
+  // ---- Tip ----
+  tip: {
+    gap: 4,
+    marginTop: espacio(4),
+    padding: espacio(2),
+    borderRadius: 14,
+  },
+  tituloTip: {
+    fontFamily: fuentes.semi,
+    fontSize: 13,
+  },
+  textoTip: {
+    fontFamily: fuentes.normal,
+    fontSize: 13,
+    lineHeight: 19,
   },
 });

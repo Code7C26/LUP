@@ -10,7 +10,7 @@ import {
   Poppins_500Medium,
   Poppins_700Bold,
 } from '@expo-google-fonts/poppins';
-import { DMSans_400Regular, DMSans_500Medium, DMSans_700Bold } from '@expo-google-fonts/dm-sans';
+import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold, DMSans_700Bold } from '@expo-google-fonts/dm-sans';
 
 import { ProveedorSesion } from './src/contexto/Sesion';
 import Navegacion from './src/navegacion';
@@ -26,6 +26,7 @@ export default function App() {
     Poppins_700Bold,
     DMSans_400Regular, // DM Sans: la letra del mockup para los textos
     DMSans_500Medium,
+    DMSans_600SemiBold,
     DMSans_700Bold,
   });
   const { esOscuro } = useTema();

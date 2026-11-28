@@ -23,7 +23,11 @@ export default function Chip({ texto, icono, categoria, activo, tono, onPress })
       onPress={onPress}
       accessibilityRole="button"
       accessibilityState={{ selected: activo }}
-      style={({ pressed }) => [estilos.chip, { backgroundColor: fondo, borderColor: borde }, pressed && { opacity: 0.8 }]}
+      style={({ pressed }) => [
+        estilos.chip,
+        { backgroundColor: fondo, borderColor: borde },
+        pressed && { transform: [{ scale: 0.97 }] },
+      ]}
     >
       {categoria ? <IconoCategoria categoria={categoria} tamano={28} estilo={estilos.icono} /> : null}
       {icono ? <Icono nombre={icono} tamano={15} color={!activo && suave ? suave.icono : colorTexto} /> : null}

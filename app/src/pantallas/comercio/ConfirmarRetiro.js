@@ -1,30 +1,71 @@
 // PASO 47 · Comercio: confirmar retiro.
-// Escanea el QR que el cliente muestra en "Mis reservas" (paso 44), o deja tipear el código.
-// Abajo, los retiros que todavía están pendientes.
+// Arriba, la cabecera verde ("Retiros", "Escaneá el QR del cliente para confirmar" y los pendientes de hoy).
+// Una tarjeta para escanear el QR que el cliente muestra en "Mis reservas" (paso 44), o tipear el código.
+// Después, los retiros pendientes (ordenados por horario) y los confirmados en esta vuelta de la pantalla.
 // Usa POST /api/retiros/confirmar/ y GET /api/reservas-del-comercio/ (paso 30).
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 
-import { api } from '../../api/cliente';
+import { api, urlCompleta } from '../../api/cliente';
+import BarraSuperior from '../../componentes/BarraSuperior';
 import Boton from '../../componentes/Boton';
+import CabeceraUsuario from '../../componentes/CabeceraUsuario';
 import Campo from '../../componentes/Campo';
+import Esqueleto from '../../componentes/Esqueleto';
+import EstadoVacio from '../../componentes/EstadoVacio';
+import Icono from '../../componentes/Icono';
 import MensajeError from '../../componentes/MensajeError';
+import TituloSeccion from '../../componentes/TituloSeccion';
+import { mostrarAviso } from '../../contexto/Aviso';
 import { useIdioma } from '../../contexto/Idioma';
-import { espacio, fuentes, radio, tamanos, useTema } from '../../tema';
-import { formatoPrecio, textoError } from '../../utilidades';
-import Encabezado from '../../componentes/Encabezado';
+import { useSesion } from '../../contexto/Sesion';
+import { espacio, fuentes, tamanos, useTema } from '../../tema';
+import { textoError, vibrar } from '../../utilidades';
+
+const presionado = { transform: [{ scale: 0.97 }] };
+
+// Ordena por horario de retiro y, a igual horario, por la fecha de la reserva
+const porHorario = (a, b) =>
+  String(a.horario || '').localeCompare(String(b.horario || '')) || String(a.creada_en).localeCompare(String(b.creada_en));
+
+function FilaPendiente({ reserva }) {
+  const { colores } = useTema();
+  const { t } = useIdioma();
+  return (
+    <View style={estilos.fila}>
+      <View style={[estilos.cuadro, { backgroundColor: colores.menta }]}>
+        <Icono nombre="bag-handle-outline" tamano={22} color={colores.verdeHover} />
+      </View>
+      <View style={estilos.datos}>
+        <Text style={[estilos.nombre, { color: colores.texto }]} numberOfLines={2}>
+          {reserva.producto}
+        </Text>
+        <Text style={[estilos.linea, { color: colores.grisVerde }]}>{t('retiros.unidades', { n: reserva.cantidad })}</Text>
+        <Text style={[estilos.linea, { color: colores.grisVerde }]} numberOfLines={1}>
+          {t('retiros.horarioRetiro', { horario: reserva.horario })}
+        </Text>
+      </View>
+      <View style={[estilos.codigoPastilla, { backgroundColor: colores.menta }]}>
+        <Text style={[estilos.codigo, { color: colores.verdeProfundo }]}>{reserva.codigo_retiro}</Text>
+      </View>
+    </View>
+  );
+}
 
 export default function ConfirmarRetiro({ navigation }) {
   const { colores } = useTema();
   const { t } = useIdioma();
+  const { usuario } = useSesion();
   const [permiso, pedirPermiso] = useCameraPermissions();
 
   const [escaneando, setEscaneando] = useState(false);
   const [codigo, setCodigo] = useState('');
   const [enviando, setEnviando] = useState(false);
-  const [resultado, setResultado] = useState(null); // { ok: true/false, texto }
+  const [error, setError] = useState('');
   const [pendientes, setPendientes] = useState([]);
+  const [retiradas, setRetiradas] = useState([]); // las confirmadas mientras la pantalla está abierta
+  const [cargando, setCargando] = useState(true);
   const [errorLista, setErrorLista] = useState('');
   const [actualizando, setActualizando] = useState(false);
   // La cámara lee el mismo QR muchas veces por segundo: esto evita mandarlo dos veces
@@ -37,6 +78,7 @@ export default function ConfirmarRetiro({ navigation }) {
     } catch (e) {
       setErrorLista(e);
     } finally {
+      setCargando(false);
       setActualizando(false);
     }
   }, []);
@@ -50,29 +92,31 @@ export default function ConfirmarRetiro({ navigation }) {
   async function confirmar(texto) {
     const limpio = texto.trim().toUpperCase();
     if (!limpio) {
-      setResultado({ ok: false, texto: t('retiros.escribiCodigo') });
+      setError(t('retiros.escribiCodigo'));
       return;
     }
     setEnviando(true);
-    setResultado(null);
+    setError('');
     try {
       const r = await api('/retiros/confirmar/', { metodo: 'POST', datos: { codigo: limpio } });
-      setResultado({ ok: true, texto: r.mensaje });
       setCodigo('');
+      setRetiradas((lista) => [r.reserva, ...lista]);
+      mostrarAviso({ texto: t('retiros.confirmadoAviso') });
+      vibrar('exito');
       cargarPendientes();
     } catch (e) {
-      setResultado({ ok: false, texto: textoError(e) || t('retiros.noSePudo') });
+      setError(textoError(e) || t('retiros.noSePudo'));
     } finally {
       setEnviando(false);
     }
   }
 
   async function abrirCamara() {
-    setResultado(null);
+    setError('');
     if (!permiso?.granted) {
       const respuesta = await pedirPermiso();
       if (!respuesta.granted) {
-        setResultado({ ok: false, texto: t('retiros.sinCamara') });
+        setError(t('retiros.sinCamara'));
         return;
       }
     }
@@ -86,6 +130,11 @@ export default function ConfirmarRetiro({ navigation }) {
     setEscaneando(false);
     confirmar(data);
   }
+
+  if (cargando) return <Esqueleto tipo="reservas" />;
+
+  const nombre = usuario?.comercio?.nombre || usuario?.nombre || t('misProductos.miComercio');
+  const pendientesOrdenados = [...pendientes].sort(porHorario);
 
   return (
     <ScrollView
@@ -103,75 +152,91 @@ export default function ConfirmarRetiro({ navigation }) {
         />
       }
     >
-      <Encabezado titulo={t('retiros.titulo')} />
-      <Text style={[estilos.texto, { color: colores.gris }]}>{t('retiros.explicacion')}</Text>
+      <BarraSuperior navigation={navigation} desde="ConfirmarRetiro" estilo={estilos.barra} />
 
-      {escaneando ? (
-        <View style={{ gap: espacio(1) }}>
-          <View style={estilos.camara}>
-            <CameraView
-              style={{ flex: 1 }}
-              facing="back"
-              barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
-              onBarcodeScanned={alEscanear}
-            />
-          </View>
-          <Boton texto={t('retiros.cerrarCamara')} icono="close" variante="texto" onPress={() => setEscaneando(false)} />
+      <CabeceraUsuario
+        foto={urlCompleta(usuario?.foto)}
+        nombre={nombre}
+        arriba={t('retiros.titulo')}
+        titulo={t('retiros.subtitulo')}
+        resumen={t('retiros.resumenPendientes', { n: pendientes.length })}
+        alTocar={() => navigation.navigate('Perfil')}
+      />
+
+      {/* La tarjeta para escanear: el QR grande y, debajo, el código a mano */}
+      <View style={[estilos.tarjeta, { backgroundColor: colores.menta }]}>
+        {escaneando ? (
+          <>
+            <View style={estilos.camara}>
+              <CameraView
+                style={{ flex: 1 }}
+                facing="back"
+                barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
+                onBarcodeScanned={alEscanear}
+              />
+            </View>
+            <Boton texto={t('retiros.cerrarCamara')} icono="close" variante="texto" onPress={() => setEscaneando(false)} />
+          </>
+        ) : (
+          <Pressable
+            onPress={abrirCamara}
+            disabled={enviando}
+            accessibilityRole="button"
+            accessibilityLabel={t('retiros.escanear')}
+            style={({ pressed }) => [estilos.escanear, pressed && presionado]}
+          >
+            <Icono nombre="qr-code-outline" tamano={56} color={colores.verdeProfundo} />
+            <Text style={[estilos.escanearTexto, { color: colores.verdeProfundo }]}>{t('retiros.escanear')}</Text>
+          </Pressable>
+        )}
+
+        <Text style={[estilos.oEscribi, { color: colores.grisVerde }]}>{t('retiros.oEscribi')}</Text>
+        <View style={estilos.filaCodigo}>
+          <Campo
+            placeholder={t('retiros.codigoEjemplo')}
+            value={codigo}
+            onChangeText={setCodigo}
+            autoCapitalize="characters"
+            autoCorrect={false}
+            maxLength={10}
+            returnKeyType="done"
+            onSubmitEditing={() => confirmar(codigo)}
+            estilo={{ flex: 1 }}
+          />
+          <Boton texto={t('retiros.confirmar')} chico onPress={() => confirmar(codigo)} cargando={enviando} />
         </View>
-      ) : (
-        <Boton texto={t('retiros.escanear')} icono="scan-outline" onPress={abrirCamara} cargando={enviando} />
-      )}
-
-      <View style={estilos.fila}>
-        <Campo
-          placeholder={t('retiros.codigoEjemplo')}
-          value={codigo}
-          onChangeText={setCodigo}
-          autoCapitalize="characters"
-          autoCorrect={false}
-          maxLength={10}
-          returnKeyType="done"
-          onSubmitEditing={() => confirmar(codigo)}
-          estilo={{ flex: 1 }}
-        />
-        <Boton icono="checkmark" etiqueta={t('retiros.confirmarCodigo')} variante="secundario" onPress={() => confirmar(codigo)} deshabilitado={enviando} />
       </View>
 
-      {resultado ? (
-        <View
-          accessibilityRole="alert"
-          style={[
-            estilos.resultado,
-            resultado.ok
-              ? { backgroundColor: colores.menta, borderColor: colores.verde }
-              : { backgroundColor: colores.ambarClaro, borderColor: colores.ambar },
-          ]}
-        >
-          <Text style={[estilos.textoResultado, { color: colores.texto }]}>
-            {resultado.texto}
-          </Text>
+      {error ? (
+        <View accessibilityRole="alert" style={[estilos.error, { backgroundColor: colores.ambarClaro }]}>
+          <Text style={[estilos.textoError, { color: colores.texto }]}>{error}</Text>
         </View>
       ) : null}
 
-      <Text style={[estilos.subtitulo, { color: colores.gris }]}>{t('retiros.pendientes')}</Text>
+      <TituloSeccion texto={t('retiros.pendientesRetiro')} />
       <MensajeError mensaje={errorLista} alReintentar={cargarPendientes} />
-      {!errorLista && pendientes.length === 0 ? (
-        <Text style={[estilos.texto, { color: colores.gris }]}>{t('retiros.nadie')}</Text>
-      ) : null}
-      {pendientes.map((reserva) => (
-        <View
-          key={reserva.id}
-          style={[estilos.reserva, { backgroundColor: colores.superficie, borderColor: colores.borde }]}
-        >
-          <View style={{ flex: 1, gap: 2 }}>
-            <Text style={[estilos.producto, { color: colores.titulo }]} numberOfLines={1}>
-              {reserva.cantidad} × {reserva.producto}
-            </Text>
-            <Text style={[estilos.detalle, { color: colores.gris }]}>{formatoPrecio(reserva.precio_total)}</Text>
-          </View>
-          <Text style={[estilos.codigo, { color: colores.verdeHover }]}>{reserva.codigo_retiro}</Text>
-        </View>
+      {pendientesOrdenados.map((reserva) => (
+        <FilaPendiente key={reserva.id} reserva={reserva} />
       ))}
+      {!errorLista && pendientes.length === 0 ? (
+        <EstadoVacio icono="bag-check-outline" texto={t('retiros.vacioTitulo')}>
+          <Text style={[estilos.oEscribi, { color: colores.gris }]}>{t('retiros.vacioTexto')}</Text>
+        </EstadoVacio>
+      ) : null}
+
+      {retiradas.length ? (
+        <>
+          <TituloSeccion texto={t('retiros.retiradosHoy')} />
+          {retiradas.map((r) => (
+            <View key={r.id} style={estilos.filaRetirada}>
+              <Icono nombre="checkmark-circle" tamano={18} color={colores.verde} />
+              <Text style={[estilos.linea, { color: colores.grisVerde, flex: 1 }]} numberOfLines={1}>
+                {r.cantidad} × {r.producto}
+              </Text>
+            </View>
+          ))}
+        </>
+      ) : null}
     </ScrollView>
   );
 }
@@ -179,58 +244,93 @@ export default function ConfirmarRetiro({ navigation }) {
 const estilos = StyleSheet.create({
   contenido: {
     padding: espacio(2),
+    paddingBottom: espacio(4),
+    gap: espacio(2),
+  },
+  barra: {
+    paddingHorizontal: 0,
+    marginBottom: -espacio(1),
+  },
+  // ---- Tarjeta para escanear ----
+  tarjeta: {
+    padding: 20,
     gap: espacio(1.5),
+    borderRadius: 20,
   },
-  titulo: {
-    fontFamily: fuentes.negrita,
-    fontSize: tamanos.grande,
+  escanear: {
+    alignItems: 'center',
+    gap: espacio(1),
+    paddingVertical: espacio(1.5),
   },
-  subtitulo: {
-    fontFamily: fuentes.negrita,
-    fontSize: tamanos.mediano,
-    marginTop: espacio(1.5),
-  },
-  texto: {
-    fontFamily: fuentes.normal,
-    fontSize: tamanos.normal,
+  escanearTexto: {
+    fontFamily: fuentes.semi,
+    fontSize: 16,
   },
   camara: {
-    height: 300,
-    borderRadius: radio,
+    height: 260,
+    borderRadius: 16,
     overflow: 'hidden',
   },
-  fila: {
+  oEscribi: {
+    fontFamily: fuentes.normal,
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  filaCodigo: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: espacio(1),
   },
-  resultado: {
-    borderRadius: radio,
-    padding: espacio(2),
+  error: {
+    borderRadius: 14,
+    padding: espacio(1.5),
   },
-  textoResultado: {
+  textoError: {
     fontFamily: fuentes.media,
-    fontSize: tamanos.normal,
+    fontSize: tamanos.chico,
   },
-  reserva: {
+  // ---- Pendientes ----
+  fila: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: espacio(1.5),
-    borderRadius: radio,
-    paddingHorizontal: espacio(2),
-    paddingVertical: espacio(1.5),
+    paddingVertical: espacio(1),
   },
-  producto: {
-    fontFamily: fuentes.media,
-    fontSize: tamanos.normal,
+  cuadro: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  detalle: {
+  datos: {
+    flex: 1,
+    minWidth: 0,
+    gap: 2,
+  },
+  nombre: {
+    fontFamily: fuentes.semi,
+    fontSize: 14,
+  },
+  linea: {
     fontFamily: fuentes.normal,
-    fontSize: tamanos.chico,
+    fontSize: 12,
+  },
+  codigoPastilla: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
   },
   codigo: {
-    fontFamily: fuentes.negrita,
-    fontSize: tamanos.mediano,
+    fontFamily: fuentes.marca,
+    fontSize: 13,
     letterSpacing: 2,
+  },
+  // ---- Retiradas hoy ----
+  filaRetirada: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: espacio(1),
+    paddingVertical: 4,
   },
 });

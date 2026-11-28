@@ -1,6 +1,6 @@
-// Fila de producto IGUAL AL MOCKUP (página 8): la foto cuadrada a la izquierda
-// y una tarjeta gris a la derecha con el nombre, el precio, el selector de cantidad ("1 ⌄")
-// y "Agregar al carrito" (en pantallas chicas los dos bajan abajo de los precios).
+// Producto en una lista (Buscar, detalle del comercio y Mis favoritos), sin caja: la foto a la izquierda con el
+// "-40%", y a la derecha el nombre, una línea gris ("$1.500 · Panadería Sol · 1 km · ★ 4,6"), el selector de
+// cantidad ("1 ⌄") y "Agregar al carrito".
 // Tocar la fila abre el detalle; el selector abre la lista de 1 hasta el stock que queda
 // y el botón suma esa cantidad al carrito.
 // Uso:  <FilaProducto producto={p} onPress={() => navigation.navigate('DetalleProducto', { id: p.id })} />
@@ -15,15 +15,17 @@ import { useCarrito } from '../contexto/Carrito';
 import { useSesion } from '../contexto/Sesion';
 import { useIdioma } from '../contexto/Idioma';
 import { espacio, fuentes, radio, sombra, tamanos, useTema } from '../tema';
-import { formatoPrecio, textoKm, vibrar } from '../utilidades';
-import CalificacionComercio from './CalificacionComercio';
+import { formatoPrecio, textoKm, venceHoy, vibrar } from '../utilidades';
+import CalificacionComercio, { promedioConComa, textoCalificacion } from './CalificacionComercio';
 import FotoSuave from './FotoSuave';
 import IconoCategoria from './IconoCategoria';
 import Icono from './Icono';
+import PastillaDescuento, { porcentajeDescuento } from './PastillaDescuento';
 
 // "conBarraCarrito": la pantalla ya tiene la barra "Ver carrito" abajo, así que el aviso no repite el botón "Ver"
-export default function FilaProducto({ producto, onPress, mostrarComercio, calificacion, conBarraCarrito }) {
-  const { colores } = useTema();
+export default function FilaProducto({ producto, onPress, mostrarComercio, calificacion, conBarraCarrito, variante = 'lista' }) {
+  const { colores, esOscuro } = useTema();
+  const card = variante === 'tarjeta';
   const { t } = useIdioma();
   const { usuario } = useSesion();
   const { agregar, cantidadDe } = useCarrito();
@@ -53,7 +55,17 @@ export default function FilaProducto({ producto, onPress, mostrarComercio, calif
     );
     setCantidad(1);
   }
-  const distancia = textoKm(producto.distancia_km);
+  const porcentaje = porcentajeDescuento(producto);
+  const promedio = calificacion ? promedioConComa(calificacion.promedio, calificacion.cantidad) : null;
+  // Una sola línea gris: "$1.500 · Panadería Sol · 1 km · ★ 4,6" (el comercio y las estrellas, solo en Buscar)
+  const linea = [
+    formatoPrecio(producto.precio_descuento),
+    mostrarComercio && producto.comercio,
+    textoKm(producto.distancia_km),
+    mostrarComercio && promedio && `★ ${promedio}`,
+  ]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
     <Animated.View
@@ -65,36 +77,65 @@ export default function FilaProducto({ producto, onPress, mostrarComercio, calif
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={t('fila.accesible', { titulo: producto.titulo, precio: formatoPrecio(producto.precio_descuento) })}
-      style={({ pressed }) => [estilos.fila, pressed && { opacity: 0.85 }]}
+      accessibilityLabel={[
+        t('fila.accesible', { titulo: producto.titulo, precio: formatoPrecio(producto.precio_descuento) }),
+        mostrarComercio && producto.comercio,
+        textoKm(producto.distancia_km),
+        mostrarComercio && calificacion && textoCalificacion(calificacion.promedio, calificacion.cantidad),
+        porcentaje && t('inicio.descuentoAccesible', { n: porcentaje }),
+      ]
+        .filter(Boolean)
+        .join('. ')}
+      style={({ pressed }) => [
+        card ? estilos.tarjeta : estilos.fila,
+        card && { backgroundColor: esOscuro ? colores.panel : colores.fondo, borderColor: colores.borde },
+        card && sombra(colores),
+        pressed && { transform: [{ scale: 0.97 }] },
+      ]}
     >
-      <View style={[estilos.foto, { backgroundColor: colores.panel }]}>
-        {producto.imagen ? (
-          <FotoSuave uri={producto.imagen} estilo={StyleSheet.absoluteFill} />
-        ) : (
-          <IconoCategoria categoria={producto.categoria} llenar tamano={34} />
-        )}
+      <View>
+        <View style={[estilos.foto, { backgroundColor: colores.panel }]}>
+          {producto.imagen ? (
+            <FotoSuave uri={producto.imagen} estilo={StyleSheet.absoluteFill} />
+          ) : (
+            <IconoCategoria categoria={producto.categoria} llenar tamano={34} />
+          )}
+        </View>
+        <PastillaDescuento porcentaje={porcentaje} />
       </View>
 
-      <View style={[estilos.tarjeta, { backgroundColor: colores.panel }, sombra(colores)]}>
+      <View style={estilos.datos}>
         <Text style={[estilos.titulo, { color: colores.texto }]} numberOfLines={2}>
           {producto.titulo}
         </Text>
-        {mostrarComercio ? (
-          <Text style={[estilos.chico, { color: colores.gris }]} numberOfLines={1}>
-            {producto.comercio}
-            {distancia ? ` · ${distancia}` : ''}
+        {card ? (
+          <>
+            {mostrarComercio ? (
+              <Text style={[estilos.chico, { color: colores.gris }]} numberOfLines={1}>
+                {producto.comercio}
+                {textoKm(producto.distancia_km) ? ` · ${textoKm(producto.distancia_km)}` : ''}
+              </Text>
+            ) : null}
+            {mostrarComercio && calificacion ? (
+              <CalificacionComercio promedio={calificacion.promedio} cantidad={calificacion.cantidad} tamano={11} />
+            ) : null}
+            {venceHoy(producto) ? (
+              <View style={[estilos.venceHoy, { backgroundColor: colores.suaves.ambar.fondo }]}>
+                <Icono nombre="time-outline" tamano={11} color={colores.suaves.ambar.icono} />
+                <Text style={[estilos.textoVenceHoy, { color: colores.texto }]}>{t('fila.venceHoy')}</Text>
+              </View>
+            ) : null}
+            <View style={estilos.precios}>
+              <Text style={[estilos.precio, { color: colores.verdeTexto }]}>{formatoPrecio(producto.precio_descuento)}</Text>
+              <Text style={[estilos.tachado, { color: colores.gris }]}>{formatoPrecio(producto.precio_original)}</Text>
+            </View>
+          </>
+        ) : (
+          <Text style={[estilos.linea, { color: colores.grisVerde }]} numberOfLines={2}>
+            {linea}
           </Text>
-        ) : null}
-        {mostrarComercio && calificacion ? (
-          <CalificacionComercio promedio={calificacion.promedio} cantidad={calificacion.cantidad} tamano={11} />
-        ) : null}
+        )}
         <View style={estilos.abajo}>
-          <View style={estilos.precios}>
-            <Text style={[estilos.precio, { color: colores.texto }]}>{formatoPrecio(producto.precio_descuento)}</Text>
-            <Text style={[estilos.tachado, { color: colores.gris }]}>{formatoPrecio(producto.precio_original)}</Text>
-            {producto.es_donacion ? <Icono nombre="heart" tamano={12} color={colores.verde} /> : null}
-          </View>
           {puedeComprar ? (
             <View style={estilos.acciones}>
               {/* Selector de cantidad "1 ⌄" (como el mockup) */}
@@ -212,43 +253,58 @@ function ListaCantidades({ maximo, elegida, titulo, alElegir, alCerrar }) {
 }
 
 const estilos = StyleSheet.create({
+  // Sin caja: la foto, el nombre, una línea gris y los botones
   fila: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: espacio(1.5),
   },
   foto: {
-    width: 92,
-    height: 92,
-    borderRadius: 12,
+    width: 88,
+    height: 88,
+    borderRadius: 14,
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  tarjeta: {
+  datos: {
     flex: 1,
-    borderRadius: 12,
-    paddingHorizontal: espacio(1.5),
-    paddingVertical: espacio(1.25),
-    justifyContent: 'space-between',
+    minWidth: 0,
+    gap: 4,
   },
   titulo: {
-    fontFamily: fuentes.negrita,
+    fontFamily: fuentes.semi,
     fontSize: 14,
+  },
+  linea: {
+    fontFamily: fuentes.normal,
+    fontSize: 12,
+    lineHeight: 17,
   },
   chico: {
     fontFamily: fuentes.normal,
     fontSize: 11,
   },
-  // Precios y botón en la misma línea si entran; si no (pantallas chicas, precios largos),
-  // el botón baja a su propia línea: nunca se tapan.
-  abajo: {
+  tarjeta: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    columnGap: espacio(1),
-    rowGap: espacio(0.75),
-    marginTop: espacio(0.5),
+    gap: espacio(1.5),
+    padding: 10,
+    borderRadius: 16,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  venceHoy: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 3,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 999,
+  },
+  textoVenceHoy: {
+    fontFamily: fuentes.media,
+    fontSize: 10,
   },
   precios: {
     flexDirection: 'row',
@@ -257,15 +313,19 @@ const estilos = StyleSheet.create({
     columnGap: 6,
   },
   precio: {
-    fontFamily: fuentes.negrita,
-    fontSize: 15,
+    fontFamily: fuentes.marca,
+    fontSize: 18,
   },
   tachado: {
     fontFamily: fuentes.normal,
     fontSize: 11,
     textDecorationLine: 'line-through',
   },
-  // Selector + botón siempre juntos (si no entran al lado de los precios, bajan los dos)
+  abajo: {
+    flexDirection: 'row',
+    marginTop: 2,
+  },
+  // Selector + botón siempre juntos
   acciones: {
     flexDirection: 'row',
     alignItems: 'center',

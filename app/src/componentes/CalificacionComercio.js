@@ -14,8 +14,8 @@ import { idiomaActual, t, useIdioma } from '../contexto/Idioma';
 import { fuentes, tamanos, useTema } from '../tema';
 import Estrellas from './Estrellas';
 
-// 4.6 -> "4,6" ("4.6" en inglés)   (null si no hay opiniones)
-function promedioConComa(promedio, cantidad) {
+// 4.6 -> "4,6" ("4.6" en inglés)   (null si no hay opiniones). También para la línea gris de las tarjetas: "★ 4,6"
+export function promedioConComa(promedio, cantidad) {
   const numero = Number(promedio);
   if (!cantidad || promedio === null || promedio === undefined || Number.isNaN(numero)) return null;
   return idiomaActual() === 'en' ? numero.toFixed(1) : numero.toFixed(1).replace('.', ',');

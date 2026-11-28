@@ -1,76 +1,77 @@
 // PASO 48 · Organización: donaciones disponibles (pantalla principal, con el estilo de Inicio y del comercio).
 // Arriba la misma barra que Inicio: el menú ☰ (MenuLateral de la organización) y el botón verde "Ayuda" (chat con Lü).
-// Después el círculo con la inicial y el nombre de la organización, con un resumen abajo ("4 donaciones disponibles").
-// Lista los productos que los comercios marcaron como aptos para donar (GET /api/donaciones/), cada uno en una
-// tarjeta: foto o ícono de la categoría, nombre, comercio y distancia, cantidad, "hasta el dd/mm" y el estado como etiqueta de color
-// (Disponible verde, Ya lo pediste naranja). Abajo, "Pedir" abre el cuadro para escribirle al comercio
-// (POST /api/productos/<id>/solicitar-donacion/, paso 31). Tocar la tarjeta abre el detalle.
+// Después la cabecera verde: "Hola," + el nombre de la organización, el resumen ("2 para pedir · 1 ya pedido")
+// y la pastilla "Mis pedidos" (abre la pestaña de pedidos). Tocar la cabecera abre el Perfil.
+// Lista los productos que los comercios marcaron como aptos para donar (GET /api/donaciones/): la foto, el nombre,
+// "cantidad · comercio · km" y, a la derecha, "Pedir" (abre el cuadro para escribirle al comercio:
+// POST /api/productos/<id>/solicitar-donacion/, paso 31) o "Ya lo pediste". Tocar el producto abre el detalle.
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, FlatList, Image, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
 import { api, urlCompleta } from '../../api/cliente';
 import BarraSuperior from '../../componentes/BarraSuperior';
-import Boton from '../../componentes/Boton';
-import CabeceraCuenta from '../../componentes/CabeceraCuenta';
+import CabeceraUsuario from '../../componentes/CabeceraUsuario';
 import Cargando from '../../componentes/Cargando';
-import { EtiquetaEstado } from '../../componentes/EtiquetaEstado';
+import EstadoVacio from '../../componentes/EstadoVacio';
 import IconoCategoria from '../../componentes/IconoCategoria';
 import MensajeError from '../../componentes/MensajeError';
 import ModalSolicitudDonacion from '../../componentes/ModalSolicitudDonacion';
-import Vacio from '../../componentes/Vacio';
+import TituloSeccion from '../../componentes/TituloSeccion';
 import { useSesion } from '../../contexto/Sesion';
 import { useIdioma } from '../../contexto/Idioma';
-import { espacio, fuentes, radio, sombra, tamanos, useTema } from '../../tema';
-import { formatoDiaMes, textoKm } from '../../utilidades';
+import { espacio, fuentes, useTema } from '../../tema';
+import { textoKm } from '../../utilidades';
+
+const presionado = { transform: [{ scale: 0.97 }] };
 
 function TarjetaDonacion({ producto, alVer, alPedir }) {
   const { colores } = useTema();
   const { t } = useIdioma();
-  const distancia = textoKm(producto.distancia_km);
   const pedido = !!producto.ya_solicitado;
+  const linea = [t('misProductos.cantidad', { n: producto.stock }), producto.comercio, textoKm(producto.distancia_km)]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
-    <Pressable
-      onPress={alVer}
-      accessibilityRole="button"
-      accessibilityHint={t('donaciones.verDetalle')}
-      style={({ pressed }) => [estilos.tarjeta, { backgroundColor: colores.panel }, sombra(colores), pressed && { opacity: 0.85 }]}
-    >
-      <View style={estilos.arriba}>
-        <View style={[estilos.foto, { backgroundColor: colores.superficie }]}>
+    <View style={estilos.fila}>
+      <Pressable
+        onPress={alVer}
+        accessibilityRole="button"
+        accessibilityLabel={`${producto.titulo}. ${linea}`}
+        accessibilityHint={t('donaciones.verDetalle')}
+        style={({ pressed }) => [estilos.tocable, pressed && presionado]}
+      >
+        <View style={[estilos.foto, { backgroundColor: colores.panel }]}>
           {producto.imagen ? (
             <Image source={{ uri: urlCompleta(producto.imagen) }} style={StyleSheet.absoluteFill} accessibilityIgnoresInvertColors />
           ) : (
-            <IconoCategoria categoria={producto.categoria} llenar tamano={28} />
+            <IconoCategoria categoria={producto.categoria} llenar tamano={30} />
           )}
         </View>
         <View style={estilos.datos}>
-          <Text style={[estilos.titulo, { color: colores.texto }]} numberOfLines={3}>
+          <Text style={[estilos.nombre, { color: colores.texto }]} numberOfLines={2}>
             {producto.titulo}
           </Text>
-          <Text style={[estilos.detalle, { color: colores.gris }]} numberOfLines={2}>
-            {[producto.comercio, distancia].filter(Boolean).join('  ·  ')}
+          <Text style={[estilos.linea, { color: colores.grisVerde }]} numberOfLines={2}>
+            {linea}
           </Text>
-          <Text style={[estilos.detalle, { color: colores.gris }]}>
-            {t('misProductos.cantidad', { n: producto.stock })}
-            {'  ·  '}
-            {t('misProductos.hasta', { fecha: formatoDiaMes(producto.fecha_vencimiento) })}
-          </Text>
-          <View style={estilos.infos}>
-            <EtiquetaEstado
-              texto={pedido ? t('donaciones.yaLoPediste') : t('estadosProducto.DISPONIBLE')}
-              tono={pedido ? 'naranja' : 'verde'}
-            />
-          </View>
         </View>
-      </View>
+      </Pressable>
 
-      {!pedido ? (
-        <View style={[estilos.acciones, { borderTopColor: colores.borde }]}>
-          <Boton texto={t('donaciones.pedir')} icono="heart" chico onPress={alPedir} estilo={estilos.principal} />
-        </View>
-      ) : null}
-    </Pressable>
+      {pedido ? (
+        <Text style={[estilos.pedido, { color: colores.grisVerde }]}>{t('donaciones.yaLoPediste')}</Text>
+      ) : (
+        <Pressable
+          onPress={alPedir}
+          hitSlop={10}
+          accessibilityRole="button"
+          accessibilityLabel={`${t('donaciones.pedir')}: ${producto.titulo}`}
+          style={({ pressed }) => [estilos.botonPedir, pressed && presionado]}
+        >
+          <Text style={[estilos.textoPedir, { color: colores.verdeTexto }]}>{t('donaciones.pedir')}</Text>
+        </Pressable>
+      )}
+    </View>
   );
 }
 
@@ -114,8 +115,13 @@ export default function Donaciones({ navigation }) {
   if (cargando) return <Cargando texto={t('donaciones.buscando')} />;
 
   const nombre = usuario?.organizacion?.nombre || usuario?.nombre || t('donaciones.miOrganizacion');
-  const sinPedir = productos.filter((p) => !p.ya_solicitado).length;
-  const resumen = t('donaciones.resumen', { n: sinPedir });
+  const yaPedidos = productos.filter((p) => p.ya_solicitado).length;
+  const resumen = [
+    t('donaciones.resumen', { n: productos.length - yaPedidos }),
+    yaPedidos ? t('donaciones.resumenPedidos', { n: yaPedidos }) : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
     <>
@@ -135,21 +141,25 @@ export default function Donaciones({ navigation }) {
           />
         }
         ListHeaderComponent={
-          <View style={estilos.cabecera}>
+          <View>
             {/* Igual que Inicio: ☰ y "Ayuda" */}
             <BarraSuperior navigation={navigation} desde="Donaciones" estilo={estilos.barra} />
-            <CabeceraCuenta nombre={nombre} resumen={resumen} alTocar={() => navigation.navigate('Perfil')} />
-            <Text style={[estilos.tituloSeccion, { color: colores.titulo }]} accessibilityRole="header">
-              {t('donaciones.subtitulo')}
-            </Text>
+            <CabeceraUsuario
+              foto={urlCompleta(usuario?.foto)}
+              nombre={nombre}
+              arriba={t('donaciones.hola')}
+              titulo={nombre}
+              resumen={resumen}
+              accion={{ texto: t('donaciones.misPedidos'), alTocar: () => navigation.navigate('MisSolicitudes') }}
+              alTocar={() => navigation.navigate('Perfil')}
+              accessibilityLabel={`${nombre}. ${resumen}. ${t('menu.miPerfil')}`}
+              estilo={estilos.cabecera}
+            />
             <MensajeError mensaje={error} alReintentar={cargar} />
+            {productos.length ? <TituloSeccion texto={t('donaciones.subtitulo')} /> : null}
           </View>
         }
-        ListEmptyComponent={
-          !error ? (
-            <Vacio icono="heart-outline" texto={t('donaciones.vacio')} />
-          ) : null
-        }
+        ListEmptyComponent={!error ? <EstadoVacio texto={t('donaciones.vacio')} /> : null}
         renderItem={({ item }) => (
           <TarjetaDonacion
             producto={item}
@@ -157,7 +167,7 @@ export default function Donaciones({ navigation }) {
             alPedir={() => setPidiendo(item)}
           />
         )}
-        ItemSeparatorComponent={() => <View style={{ height: espacio(1.5) }} />}
+        ItemSeparatorComponent={() => <View style={{ height: espacio(2.5) }} />}
       />
 
       <ModalSolicitudDonacion producto={pidiendo} alCerrar={() => setPidiendo(null)} alEnviar={alEnviar} />
@@ -169,35 +179,30 @@ const estilos = StyleSheet.create({
   contenido: {
     paddingHorizontal: espacio(2),
     paddingBottom: espacio(4),
-  },
-  cabecera: {
-    gap: espacio(2),
-    marginBottom: espacio(1.5),
+    flexGrow: 1,
   },
   barra: {
     paddingHorizontal: 0, // la lista ya tiene el margen a los costados
-    marginBottom: -espacio(1),
   },
-  // Igual que estilos.titulo de Inicio.js
-  tituloSeccion: {
-    fontFamily: fuentes.normal,
-    fontSize: 18,
-    marginTop: espacio(0.5),
+  cabecera: {
+    marginTop: espacio(1),
   },
-  tarjeta: {
-    borderRadius: radio,
-    padding: espacio(1.5),
-    gap: espacio(1.5),
-  },
-  arriba: {
+  // ---- Donación (sin caja: la foto, el nombre y una línea gris) ----
+  fila: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    gap: espacio(1),
+  },
+  tocable: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: espacio(1.5),
   },
   foto: {
-    width: 64,
-    height: 64,
-    borderRadius: 12,
+    width: 88,
+    height: 88,
+    borderRadius: 14,
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
@@ -205,34 +210,29 @@ const estilos = StyleSheet.create({
   datos: {
     flex: 1,
     minWidth: 0,
-    gap: espacio(0.5),
+    gap: 4,
   },
-  titulo: {
-    fontFamily: fuentes.negrita,
-    fontSize: tamanos.normal,
+  nombre: {
+    fontFamily: fuentes.semi,
+    fontSize: 14,
   },
-  detalle: {
+  linea: {
     fontFamily: fuentes.normal,
-    fontSize: tamanos.chico,
+    fontSize: 12,
+    lineHeight: 17,
   },
-  infos: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    gap: espacio(1),
-    marginTop: 2,
+  botonPedir: {
+    paddingHorizontal: espacio(1),
+    paddingVertical: espacio(1),
   },
-  acciones: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    gap: espacio(1),
-    paddingTop: espacio(1.5),
-    borderTopWidth: StyleSheet.hairlineWidth,
+  textoPedir: {
+    fontFamily: fuentes.semi,
+    fontSize: 14,
   },
-  principal: {
-    minHeight: 36,
-    height: 36,
-    maxWidth: '100%',
+  pedido: {
+    maxWidth: 80,
+    fontFamily: fuentes.normal,
+    fontSize: 12,
+    textAlign: 'right',
   },
 });

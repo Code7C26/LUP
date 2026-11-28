@@ -1,74 +1,109 @@
-// PASO 48 · Organización: mis solicitudes (con el estilo de Inicio y del comercio).
-// Arriba la misma barra que Inicio: el menú ☰ y el botón verde "Ayuda" (chat con Lü), y el círculo con el
-// nombre de la organización y un resumen ("1 para retirar · 2 esperando respuesta").
-// Cada pedido de donación en una tarjeta, con su estado como etiqueta de color:
-// Aprobada verde, Pendiente naranja, Rechazada gris. Las aprobadas muestran dónde y cuándo retirar.
+// PASO 48 · Organización: mis pedidos de donación (con el estilo de Inicio y del comercio).
+// Arriba, la cabecera verde ("Tus pedidos", "Seguí tus donaciones" y lo que hay para retirar y esperando respuesta).
+// Dos pestañas: "En curso" (pendientes y aprobadas) e "Historial" (rechazadas).
+// Cada pedido en una tarjeta con su estado como puntito de color y una línea de tiempo de 3 pasos. Si está
+// aprobado, dónde y cuándo retirar, y "Cómo llegar" (abre Google Maps con la dirección del comercio).
 // Usa GET /api/mis-solicitudes-donacion/ (paso 31).
 import { useCallback, useEffect, useState } from 'react';
-import { RefreshControl, SectionList, StyleSheet, Text, View } from 'react-native';
+import { Alert, FlatList, Linking, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
-import { api } from '../../api/cliente';
+import { api, urlCompleta } from '../../api/cliente';
 import BarraSuperior from '../../componentes/BarraSuperior';
 import Boton from '../../componentes/Boton';
-import CabeceraCuenta from '../../componentes/CabeceraCuenta';
-import Cargando from '../../componentes/Cargando';
-import { EtiquetaEstado } from '../../componentes/EtiquetaEstado';
+import CabeceraUsuario from '../../componentes/CabeceraUsuario';
+import Esqueleto from '../../componentes/Esqueleto';
+import EstadoVacio from '../../componentes/EstadoVacio';
 import Icono from '../../componentes/Icono';
 import MensajeError from '../../componentes/MensajeError';
-import Vacio from '../../componentes/Vacio';
+import Pestanas from '../../componentes/Pestanas';
+import { t as traducir, useIdioma } from '../../contexto/Idioma';
 import { useSesion } from '../../contexto/Sesion';
-import { textoDeOpcion, useIdioma } from '../../contexto/Idioma';
-import { espacio, fuentes, radio, sombra, tamanos, useTema } from '../../tema';
+import { espacio, fuentes, useTema } from '../../tema';
 import { formatoDiaMes } from '../../utilidades';
 
-const TONOS = { aprobada: 'verde', pendiente: 'naranja', rechazada: 'gris' };
+// El mismo link que arma Django para "Cómo llegar" (stores/ubicacion.py), con la dirección del comercio
+function abrirMapa(direccion) {
+  const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(direccion)}`;
+  Linking.openURL(url).catch(() => Alert.alert(traducir('comun.noSePudoAbrir'), traducir('comun.noSePudoAbrirTexto')));
+}
 
-function TarjetaSolicitud({ solicitud, alVerComercio }) {
+// Los pasos de la línea de tiempo: enviado (siempre), aprobado y retirado.
+// El modelo no tiene un estado "retirada" para las donaciones, así que el último paso queda sin marcar.
+const hecho = (paso, estado) => paso === 0 || (paso === 1 && estado === 'aprobada');
+
+function LineaDeTiempo({ estado }) {
   const { colores } = useTema();
   const { t } = useIdioma();
+  const pasos = [t('misSolicitudes.pasoEnviado'), t('misSolicitudes.pasoAprobado'), t('misSolicitudes.pasoRetirado')];
+  return (
+    <View style={estilos.linea}>
+      {pasos.map((texto, i) => {
+        const marcado = hecho(i, estado);
+        const color = marcado ? colores.verde : colores.borde;
+        return (
+          <View key={texto} style={[estilos.paso, { alignItems: i === 0 ? 'flex-start' : i === 2 ? 'flex-end' : 'center' }]}>
+            <View style={estilos.puntos}>
+              {i > 0 ? <View style={[estilos.segmento, { backgroundColor: hecho(i, estado) ? colores.verde : colores.borde }]} /> : null}
+              <View style={[estilos.punto, { backgroundColor: color }]} />
+              {i < pasos.length - 1 ? (
+                <View style={[estilos.segmento, { backgroundColor: hecho(i + 1, estado) ? colores.verde : colores.borde }]} />
+              ) : null}
+            </View>
+            <Text style={[estilos.textoPaso, { color: marcado ? colores.verdeHover : colores.gris }]}>{texto}</Text>
+          </View>
+        );
+      })}
+    </View>
+  );
+}
+
+function TarjetaSolicitud({ solicitud }) {
+  const { colores } = useTema();
+  const { t } = useIdioma();
+  const aprobada = solicitud.estado === 'aprobada';
+  const pendiente = solicitud.estado === 'pendiente';
+  const color = aprobada ? colores.verde : pendiente ? colores.ambar : colores.gris;
+  const texto = aprobada
+    ? t('misSolicitudes.estadoAprobado')
+    : pendiente
+      ? t('misSolicitudes.estadoEspera')
+      : t('misSolicitudes.estadoRechazado');
 
   return (
-    <View style={[estilos.tarjeta, { backgroundColor: colores.panel }, sombra(colores)]}>
-      <View style={{ gap: espacio(0.5) }}>
-        <Text style={[estilos.producto, { color: colores.texto }]} numberOfLines={3}>
-          {solicitud.producto}
-        </Text>
-        <Text style={[estilos.detalle, { color: colores.gris }]}>
-          {solicitud.comercio}
-          {'  ·  '}
-          {formatoDiaMes(solicitud.creada_en)}
-        </Text>
-        <View style={estilos.infos}>
-          <EtiquetaEstado
-            texto={textoDeOpcion(t, 'estadosSolicitud', solicitud.estado, solicitud.estado_texto)}
-            tono={TONOS[solicitud.estado] || 'gris'}
-          />
+    <View style={[estilos.tarjeta, { backgroundColor: colores.panel }]}>
+      <View style={estilos.fila}>
+        <View style={[estilos.cuadro, { backgroundColor: colores.menta }]}>
+          <Icono nombre="bag-handle-outline" tamano={24} color={colores.verdeHover} />
+        </View>
+        <View style={estilos.datos}>
+          <Text style={[estilos.producto, { color: colores.texto }]} numberOfLines={2}>
+            {solicitud.producto}
+          </Text>
+          <Text style={[estilos.detalle, { color: colores.grisVerde }]} numberOfLines={1}>
+            {solicitud.comercio} · {formatoDiaMes(solicitud.creada_en)}
+          </Text>
+          <View style={estilos.filaEstado}>
+            <View style={[estilos.puntito, { backgroundColor: color }]} />
+            <Text style={[estilos.estado, { color: colores.texto }]}>{texto}</Text>
+          </View>
         </View>
       </View>
 
-      <Text style={[estilos.mensaje, { color: colores.texto, backgroundColor: colores.fondo }]}>“{solicitud.mensaje}”</Text>
+      {!solicitud.estado || solicitud.estado === 'rechazada' ? null : <LineaDeTiempo estado={solicitud.estado} />}
 
-      {solicitud.estado === 'aprobada' ? (
-        <View style={[estilos.aviso, { backgroundColor: colores.menta }]}>
-          <Text style={[estilos.textoAviso, { color: colores.titulo }]}>{t('misSolicitudes.aprobadaRetirar')}</Text>
-          <View style={estilos.dato}>
-            <Icono nombre="location-outline" tamano={15} color={colores.verdeHover} />
-            <Text style={[estilos.detalle, { color: colores.texto, flex: 1 }]}>{solicitud.direccion}</Text>
-          </View>
-          <View style={estilos.dato}>
-            <Icono nombre="time-outline" tamano={15} color={colores.verdeHover} />
-            <Text style={[estilos.detalle, { color: colores.texto, flex: 1 }]}>{solicitud.horario}</Text>
-          </View>
+      {aprobada ? (
+        <View style={estilos.retiro}>
+          <Text style={[estilos.detalle, { color: colores.texto }]}>{solicitud.direccion}</Text>
+          <Text style={[estilos.detalle, { color: colores.grisVerde }]}>{t('misSolicitudes.horario', { horario: solicitud.horario })}</Text>
           <Boton
             texto={t('misSolicitudes.comoLlegar')}
-            icono="navigate"
+            icono="navigate-outline"
+            variante="secundario"
             chico
-            onPress={alVerComercio}
-            estilo={estilos.principal}
+            onPress={() => abrirMapa(solicitud.direccion)}
+            estilo={estilos.comoLlegar}
           />
         </View>
-      ) : solicitud.estado === 'pendiente' ? (
-        <Text style={[estilos.detalle, { color: colores.gris }]}>{t('misSolicitudes.esperando')}</Text>
       ) : null}
     </View>
   );
@@ -82,6 +117,7 @@ export default function MisSolicitudes({ navigation }) {
   const [cargando, setCargando] = useState(true);
   const [actualizando, setActualizando] = useState(false);
   const [error, setError] = useState('');
+  const [pestana, setPestana] = useState('enCurso');
 
   const cargar = useCallback(async () => {
     setError('');
@@ -102,29 +138,25 @@ export default function MisSolicitudes({ navigation }) {
   // Al volver a la pestaña se actualiza, por si el comercio ya respondió
   useEffect(() => navigation?.addListener?.('focus', cargar), [navigation, cargar]);
 
-  if (cargando) return <Cargando texto={t('misSolicitudes.cargando')} />;
+  if (cargando) return <Esqueleto tipo="reservas" />;
 
-  const secciones = [
-    { titulo: t('misSolicitudes.paraRetirar'), estado: 'aprobada' },
-    { titulo: t('misSolicitudes.esperandoRespuesta'), estado: 'pendiente' },
-    { titulo: t('misSolicitudes.rechazadas'), estado: 'rechazada' },
-  ]
-    .map((s) => ({ ...s, data: solicitudes.filter((sol) => sol.estado === s.estado) }))
-    .filter((s) => s.data.length > 0);
-
-  const nombre = usuario?.organizacion?.nombre || usuario?.nombre || t('donaciones.miOrganizacion');
+  const enCurso = solicitudes.filter((s) => s.estado !== 'rechazada');
+  const historial = solicitudes.filter((s) => s.estado === 'rechazada');
   const contar = (estado) => solicitudes.filter((s) => s.estado === estado).length;
+  const nombre = usuario?.organizacion?.nombre || usuario?.nombre || t('donaciones.miOrganizacion');
   const resumen = `${t('misSolicitudes.resumenParaRetirar', { n: contar('aprobada') })} · ${t('misSolicitudes.resumenEsperando', {
     n: contar('pendiente'),
   })}`;
+  const enCursoActiva = pestana === 'enCurso';
+  const recibidas = contar('aprobada');
 
   return (
-    <SectionList
+    <FlatList
+      key={pestana}
       style={{ backgroundColor: colores.fondo }}
       contentContainerStyle={estilos.contenido}
-      sections={secciones}
+      data={enCursoActiva ? enCurso : historial}
       keyExtractor={(s) => String(s.id)}
-      stickySectionHeadersEnabled={false}
       refreshControl={
         <RefreshControl
           refreshing={actualizando}
@@ -139,35 +171,50 @@ export default function MisSolicitudes({ navigation }) {
         <View style={estilos.cabecera}>
           {/* Igual que Inicio: ☰ y "Ayuda" */}
           <BarraSuperior navigation={navigation} desde="MisSolicitudes" estilo={estilos.barra} />
-          <CabeceraCuenta nombre={nombre} resumen={resumen} alTocar={() => navigation.navigate('Perfil')} />
-          <Text style={[estilos.tituloPantalla, { color: colores.titulo }]} accessibilityRole="header">
-            {t('misSolicitudes.titulo')}
-          </Text>
+
+          <CabeceraUsuario
+            foto={urlCompleta(usuario?.foto)}
+            nombre={nombre}
+            arriba={t('misSolicitudes.subtitulo')}
+            titulo={t('misSolicitudes.titulo')}
+            resumen={resumen}
+            alTocar={() => navigation.navigate('Perfil')}
+          />
+
+          {/* Tu impacto: lo que ya te aprobaron */}
+          <View style={[estilos.impacto, { backgroundColor: colores.menta }]}>
+            <Text style={[estilos.impactoTitulo, { color: colores.verdeProfundo }]}>{t('misSolicitudes.impactoTitulo')}</Text>
+            <Text style={[estilos.impactoNumero, { color: colores.verdeProfundo }]}>{recibidas}</Text>
+            <Text style={[estilos.impactoTexto, { color: colores.grisVerde }]}>
+              {t('misSolicitudes.impactoDonaciones', { n: recibidas })}
+            </Text>
+          </View>
+
           <MensajeError mensaje={error} alReintentar={cargar} />
+
+          <Pestanas
+            opciones={[
+              ['enCurso', t('misSolicitudes.enCurso')],
+              ['historial', t('misSolicitudes.historial')],
+            ]}
+            activa={pestana}
+            alCambiar={setPestana}
+          />
         </View>
       }
       ListEmptyComponent={
-        !error ? (
-          <Vacio
-            icono="clipboard-outline"
-            texto={t('misSolicitudes.vacio')}
-            boton={t('misSolicitudes.verDonaciones')}
-            alTocar={() => navigation.navigate('Donaciones')}
-          />
+        error ? null : enCursoActiva ? (
+          <EstadoVacio icono="heart-outline" texto={t('misSolicitudes.vacio')}>
+            <Boton
+              texto={t('misSolicitudes.verDonaciones')}
+              onPress={() => navigation.navigate('Donaciones')}
+              estilo={estilos.botonVacio}
+            />
+          </EstadoVacio>
         ) : null
       }
-      renderSectionHeader={({ section }) => (
-        <Text style={[estilos.subtitulo, { color: colores.gris }]} accessibilityRole="header">
-          {section.titulo}
-        </Text>
-      )}
-      renderItem={({ item }) => (
-        <TarjetaSolicitud
-          solicitud={item}
-          alVerComercio={() => navigation.navigate('DetalleComercio', { id: item.comercio_id })}
-        />
-      )}
-      ItemSeparatorComponent={() => <View style={{ height: espacio(1.5) }} />}
+      renderItem={({ item }) => <TarjetaSolicitud solicitud={item} />}
+      ItemSeparatorComponent={() => <View style={{ height: espacio(2) }} />}
     />
   );
 }
@@ -176,72 +223,117 @@ const estilos = StyleSheet.create({
   contenido: {
     paddingHorizontal: espacio(2),
     paddingBottom: espacio(4),
+    flexGrow: 1,
   },
   cabecera: {
     gap: espacio(2),
+    marginBottom: espacio(2.5),
   },
   barra: {
-    paddingHorizontal: 0, // la lista ya tiene el margen a los costados
+    paddingHorizontal: 0,
     marginBottom: -espacio(1),
   },
-  // Igual que estilos.titulo de Inicio.js
-  tituloPantalla: {
+  // ---- Tu impacto ----
+  impacto: {
+    padding: espacio(2.25),
+    gap: 2,
+    borderRadius: 20,
+  },
+  impactoTitulo: {
+    fontFamily: fuentes.semi,
+    fontSize: 14,
+  },
+  impactoNumero: {
+    fontFamily: fuentes.marca,
+    fontSize: 28,
+    fontVariant: ['tabular-nums'],
+  },
+  impactoTexto: {
     fontFamily: fuentes.normal,
-    fontSize: 18,
-    marginTop: espacio(0.5),
+    fontSize: 12,
   },
-  subtitulo: {
-    fontFamily: fuentes.media,
-    fontSize: tamanos.chico,
-    marginTop: espacio(2),
-    marginBottom: espacio(1),
-  },
+  // ---- Pedido ----
   tarjeta: {
-    borderRadius: radio,
-    padding: espacio(1.5),
+    padding: espacio(2),
+    gap: espacio(1.75),
+    borderRadius: 20,
+  },
+  fila: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: espacio(1.5),
   },
+  cuadro: {
+    width: 64,
+    height: 64,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  datos: {
+    flex: 1,
+    minWidth: 0,
+    gap: 3,
+  },
   producto: {
-    fontFamily: fuentes.negrita,
-    fontSize: tamanos.normal,
+    fontFamily: fuentes.semi,
+    fontSize: 14,
   },
   detalle: {
     fontFamily: fuentes.normal,
-    fontSize: tamanos.chico,
+    fontSize: 12,
   },
-  infos: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    gap: espacio(1),
-    marginTop: 2,
-  },
-  mensaje: {
-    fontFamily: fuentes.normal,
-    fontSize: tamanos.chico,
-    borderRadius: 12,
-    padding: espacio(1.25),
-    overflow: 'hidden',
-  },
-  aviso: {
-    borderRadius: 12,
-    padding: espacio(1.5),
-    gap: espacio(0.75),
-  },
-  textoAviso: {
-    fontFamily: fuentes.media,
-    fontSize: tamanos.normal,
-  },
-  dato: {
+  filaEstado: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    marginTop: 2,
   },
-  principal: {
+  puntito: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+  },
+  estado: {
+    fontFamily: fuentes.media,
+    fontSize: 12,
+  },
+  // ---- Línea de tiempo ----
+  linea: {
+    flexDirection: 'row',
+  },
+  paso: {
+    flex: 1,
+    gap: 6,
+  },
+  puntos: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+  },
+  punto: {
+    width: 9,
+    height: 9,
+    borderRadius: 5,
+  },
+  segmento: {
+    flex: 1,
+    height: 2,
+    borderRadius: 1,
+  },
+  textoPaso: {
+    fontFamily: fuentes.normal,
+    fontSize: 11,
+  },
+  // ---- Retiro ----
+  retiro: {
+    gap: 3,
+  },
+  comoLlegar: {
     alignSelf: 'flex-start',
-    minHeight: 36,
-    height: 36,
-    maxWidth: '100%',
-    marginTop: espacio(0.5),
+    marginTop: espacio(0.75),
+  },
+  botonVacio: {
+    marginTop: espacio(1),
   },
 });
