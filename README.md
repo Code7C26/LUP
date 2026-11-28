@@ -1,144 +1,106 @@
 <p align="center">
-
-  <img src="jpg/dise%C3%B1o/lup%20logo.png" alt="Lüp Logo" width="300">
-
+  <img src="jpg/doc_assets/readme/banner.png" alt="Lüp · Una segunda oportunidad para cada alimento" width="100%">
 </p>
 
-<p align="center">
+<img src="jpg/doc_assets/readme/t_proba.png" alt="Probá Lüp" height="44">
 
-  <strong>Una segunda oportunidad para cada alimento.</strong>
+- **Página web:** [www.lupalimentos.com](https://www.lupalimentos.com)
+- **App para Android:** entrá a la web desde el celular y tocá **Descargar la app**
+- **Manual de usuario:** [Manual de usuario.pdf](doc/Pdf/Manuales%20-%20de%20empresa/Manual%20de%20usuario.pdf)
+- **Instagram:** [@lupalimentos](https://www.instagram.com/lupalimentos)
 
-</p>
+<img src="jpg/doc_assets/readme/t_que.png" alt="¿Qué es Lüp?" height="44">
 
-<p align="center">
+En Argentina se desperdician cerca de **16 millones de toneladas de alimentos por año**, y muchos todavía están en buen estado. Lüp conecta a los comercios que tienen comida sin vender con personas que la compran con descuento y con organizaciones sociales que la reciben como donación. Así, el comercio recupera parte de lo que invirtió, más gente accede a comida a menor precio y se tira menos.
 
-![Estado](https://img.shields.io/badge/Estado-Publicada-71A24D?style=for-the-badge)
-![Web](https://img.shields.io/badge/Web-lupalimentos.com-073425?style=for-the-badge)
-![Android](https://img.shields.io/badge/App-Android%20(APK)-073425?style=for-the-badge&logo=android&logoColor=white)
-![Python](https://img.shields.io/badge/Python-073425?style=for-the-badge&logo=python&logoColor=white)
-![Django](https://img.shields.io/badge/Django-073425?style=for-the-badge&logo=django)
-![Expo](https://img.shields.io/badge/App-React%20Native%20%2B%20Expo-073425?style=for-the-badge&logo=expo)
-![IA](https://img.shields.io/badge/Inteligencia%20Artificial-ABBFA7?style=for-the-badge&labelColor=073425)
-![Economía Circular](https://img.shields.io/badge/Economía%20Circular-71A24D?style=for-the-badge)
+<img src="jpg/doc_assets/readme/t_como.png" alt="¿Cómo funciona?" height="44">
 
-</p>
+<img src="jpg/doc_assets/readme/como.png" alt="Cómo funciona Lüp" width="100%">
 
-<p align="center">
-  Proyecto FAT 2026 · Escuela El Obraje · 7.º C · Especialidad Informática · Alta Gracia, Córdoba
-</p>
+<img src="jpg/doc_assets/readme/t_func.png" alt="Qué puede hacer cada usuario" height="44">
 
----
+<img src="jpg/doc_assets/readme/usuarios.png" alt="Funciones para consumidor, comercio y organización" width="100%">
 
-## Probá Lüp
+La web y la app comparten el mismo servidor, y las dos tienen **chat de ayuda con IA ("Lü")**, notificaciones, modo oscuro y versión en inglés.
+
+<img src="jpg/doc_assets/readme/t_tec.png" alt="Tecnologías" height="44">
 
 | | |
 |---|---|
-| 🌐 **Página web** | https://www.lupalimentos.com |
-| 📱 **App para Android** | Entrá a la web desde el celular y tocá **"Descargar la app"**, o usá [este link](https://drive.google.com/file/d/1A3HXX4eX8W-bLU6BY6kA4ye7r4BwRsHT/view?usp=sharing) |
-| 📖 **Manual de usuario** | [`doc/Pdf/Manuales - de empresa/Manual de usuario.pdf`](doc/Pdf/Manuales%20-%20de%20empresa/Manual%20de%20usuario.pdf) |
-| 📸 **Instagram** | [@lupalimentos](https://www.instagram.com/lupalimentos) |
+| **Servidor y web** | Python · Django · Django REST Framework |
+| **App** | React Native · Expo · notificaciones con Firebase |
+| **Base de datos** | PostgreSQL |
+| **Inteligencia artificial** | Claude (Anthropic): chat de ayuda y productos a partir de una foto |
+| **Publicación** | Render · Cloudflare · APK con EAS |
+| **Organización** | GitHub con ramas por integrante, Pull Requests y GitHub Projects |
 
----
+<img src="jpg/doc_assets/readme/t_equipo.png" alt="Equipo" height="44">
 
-## <img src="jpg/doc_assets/icon_hoja.png" width="40"> ¿Qué es Lüp?
+<img src="jpg/doc_assets/readme/equipo.png" alt="Equipo de Lüp" width="100%">
 
-Lüp es una plataforma (página web + app para celular) que conecta **comercios**, **consumidores** y **fundaciones** para reducir el desperdicio alimentario mediante la venta con descuento y la donación de excedentes.
+<img src="jpg/doc_assets/readme/t_docs.png" alt="Documentación" height="44">
 
-Nuestro objetivo es transformar alimentos próximos a vencer en oportunidades, generando un impacto **ambiental**, **social** y **económico**.
+Toda la documentación del proyecto está en [`doc/`](doc/), en Word y en PDF: análisis FODA, costos y monetización, punto de equilibrio, dimensión del mercado, estrategias de adquisición, pasos legales, [mockup](doc/Pdf/Dise%C3%B1o/Mock%20up.pdf), lluvia de ideas, propuesta de valor, testing y [manual de usuario](doc/Pdf/Manuales%20-%20de%20empresa/Manual%20de%20usuario.pdf).
 
-## ¿Qué problema resuelve?
+**Próximos pasos:** publicar la app en Google Play, sumar el pago online con Mercado Pago y sumar los primeros comercios de Alta Gracia.
 
-En Argentina se pierden o desperdician cerca de **16 millones de toneladas de alimentos por año** (Ministerio de Agroindustria / FAO).
-Muchos son productos todavía aptos para comer que los comercios tiran porque están por vencer o les sobró stock.
-Eso significa plata perdida para el comercio, recursos desperdiciados para el ambiente y comida que no llega a quien la necesita.
-En Alta Gracia no había ninguna herramienta que resolviera esto.
+<img src="jpg/doc_assets/readme/t_dev.png" alt="Para desarrolladores" height="44">
 
-## ¿Cómo lo resuelve?
+Tocá cada sección para abrirla.
 
-1. **El comercio publica** lo que está por vencer, con descuento (precio original, precio Lüp, cantidad y fecha).
-2. **El consumidor elige** exactamente qué productos quiere (no una "caja sorpresa"), los **reserva** y los retira en el local con un código.
-3. **Lo que no se vende** y sigue siendo apto se puede **donar** a fundaciones y comedores, que lo piden desde Lüp.
+<details>
+<summary><b>Cómo ejecutarlo en la compu</b></summary>
 
-Prioridad del alimento: **venta → donación → descarte** (solo si ya no es apto).
+### 1. Página web y API (carpeta `LUP`)
 
-## Público objetivo
+```bash
+git clone https://github.com/Code7C26/LUP.git
+cd LUP
+python -m venv venv
+source venv/bin/activate          # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py createsuperuser  # opcional: acceso a /admin
+python manage.py runserver
+```
 
-| Quién | Por qué lo necesita |
-|---|---|
-| **Comercios de alimentos** (panaderías, rotiserías, verdulerías, almacenes) | Recuperan parte del costo de lo que hoy tiran y suman clientes. |
-| **Consumidores** | Compran comida en buen estado más barata, cerca de su casa. |
-| **Fundaciones y comedores** | Reciben donaciones de alimentos de forma ordenada. |
-| **Municipios e instituciones** (a futuro) | Miden y reducen el desperdicio de la ciudad. |
+Abrí http://127.0.0.1:8000.
 
----
+### 2. App para celular (carpeta `LUP/app`)
 
-## <img src="jpg/doc_assets/icon_grafico.png" width="40"> Objetivos
+Necesitás Node.js y la app **Expo Go** en el celular (o un emulador de Android).
 
-- Reducir el desperdicio alimentario.
-- Promover la economía circular.
-- Disminuir pérdidas económicas en comercios.
-- Facilitar el acceso a alimentos a menor costo.
-- Impulsar donaciones responsables.
-- Incorporar Inteligencia Artificial para optimizar la gestión de excedentes.
+```bash
+cd app
+npm install
+npx expo start
+```
 
----
+Escaneá el código QR con Expo Go. El celular y la compu tienen que estar en la **misma red Wi-Fi**,
+y Django tiene que correr escuchando en la red:
 
-## <img src="jpg/doc_assets/icon_tienda.png" width="40"> Funcionalidades
+```bash
+python manage.py runserver 0.0.0.0:8000
+```
 
-### Comercios
+La app busca el servidor sola en la misma compu que corre Expo. Para usar otro servidor, creá `app/.env` con
+`EXPO_PUBLIC_URL_SERVIDOR=http://IP-DE-TU-COMPU:8000`.
 
-- Publicación de excedentes con una foto: la IA completa los datos.
-- Descuentos con precio original y precio Lüp.
-- Gestión de stock, "Publicar de nuevo" y historial.
-- Confirmación de retiros con código o QR.
-- Impacto del mes: plata recuperada y comidas salvadas.
+### Datos de muestra (solo para desarrollo)
 
-### Consumidores
+`python manage.py cargar_demo` crea comercios, ofertas, reservas y opiniones **inventadas** para probar
+(usuarios `panaderia_sol`, `consumidor_demo` y `comedor_demo`, clave `LupDemo2026!`). No funciona con `DEBUG=0`.
 
-- Ofertas cercanas con mapa, buscador y filtros.
-- Reserva con código de retiro y QR (se paga en el local).
-- Historial, opiniones y favoritos.
-- **Puntos Lüp**: 1 punto cada $2.000, que se canjean por merch sustentable.
+**Antes de presentar o publicar la página**, borrá todo lo de muestra (solo toca las cuentas `@lup.demo`):
 
-### Organizaciones
+```bash
+python manage.py limpiar_demo
+```
 
-- Donaciones disponibles de comercios cercanos.
-- Pedidos de donación y seguimiento (enviado, aprobado, retirado).
+</details>
 
-### Inteligencia Artificial
-
-- **Completar con IA**: reconoce el producto en una foto y sugiere nombre, categoría, descripción, precio y vencimiento.
-- **Chat de ayuda con IA ("Lü")**: responde dudas y problemas de los usuarios en la web y en la app.
-
----
-
-## <img src="jpg/doc_assets/icon_grafico.png" width="40"> Impacto
-
-| Ambiental | Social | Económico |
-|-----------|--------|-----------|
-| 🌿 Menos desperdicio | 🤝 Mayor acceso a alimentos | 💰 Menores pérdidas |
-| ♻️ Economía circular | ❤️ Apoyo a organizaciones | 📦 Mejor aprovechamiento |
-| 🌎 Reducción de residuos | 👥 Consumo responsable | 📈 Optimización del stock |
-
----
-
-## <img src="jpg/doc_assets/icon_reloj.png" width="40"> Tecnologías
-
-| Parte | Tecnologías |
-|---|---|
-| **Backend** | Python 3 · Django 6.1 · Django REST Framework (API con token para la app) |
-| **Página web** | HTML · CSS · JavaScript · Bootstrap · modo oscuro · español / inglés |
-| **App para celular** | React Native 0.88 · Expo SDK 58 · React Navigation · Expo Notifications + Firebase (push) · react-native-maps · EAS Build (APK) |
-| **Base de datos** | PostgreSQL en Render (producción) · SQLite (desarrollo) |
-| **Inteligencia Artificial** | Claude (API de Anthropic) para el chat de ayuda "Lü" y para completar productos con una foto |
-| **Publicación** | Render (web, API y base de datos) · dominio www.lupalimentos.com con Cloudflare |
-| **Servicios** | Gmail (avisos por email) · Google Maps · Expo Application Services (EAS) |
-| **Organización** | Git y GitHub (ramas por integrante + Pull Requests) · GitHub Projects (Kanban) |
-| **Diseño** | Mockup propio · tipografías DM Sans y Poppins · paleta verde (#073425, #71A24D, #B6D1A1) |
-
----
-
-## <img src="jpg/doc_assets/icon_tienda2.png" width="40"> Estructura
+<details>
+<summary><b>Estructura de carpetas</b></summary>
 
 ```text
 LUP/
@@ -190,108 +152,10 @@ LUP/
 └── media/                        <-- Fotos subidas desde la web (se crea sola, no se sube a git)
 ```
 
----
+</details>
 
-## <img src="jpg/doc_assets/icon_grafico.png" width="40"> Estado Técnico Actual
-
-Plataforma web funcional en Django con tres tipos de cuenta:
-
-| Rol | Puede |
-|-----|-------|
-| **Consumidor** | Buscar y filtrar ofertas, reservar con código de retiro (de a una o varias juntas con el carrito), cancelar reservas, ver historial y ahorro. |
-| **Comercio** | Publicar / editar / eliminar excedentes con vista previa en vivo, confirmar retiros por código, aprobar donaciones, ver estadísticas. |
-| **Organización** | Solicitar productos marcados como donables y seguir el estado de sus solicitudes. |
-
-- **Apps:** `users` (usuario personalizado `Usuario` + perfil `Organizacion`), `stores` (perfil `Tienda` del comercio) y `products` (`Producto`, `Reserva`, `SolicitudDonacion`).
-- **Login** con usuario o email y selector de tipo de cuenta; **registro** guiado en 2 pasos según el rol.
-- **API REST** en `/api/...` (con token) que usa la app: ofertas, comercios, opiniones, reservas, donaciones y notificaciones.
-- **Opiniones**: el consumidor califica al comercio y al producto después de retirar; el comercio puede responder.
-- **Chat de ayuda "Lü"** con Inteligencia Artificial, avisos por email y mapa de comercios cercanos.
-- **Tests** automáticos de todos los flujos (`python manage.py test scr`).
-
-### App para celular
-
-- Intro animada, inicio de sesión por tipo de cuenta y bienvenida personalizada.
-- **Consumidor:** inicio con ofertas, buscador, catálogo, mapa, favoritos, carrito con varias unidades, reservas con código de retiro, opiniones e impacto (cuánto ahorró y cuánta comida salvó).
-- **Comercio:** publicar y editar productos, confirmar retiros con el código y responder pedidos de donación.
-- **Fundación:** ver donaciones disponibles, pedirlas y seguir sus solicitudes.
-- **Notificaciones push** (Expo + Firebase) y recordatorio 30 minutos antes del horario de retiro.
-- **Completar con IA**: el comercio saca una foto y la IA completa el producto.
-- **Puntos Lüp** con fotos del merch y canje desde la app.
-- **Chat de ayuda "Lü"**, modo claro y oscuro, español e inglés.
-
-### Funcionalidades clave
-
-- [x] Registro e inicio de sesión con 3 tipos de cuenta
-- [x] Publicación de productos con descuento y fecha de vencimiento
-- [x] Reservas con código de retiro
-- [x] Donaciones a fundaciones
-- [x] Mapa y comercios cercanos
-- [x] Opiniones y calificaciones
-- [x] Avisos por email y notificaciones push
-- [x] Chat de ayuda con IA
-- [x] Página bilingüe (español / inglés)
-- [x] Carga de productos con una foto (IA)
-- [x] Puntos Lüp con canje de merch
-- [x] App en español e inglés, modo claro y oscuro
-- [x] Página publicada en www.lupalimentos.com
-- [x] APK de Android descargable desde la web
-- [ ] Publicación en Google Play
-- [ ] Pago online con Mercado Pago
-
----
-
-## <img src="jpg/doc_assets/icon_reloj.png" width="40"> Cómo ejecutarlo
-
-### 1. Página web y API (carpeta `LUP`)
-
-```bash
-git clone https://github.com/Code7C26/LUP.git
-cd LUP
-python -m venv venv
-source venv/bin/activate          # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py createsuperuser  # opcional: acceso a /admin
-python manage.py runserver
-```
-
-Abrí http://127.0.0.1:8000.
-
-### 2. App para celular (carpeta `LUP/app`)
-
-Necesitás Node.js y la app **Expo Go** en el celular (o un emulador de Android).
-
-```bash
-cd app
-npm install
-npx expo start
-```
-
-Escaneá el código QR con Expo Go. El celular y la compu tienen que estar en la **misma red Wi-Fi**,
-y Django tiene que correr escuchando en la red:
-
-```bash
-python manage.py runserver 0.0.0.0:8000
-```
-
-La app busca el servidor sola en la misma compu que corre Expo. Para usar otro servidor, creá `app/.env` con
-`EXPO_PUBLIC_URL_SERVIDOR=http://IP-DE-TU-COMPU:8000`.
-
-### Datos de muestra (solo para desarrollo)
-
-`python manage.py cargar_demo` crea comercios, ofertas, reservas y opiniones **inventadas** para probar
-(usuarios `panaderia_sol`, `consumidor_demo` y `comedor_demo`, clave `LupDemo2026!`). No funciona con `DEBUG=0`.
-
-**Antes de presentar o publicar la página**, borrá todo lo de muestra (solo toca las cuentas `@lup.demo`):
-
-```bash
-python manage.py limpiar_demo
-```
-
----
-
-## <img src="jpg/doc_assets/icon_ubicacion.png" width="40"> Gmail y Google Maps
+<details>
+<summary><b>Avisos por Gmail y Google Maps</b></summary>
 
 La configuración va en un archivo **`.env`** en la raíz del proyecto (nunca se sube a GitHub).
 Copiá el ejemplo y completalo:
@@ -351,9 +215,10 @@ GOOGLE_MAPS_API_KEY=tu_clave
 
 Con la clave, además, quien no quiera compartir su ubicación puede **escribir su dirección o barrio**.
 
----
+</details>
 
-## <img src="jpg/doc_assets/icon_hoja.png" width="40"> Chat de ayuda con IA
+<details>
+<summary><b>Chat de ayuda con IA</b></summary>
 
 En todas las páginas hay un botón **Ayuda** (abajo a la derecha) que abre un chat con **Lü**, el asistente de Lüp.
 Conoce cómo funciona la página para cada tipo de cuenta y, si la persona inició sesión, sus reservas pendientes
@@ -371,9 +236,10 @@ SOPORTE_EMAIL=email_del_equipo@gmail.com
 - Todas las charlas quedan en `/admin` → *Conversaciones de soporte* (se pueden marcar como resueltas).
 - Límites: 800 caracteres por mensaje y 30 mensajes por hora por persona. El modelo se cambia con `SOPORTE_MODELO` (por defecto `claude-haiku-5-5`).
 
----
+</details>
 
-## <img src="jpg/doc_assets/icon_ubicacion.png" width="40"> Publicar la página (Render)
+<details>
+<summary><b>Publicar la página (Render)</b></summary>
 
 La página está lista para publicarse en [Render](https://render.com) con el archivo `render.yaml`
 (un *Blueprint*: Render lo lee y crea todo solo). Cada cambio que llega a `main` se publica automáticamente.
@@ -436,9 +302,10 @@ Costo aproximado: unos US$13 por mes (verificar en render.com/pricing). Se puede
 
 En la compu no cambia nada: sin estas variables se usa SQLite y el modo desarrollo de siempre.
 
----
+</details>
 
-## <img src="jpg/doc_assets/icon_infinito.png" width="40"> Idiomas (español / inglés)
+<details>
+<summary><b>Idiomas (español / inglés)</b></summary>
 
 Toda la página se puede ver en inglés con el botón **EN / ES** de la barra (al lado del modo oscuro).
 La elección se guarda en el navegador. La API de la app móvil responde siempre en español.
@@ -456,46 +323,7 @@ Lo que cargan los usuarios (nombres de productos, comercios, opiniones) no se tr
 >
 > Las fotos de productos ahora se guardan en `media/` (antes en `scr/jpg/`). Si tenés fotos viejas en tu compu, movelas de `scr/jpg/productos/` a `media/productos/`.
 
----
-
-## Estado del proyecto
-
-**Proyecto terminado y publicado.** La página está online en [www.lupalimentos.com](https://www.lupalimentos.com)
-y la app para Android se descarga desde la web, con notificaciones push funcionando.
-
-**Modelo de negocio:** alta gratuita para los comercios y comisión del 15 % por venta (20 % cuando se sume el pago online).
-
-**Próximos pasos:** publicar la app en Google Play, sumar el pago online con Mercado Pago y probar Lüp con los primeros comercios y organizaciones de Alta Gracia.
-
----
-
-## Equipo
-
-| Integrante | Rol | Rama en GitHub |
-|---|---|---|
-| **Sofía Silva** | Project Manager · Desarrolladora Backend y Frontend (app) · Inteligencia Artificial · Branding y Comunicación Visual · QA · Datos e Impacto | `sofia` |
-| **Josefina Caggiano** | Analista de Sistemas · Diseño UX/UI · Branding y Comunicación Visual · QA · Marketing y Relaciones Institucionales | `josefina` |
-| **Trinidad Bossi Scaglia** | Desarrolladora de Base de Datos · Backend y Frontend (web) · Inteligencia Artificial · QA · Sostenibilidad y Legales | `trinidad` |
-
-**Docente:** Prof. Tamara Piccinni · Escuela El Obraje, Alta Gracia
-
----
-
-## Enlaces importantes
-
-- Página web: https://www.lupalimentos.com
-- Repositorio: https://github.com/Code7C26/LUP
-- Instagram: [@lupalimentos](https://www.instagram.com/lupalimentos)
-- Manual de usuario: [`doc/Pdf/Manuales - de empresa/Manual de usuario.pdf`](doc/Pdf/Manuales%20-%20de%20empresa/Manual%20de%20usuario.pdf)
-- Mockup: [`doc/Pdf/Diseño/Mock up.pdf`](doc/Pdf/Dise%C3%B1o/Mock%20up.pdf)
-- Documentación del negocio: [`doc/`](doc/)
-
----
+</details>
 
 
-<p align="center">
-
-**Más valor. Menos desperdicio.**
-
-</p>
-
+<p align="center"><br><b>Más valor. Menos desperdicio.</b></p>
